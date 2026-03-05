@@ -23,6 +23,7 @@
 hs_err_pid*
 replay_pid*
 
+<<<<<<< HEAD
 # Eclipse
 .project
 .classpath
@@ -41,10 +42,19 @@ nbbuild/
 dist/
 nbdist/
 .nb-gradle/
+=======
+# Maven build folder
+target/
+
+# IntelliJ IDEA
+.idea/
+*.iml
+>>>>>>> 16052d35957db3f6a4640c0c86802fb5d6c873e4
 
 # VS Code
 .vscode/
 
+<<<<<<< HEAD
 # OS generated files
 .DS_Store
 .DS_Store?
@@ -224,3 +234,12 @@ venv.bak/
 # Temporary files
 *.tmp
 *.temp
+=======
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment files
+.env
+application-local.properties
+>>>>>>> 16052d35957db3f6a4640c0c86802fb5d6c873e4
