@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # DLASS - Digital Local Appointment Scheduling System
 
 DLASS is a comprehensive web-based platform designed to streamline appointment scheduling for local service providers. It empowers users to discover services, book appointments seamlessly, and make secure payments, while providing service providers with powerful tools to manage their schedules, handle emergencies, and gain insights through analytics dashboards.
@@ -155,3 +156,7 @@ For support, email support@dlass.com or create an issue in the repository.
 ---
 
 **DLASS** - Making local service appointments effortless and efficient.
+=======
+# digital-local-appointment-scheduling-system
+DLASS – A full-stack service marketplace platform for managing service providers, bookings, and availability, built using Java Spring Boot and modern web technologies.
+>>>>>>> 16052d35957db3f6a4640c0c86802fb5d6c873e4
