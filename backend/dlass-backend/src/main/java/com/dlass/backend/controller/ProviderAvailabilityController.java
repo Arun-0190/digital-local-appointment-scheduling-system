@@ -6,7 +6,8 @@ import com.dlass.backend.service.ProviderAvailabilityService;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.time.LocalDate;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/provider-availability")
@@ -36,7 +37,18 @@ public class ProviderAvailabilityController {
     }
 
     @GetMapping("/{availabilityId}/slots")
-    public List<TimeSlotDTO> getSlots(@PathVariable String availabilityId) {
-        return service.getSlots(availabilityId);
+    public List<TimeSlotDTO> getSlots(
+            @PathVariable String availabilityId,
+            @RequestParam LocalDate date
+    ) {
+        return service.getSlots(availabilityId, date);
+    }
+
+    @GetMapping("/calendar/{providerId}")
+    public Map<LocalDate, List<TimeSlotDTO>> getWeeklyCalendar(
+            @PathVariable String providerId,
+            @RequestParam LocalDate startDate) {
+
+        return service.getWeeklyCalendar(providerId, startDate);
     }
 }

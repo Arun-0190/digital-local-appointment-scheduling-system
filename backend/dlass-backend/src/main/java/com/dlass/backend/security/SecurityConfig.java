@@ -53,10 +53,18 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PATCH, "/api/admin/providers/**").hasRole("ADMIN")
 
                         //For Provider Availability
-                        .requestMatchers(HttpMethod.POST, "/api/provider-availability", "/api/provider-availability/**").hasRole("PROVIDER")
+                        .requestMatchers(HttpMethod.POST, "/api/provider-availability/**").hasRole("PROVIDER")
                         .requestMatchers(HttpMethod.PUT, "/api/provider-availability/**").hasRole("PROVIDER")
                         .requestMatchers(HttpMethod.DELETE, "/api/provider-availability/**").hasRole("PROVIDER")
                         .requestMatchers(HttpMethod.GET, "/api/provider-availability/**").permitAll()
+
+                        //Appointment Booking
+                        .requestMatchers(HttpMethod.POST, "/api/appointments/**").hasRole("USER")
+                        .requestMatchers(HttpMethod.GET, "/api/appointments/**").hasAnyRole("USER", "PROVIDER")
+                        .requestMatchers(HttpMethod.DELETE, "/api/appointments/**").hasRole("USER")
+                        .requestMatchers(HttpMethod.GET, "/api/appointments/my").hasRole("USER")
+                        .requestMatchers(HttpMethod.GET, "/api/appointments/provider").hasRole("PROVIDER")
+                        .requestMatchers(HttpMethod.GET, "/api/provider-availability/calendar/**").permitAll()
 
                         .anyRequest().authenticated()
                 )
