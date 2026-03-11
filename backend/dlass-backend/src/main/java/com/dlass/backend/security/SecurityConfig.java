@@ -49,6 +49,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/providers/register").authenticated()
 
                         //For Service Provider
+                        .requestMatchers(HttpMethod.GET, "/api/providers/search/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/providers/**").permitAll()
                         .requestMatchers(HttpMethod.PATCH, "/api/admin/providers/**").hasRole("ADMIN")
 
@@ -60,11 +61,16 @@ public class SecurityConfig {
 
                         //Appointment Booking
                         .requestMatchers(HttpMethod.POST, "/api/appointments/**").hasRole("USER")
-                        .requestMatchers(HttpMethod.GET, "/api/appointments/**").hasAnyRole("USER", "PROVIDER")
                         .requestMatchers(HttpMethod.DELETE, "/api/appointments/**").hasRole("USER")
                         .requestMatchers(HttpMethod.GET, "/api/appointments/my").hasRole("USER")
                         .requestMatchers(HttpMethod.GET, "/api/appointments/provider").hasRole("PROVIDER")
+                        .requestMatchers(HttpMethod.GET, "/api/appointments/**").hasAnyRole("USER", "PROVIDER")
+                        .requestMatchers(HttpMethod.GET, "/api/appointments/provider").hasRole("PROVIDER")
                         .requestMatchers(HttpMethod.GET, "/api/provider-availability/calendar/**").permitAll()
+
+                        //Reviews
+                        .requestMatchers(HttpMethod.POST, "/api/reviews/**").hasRole("USER")
+                        .requestMatchers(HttpMethod.GET, "/api/reviews/**").permitAll()
 
                         .anyRequest().authenticated()
                 )

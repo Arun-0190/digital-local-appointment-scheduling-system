@@ -10,5 +10,6 @@ public interface ServiceProviderRepository extends MongoRepository<ServiceProvid
 
     List<ServiceProvider> findBySubCategoryIdAndStatus(String subCategoryId, String status);
     Optional<ServiceProvider> findByUserId(String userId);
+    List<ServiceProvider> findByPincodeStartingWith(String prefix);
 
 }

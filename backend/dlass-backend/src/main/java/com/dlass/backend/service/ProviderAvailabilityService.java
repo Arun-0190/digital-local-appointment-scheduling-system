@@ -82,8 +82,12 @@ public class ProviderAvailabilityService {
 
         List<Appointment> appointments =
                 appointmentRepository.findByProviderIdAndDate(
-                        availability.getProviderId(), date
-                );
+                                availability.getProviderId(),
+                                date
+                        )
+                        .stream()
+                        .filter(a -> !"CANCELLED".equals(a.getStatus()))
+                        .toList();
 
         Set<LocalTime> bookedSlots = appointments.stream()
                 .map(Appointment::getStartTime)

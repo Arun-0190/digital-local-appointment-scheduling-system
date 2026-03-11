@@ -36,13 +36,20 @@ public class AppointmentService {
                 .orElseThrow(() -> new RuntimeException("User not found"))
                 .getId();
 
-        boolean exists = appointmentRepository
-                .existsByProviderIdAndDateAndStartTime(
+        List<Appointment> existing =
+                appointmentRepository.findByProviderIdAndDate(
                         request.getProviderId(),
-                        request.getDate(),
-                        request.getStartTime());
+                        request.getDate()
+                );
 
-        if (exists) {
+        boolean alreadyBooked = existing.stream()
+                .anyMatch(a ->
+                        a.getStartTime().equals(request.getStartTime())
+                                && a.getEndTime().equals(request.getEndTime())
+                                && !"CANCELLED".equals(a.getStatus())
+                );
+
+        if (alreadyBooked) {
             throw new RuntimeException("Slot already booked");
         }
 
@@ -54,6 +61,7 @@ public class AppointmentService {
         appointment.setStartTime(request.getStartTime());
         appointment.setEndTime(request.getEndTime());
         appointment.setStatus("BOOKED");
+        appointment.setCreatedAt(LocalDateTime.now());
 
         try {
             return appointmentRepository.save(appointment);
@@ -87,7 +95,8 @@ public class AppointmentService {
             throw new RuntimeException("Appointment cannot be cancelled within 30 minutes of start time");
         }
 
-        appointmentRepository.deleteById(appointmentId);
+        appointment.setStatus("CANCELLED");
+        appointmentRepository.save(appointment);
     }
 
     public List<Appointment> getUserAppointments(String email) {
