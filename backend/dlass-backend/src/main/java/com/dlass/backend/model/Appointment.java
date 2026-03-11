@@ -27,6 +27,10 @@ public class Appointment {
 
     private LocalDateTime createdAt;
 
+    private boolean reminder24Sent = false;
+    private boolean reminder1hSent = false;
+    private boolean reminderStartSent = false;
+
     public Appointment() {}
 
     public String getId() {
@@ -107,5 +111,29 @@ public class Appointment {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public boolean isReminder24Sent() {
+        return reminder24Sent;
+    }
+
+    public void setReminder24Sent(boolean reminder24Sent) {
+        this.reminder24Sent = reminder24Sent;
+    }
+
+    public boolean isReminder1hSent() {
+        return reminder1hSent;
+    }
+
+    public void setReminder1hSent(boolean reminder1hSent) {
+        this.reminder1hSent = reminder1hSent;
+    }
+
+    public boolean isReminderStartSent() {
+        return reminderStartSent;
+    }
+
+    public void setReminderStartSent(boolean reminderStartSent) {
+        this.reminderStartSent = reminderStartSent;
     }
 }

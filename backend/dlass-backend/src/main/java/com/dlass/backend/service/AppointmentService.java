@@ -3,6 +3,7 @@ package com.dlass.backend.service;
 import com.dlass.backend.dto.AppointmentRequest;
 import com.dlass.backend.model.Appointment;
 import com.dlass.backend.model.ServiceProvider;
+import com.dlass.backend.model.User;
 import com.dlass.backend.repository.AppointmentRepository;
 import com.dlass.backend.repository.ServiceProviderRepository;
 import com.dlass.backend.repository.UserRepository;
@@ -20,21 +21,25 @@ public class AppointmentService {
     private final AppointmentRepository appointmentRepository;
     private final UserRepository userRepository;
     private final ServiceProviderRepository serviceProviderRepository;
+    private final EmailService emailService;
 
     public AppointmentService(AppointmentRepository appointmentRepository,
                               UserRepository userRepository,
-                              ServiceProviderRepository serviceProviderRepository) {
+                              ServiceProviderRepository serviceProviderRepository,
+                              EmailService emailService) {
 
         this.appointmentRepository = appointmentRepository;
         this.userRepository = userRepository;
         this.serviceProviderRepository = serviceProviderRepository;
+        this.emailService = emailService;
     }
 
     public Appointment book(AppointmentRequest request, String email) {
 
-        String userId = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"))
-                .getId();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        String userId = user.getId();
 
         List<Appointment> existing =
                 appointmentRepository.findByProviderIdAndDate(
@@ -64,7 +69,42 @@ public class AppointmentService {
         appointment.setCreatedAt(LocalDateTime.now());
 
         try {
-            return appointmentRepository.save(appointment);
+
+            Appointment saved = appointmentRepository.save(appointment);
+
+            // USER confirmation email
+            emailService.sendEmail(
+                    user.getEmail(),
+                    "Appointment Confirmed",
+                    """
+                    Your appointment has been booked successfully.
+
+                    Date: """ + saved.getDate() + "\n"
+                            + "Time: " + saved.getStartTime()
+            );
+
+            // PROVIDER notification email
+            ServiceProvider provider = serviceProviderRepository
+                    .findById(saved.getProviderId())
+                    .orElseThrow(() -> new RuntimeException("Provider not found"));
+
+            User providerUser = userRepository
+                    .findById(provider.getUserId())
+                    .orElseThrow(() -> new RuntimeException("Provider user not found"));
+
+            emailService.sendEmail(
+                    providerUser.getEmail(),
+                    "New Appointment Booked",
+                    """
+                    A new appointment has been booked.
+
+                    Customer: """ + user.getFullName() + "\n"
+                            + "Date: " + saved.getDate() + "\n"
+                            + "Time: " + saved.getStartTime()
+            );
+
+            return saved;
+
         } catch (DuplicateKeyException e) {
             throw new RuntimeException("This slot has already been booked.");
         }
@@ -75,28 +115,57 @@ public class AppointmentService {
         Appointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new RuntimeException("Appointment not found"));
 
-        String userId = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"))
-                .getId();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        //Only the user who booked it can cancel
+        String userId = user.getId();
+
         if (!appointment.getUserId().equals(userId)) {
             throw new RuntimeException("You are not allowed to cancel this appointment");
         }
 
-        //Build appointment start datetime
         LocalDateTime appointmentTime =
                 LocalDateTime.of(appointment.getDate(), appointment.getStartTime());
 
         LocalDateTime now = LocalDateTime.now();
 
-        // Check 30-minute rule
         if (Duration.between(now, appointmentTime).toMinutes() < 30) {
             throw new RuntimeException("Appointment cannot be cancelled within 30 minutes of start time");
         }
 
         appointment.setStatus("CANCELLED");
         appointmentRepository.save(appointment);
+
+        // USER cancellation email
+        emailService.sendEmail(
+                user.getEmail(),
+                "Appointment Cancelled",
+                "Your appointment scheduled on "
+                        + appointment.getDate()
+                        + " at "
+                        + appointment.getStartTime()
+                        + " has been cancelled."
+        );
+
+        // PROVIDER cancellation email
+        ServiceProvider provider = serviceProviderRepository
+                .findById(appointment.getProviderId())
+                .orElseThrow(() -> new RuntimeException("Provider not found"));
+
+        User providerUser = userRepository
+                .findById(provider.getUserId())
+                .orElseThrow(() -> new RuntimeException("Provider user not found"));
+
+        emailService.sendEmail(
+                providerUser.getEmail(),
+                "Appointment Cancelled",
+                """
+                An appointment has been cancelled.
+
+                Customer: """ + user.getFullName() + "\n"
+                        + "Date: " + appointment.getDate() + "\n"
+                        + "Time: " + appointment.getStartTime()
+        );
     }
 
     public List<Appointment> getUserAppointments(String email) {
