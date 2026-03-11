@@ -11,7 +11,10 @@ public interface AppointmentRepository extends MongoRepository<Appointment, Stri
 
     List<Appointment> findByProviderIdAndDate(String providerId, LocalDate date);
     List<Appointment> findByUserId(String userId);
-
+    long countByProviderId(String providerId);
+    long countByProviderIdAndDate(String providerId, LocalDate date);
+    long countByProviderIdAndDateAfter(String providerId, LocalDate date);
+    List<Appointment> findByProviderId(String providerId);
     boolean existsByProviderIdAndDateAndStartTime(String providerId, LocalDate date, LocalTime startTime);
 
 }

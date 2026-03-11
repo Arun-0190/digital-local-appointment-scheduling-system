@@ -72,6 +72,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/reviews/**").hasRole("USER")
                         .requestMatchers(HttpMethod.GET, "/api/reviews/**").permitAll()
 
+                        //Dashboard
+                        .requestMatchers(HttpMethod.GET, "/api/provider/dashboard").hasRole("PROVIDER")
+
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session ->
