@@ -243,3 +243,9 @@ Thumbs.db
 .env
 application-local.properties
 >>>>>>> 16052d35957db3f6a4640c0c86802fb5d6c873e4
+
+# Added by ggshield
+.cache_ggshield
+
+# Added by ggshield
+.cache_ggshield

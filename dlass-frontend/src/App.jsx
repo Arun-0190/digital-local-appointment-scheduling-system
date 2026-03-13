@@ -1,9 +1,45 @@
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+
+import Home from "./pages/Home";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import SearchProviders from "./pages/SearchProviders";
+import UserDashboard from "./pages/UserDashboard";
+import ProviderDashboard from "./pages/ProviderDashboard";
+import Navbar from "./components/Navbar";
+import ProtectedRoute from "./components/ProtectedRoute";
+
 function App() {
   return (
-    <div>
-      <h1>DLASS</h1>
-      <p>Digital Local Appointment Scheduling System</p>
-    </div>
+    <BrowserRouter>
+
+      <Navbar />
+
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/search" element={<SearchProviders />} />
+        <Route 
+          path="/dashboard" 
+          element={
+            <ProtectedRoute>
+              <UserDashboard />
+            </ProtectedRoute>
+          } 
+        />
+
+        <Route 
+          path="/provider-dashboard" 
+            element={
+            <ProtectedRoute>
+              <ProviderDashboard />
+            </ProtectedRoute>
+          } 
+        />
+      </Routes>
+
+    </BrowserRouter>
   );
 }
 
