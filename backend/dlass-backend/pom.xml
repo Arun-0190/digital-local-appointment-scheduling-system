@@ -28,6 +28,8 @@
 	</scm>
 	<properties>
 		<java.version>21</java.version>
+		<maven.compiler.source>21</maven.compiler.source>
+		<maven.compiler.target>21</maven.compiler.target>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -129,6 +131,18 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<environmentVariables>
+						<MAIL_HOST>localhost</MAIL_HOST>
+						<MAIL_PORT>587</MAIL_PORT>
+						<MAIL_USERNAME>test</MAIL_USERNAME>
+						<MAIL_PASSWORD>test</MAIL_PASSWORD>
+					</environmentVariables>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>

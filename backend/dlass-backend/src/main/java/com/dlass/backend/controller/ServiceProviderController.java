@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.dlass.backend.dto.ProviderProfileResponse;
 import com.dlass.backend.dto.ProviderSearchResponse;
+import com.dlass.backend.dto.ProviderApplicationRequest;
 import com.dlass.backend.model.ServiceProvider;
 import com.dlass.backend.service.ServiceProviderService;
 
@@ -36,15 +37,23 @@ public class ServiceProviderController {
         return service.register(provider, email);
     }
 
+    @PostMapping("/apply")
+    public ServiceProvider applyAsProvider(@RequestBody ProviderApplicationRequest request) {
+        return service.applyAsProvider(request);
+    }
+
     @GetMapping("/by-subcategory/{id}")
     public List<ServiceProvider> getBySubCategory(@PathVariable String id) {
         return service.getBySubCategory(id);
     }
 
     @GetMapping("/search")
-public List<ProviderSearchResponse> searchProviders(@RequestParam String pincode) {
+    public List<ProviderSearchResponse> searchProviders(
+            @RequestParam String categoryId,
+            @RequestParam String subCategoryId,
+            @RequestParam String pincode) {
 
-        return service.searchByPincode(pincode)
+        return service.searchProviders(categoryId, subCategoryId, pincode)
                 .stream()
                 .map(p -> new ProviderSearchResponse(
                         p.getId(),

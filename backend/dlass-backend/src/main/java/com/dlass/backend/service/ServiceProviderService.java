@@ -16,6 +16,7 @@ import com.dlass.backend.repository.ReviewRepository;
 import com.dlass.backend.repository.ServiceOfferingRepository;
 import com.dlass.backend.repository.ServiceProviderRepository;
 import com.dlass.backend.repository.UserRepository;
+import com.dlass.backend.dto.ProviderApplicationRequest;
 
 @Service
 public class ServiceProviderService {
@@ -49,6 +50,38 @@ public class ServiceProviderService {
         return repository.save(provider);
     }
 
+    public ServiceProvider applyAsProvider(ProviderApplicationRequest request) {
+        User user = userRepository.findById(request.getUserId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if(repository.findByUserId(user.getId()).isPresent()) {
+             throw new RuntimeException("Provider profile already exists or pending");
+        }
+
+        ServiceProvider provider = new ServiceProvider();
+        provider.setUserId(user.getId());
+        provider.setBusinessName(request.getBusinessName());
+        provider.setDescription(request.getDescription());
+        provider.setCategoryId(request.getCategoryId());
+        provider.setSubCategoryId(request.getSubCategoryId());
+        provider.setServices(request.getServices());
+        provider.setExperienceYears(request.getExperienceYears());
+        provider.setCity(request.getCity());
+        provider.setArea(request.getArea());
+        provider.setPincode(request.getPincode());
+        provider.setStatus("PENDING");
+        provider.setCreatedAt(LocalDateTime.now());
+        provider.setUpdatedAt(LocalDateTime.now());
+        provider.setRating(0);
+        provider.setReviewCount(0);
+
+        return repository.save(provider);
+    }
+
+    public List<ServiceProvider> getPendingProviders() {
+        return repository.findByStatus("PENDING");
+    }
+
     public List<ServiceProvider> getBySubCategory(String subCategoryId) {
         return repository.findBySubCategoryIdAndStatus(subCategoryId, "ACTIVE");
     }
@@ -68,9 +101,15 @@ public class ServiceProviderService {
         return repository.save(provider);
     }
 
-    public List<ServiceProvider> searchByPincode(String userPincode) {
+    public ServiceProvider reject(String id) {
+        ServiceProvider provider = repository.findById(id).orElseThrow(() -> new RuntimeException("Provider not found"));
+        provider.setStatus("SUSPENDED");
+        return repository.save(provider);
+    }
 
-        List<ServiceProvider> providers = repository.findAll();
+    public List<ServiceProvider> searchProviders(String categoryId, String subCategoryId, String userPincode) {
+
+        List<ServiceProvider> providers = repository.findByCategoryIdAndSubCategoryIdAndStatus(categoryId, subCategoryId, "ACTIVE");
 
         return providers.stream()
                 .sorted((p1, p2) -> {

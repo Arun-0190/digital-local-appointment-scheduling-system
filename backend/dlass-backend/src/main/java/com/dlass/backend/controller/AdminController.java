@@ -3,6 +3,7 @@ package com.dlass.backend.controller;
 import com.dlass.backend.model.ServiceProvider;
 import org.springframework.web.bind.annotation.*;
 import com.dlass.backend.service.ServiceProviderService;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -19,9 +20,19 @@ public class AdminController {
         return "Admin access granted";
     }
 
+    @GetMapping("/providers/pending")
+    public List<ServiceProvider> getPendingProviders() {
+        return serviceProviderService.getPendingProviders();
+    }
+
     //For Approval of Provider
     @PatchMapping("/providers/{id}/approve")
     public ServiceProvider approveProvider(@PathVariable String id) {
         return serviceProviderService.approve(id);
+    }
+
+    @PatchMapping("/providers/{id}/reject")
+    public ServiceProvider rejectProvider(@PathVariable String id) {
+        return serviceProviderService.reject(id);
     }
 }
