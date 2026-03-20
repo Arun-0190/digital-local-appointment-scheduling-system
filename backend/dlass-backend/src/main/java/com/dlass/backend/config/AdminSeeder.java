@@ -20,17 +20,27 @@ public class AdminSeeder implements CommandLineRunner {
     }
 
     @Override
-    public void run(String... args) throws Exception {
-        String adminEmail = "admin@dlass.com";
+    public void run(String... args) {
+
+        String adminEmail = System.getenv("ADMIN_EMAIL");
+        String adminPassword = System.getenv("ADMIN_PASSWORD");
+
+        if (adminEmail == null || adminPassword == null) {
+            System.out.println("Admin credentials not found in environment variables.");
+            return;
+        }
+
         if (userRepository.findByEmail(adminEmail).isEmpty()) {
             User admin = new User();
             admin.setFullName("System Admin");
             admin.setEmail(adminEmail);
-            admin.setPassword(passwordEncoder.encode("admin123"));
+            admin.setPassword(passwordEncoder.encode(adminPassword));
             admin.setRole("ADMIN");
             admin.setCreatedAt(LocalDateTime.now());
+
             userRepository.save(admin);
-            System.out.println("Admin user created: " + adminEmail + " / admin123");
+
+            System.out.println("Admin user created successfully.");
         }
     }
 }
