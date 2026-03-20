@@ -1,161 +1,210 @@
 # DLASS - Digital Local Appointment Scheduling System
 
-DLASS is a comprehensive web-based platform designed to streamline appointment scheduling for local service providers. It empowers users to discover services, book appointments seamlessly, and make secure payments, while providing service providers with powerful tools to manage their schedules, handle emergencies, and gain insights through analytics dashboards.
+DLASS is a full-stack service marketplace platform designed to streamline appointment scheduling between users and local service providers.
 
-## Features
+It enables users to discover services through structured filtering, apply for appointments, and interact with verified providers. Service providers onboard through an approval workflow, and administrators ensure platform quality and trust.
+
+---
+
+## Core Features
 
 ### For Users (Customers)
 
-- **Service Discovery**: Find local services by category and pincode
-- **Appointment Booking**: First Come First Serve (FCFS) booking system
-- **Secure Payments**: Integrated online payment processing
-- **Notifications**: Real-time in-app and email notifications
+* Structured service discovery using Category → Subcategory → Pincode filtering
+* Slot-based appointment booking (First Come First Serve model)
+* Secure authentication using JWT
+
+---
 
 ### For Service Providers
 
-- **Schedule Management**: Easy creation and management of service slots
-- **Emergency Handling**: Quick shutdown and rescheduling capabilities
-- **Analytics Dashboard**: Business insights and performance metrics
+* Dedicated provider application flow (separate from user registration)
+* Submit business details, services, and specialization
+* Approval-based onboarding system
+* Basic provider dashboard for managing data
+
+---
 
 ### For Admins
 
-- **Provider Verification**: Streamlined onboarding process
-- **Category Management**: Centralized service categorization
-- **Platform Monitoring**: Comprehensive oversight tools
+* Approve or reject provider applications
+* Maintain platform quality by controlling provider visibility
+* Admin account securely created via backend seeder (environment-based)
+
+---
+
+## System Highlights
+
+* Role-based access control (USER / PROVIDER / ADMIN)
+* Approval-based marketplace model
+* Category → Subcategory → Service hierarchy
+* Secure backend with JWT authentication
+* Clean separation of frontend and backend
+* Production-oriented architecture
+
+---
 
 ## Technology Stack
 
-- **Frontend**: React.js with Tailwind CSS
-- **Backend**: Spring Boot (Java 21) with REST APIs
-- **Database**: MongoDB
-- **Security**: JWT Authentication
-- **Payments**: Razorpay integration
-- **Email**: SMTP-based notifications
-- **Deployment**: Docker-ready configurations
+| Layer          | Technology                             |
+| -------------- | -------------------------------------- |
+| Frontend       | React.js (Vite) + Tailwind CSS         |
+| Backend        | Spring Boot (Java 21)                  |
+| Database       | MongoDB                                |
+| Authentication | JWT                                    |
+| Email          | SMTP (environment-based configuration) |
+| Build Tools    | Maven, npm                             |
+
+---
 
 ## Project Structure
 
 ```
 DLASS PROJECT/
-├── backend/                    # Backend source code
-│   ├── dlass-backend/          # Spring Boot application
+├── backend/                    
+│   ├── dlass-backend/          
 │   │   ├── src/
-│   │   │   ├── main/java/com/dlass/backend/  # Java source files
-│   │   │   ├── main/resources/               # Application configs
-│   │   │   └── test/                         # Unit tests
-│   │   ├── pom.xml                           # Maven configuration
-│   │   └── README.md
-│   └── README.md
-├── frontend/                   # Frontend source code
-│   ├── dlass-frontend/         # React application
+│   │   │   ├── main/java/com/dlass/backend/
+│   │   │   │   ├── controller/     
+│   │   │   │   ├── service/        
+│   │   │   │   ├── repository/     
+│   │   │   │   ├── model/          
+│   │   │   │   ├── dto/            
+│   │   │   │   ├── config/         
+│   │   │   │   └── security/       
+│   │   │   ├── resources/
+│   │   │   │   └── application.yaml
+│   │   ├── pom.xml
+│
+├── frontend/                   
+│   ├── dlass-frontend/         
 │   │   ├── src/
-│   │   │   ├── components/     # Reusable UI components
-│   │   │   ├── pages/          # Page components
-│   │   │   ├── services/       # API service functions
-│   │   │   └── utils/          # Utility functions
-│   │   ├── public/             # Static assets
-│   │   ├── package.json        # Node dependencies
-│   │   └── tailwind.config.js  # Tailwind configuration
-│   └── README.md
-├── database/                   # Database related files
-│   ├── schema/                 # MongoDB collection schemas
-│   ├── seed-data/              # Sample data for development
-│   └── indexes.md              # Database indexing guidelines
-├── docs/                       # Project documentation
-│   ├── api-docs/               # API endpoint documentation
-│   ├── diagrams/               # Architecture and flow diagrams
-│   └── SRS/                    # Software Requirements Specification
-├── deployment/                 # Deployment configurations
-│   ├── backend-deploy.md       # Backend deployment guide
-│   ├── frontend-deploy.md      # Frontend deployment guide
-│   └── env-variables.md        # Environment variables setup
-├── third-party/                # Third-party integrations
-│   ├── payment/                # Razorpay integration notes
-│   ├── email/                  # SMTP configuration
-│   └── google-business/        # Google Business Profile integration
-├── scripts/                    # Build and utility scripts
-├── .gitignore                  # Git ignore rules
-├── CONTRIBUTING.md             # Contribution guidelines
-├── CHANGELOG.md                # Version history
-└── README.md                   # This file
+│   │   │   ├── components/     
+│   │   │   ├── pages/          
+│   │   │   │   ├── Login.jsx
+│   │   │   │   ├── Register.jsx
+│   │   │   │   ├── SearchProviders.jsx
+│   │   │   │   ├── ProviderApply.jsx
+│   │   │   │   ├── ProviderDashboard.jsx
+│   │   │   │   ├── AdminDashboard.jsx
+│   │   │   ├── services/       
+│   │   │   ├── utils/
+│   │   ├── package.json
+│
+├── database/                   
+│   ├── schema/
+│   ├── seed-data/
+│
+├── docs/                       
+├── deployment/                 
+├── scripts/                    
+├── .gitignore                  
+└── README.md                   
 ```
-
-## Prerequisites
-
-- **Java**: JDK 21 or higher
-- **Node.js**: Version 16 or higher
-- **MongoDB**: Version 5.0 or higher
-- **Maven**: For backend builds
-- **Git**: For version control
-
-## Quick Start
-
-1. **Clone the Repository**
-
-   ```bash
-   git clone <repository-url>
-   cd dlass-project
-   ```
-
-2. **Setup Backend**
-
-   ```bash
-   cd backend/dlass-backend
-   mvn clean install
-   # Configure application.yaml with your MongoDB connection
-   mvn spring-boot:run
-   ```
-
-3. **Setup Frontend**
-
-   ```bash
-   cd frontend/dlass-frontend
-   npm install
-   npm start
-   ```
-
-4. **Database Setup**
-   - Start MongoDB service
-   - Import seed data from `database/seed-data/`
-
-## Build Scripts
-
-Use the provided build scripts for quick setup:
-
-- **Windows**: Run `scripts/build-backend.bat` and `scripts/build-frontend.bat`
-- **Linux/Mac**: Use corresponding shell scripts (create if needed)
-
-## API Documentation
-
-API endpoints are documented in `docs/api-docs/api-endpoints.md`. The backend runs on `http://localhost:8080` by default.
-
-## Deployment
-
-Refer to deployment guides in the `deployment/` folder for production setup instructions.
-
-## Contributing
-
-Please read `CONTRIBUTING.md` for details on our code of conduct and the process for submitting pull requests.
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Future Enhancements
-
-- Advanced AI-based analytics
-- Mobile application support
-- Map integration for location-based services
-- SMS/WhatsApp notifications
-
-## Support
-
-For support, email support@dlass.com or create an issue in the repository.
 
 ---
 
-**DLASS** - Making local service appointments effortless and efficient.
-=======
-# digital-local-appointment-scheduling-system
-DLASS – A full-stack service marketplace platform for managing service providers, bookings, and availability, built using Java Spring Boot and modern web technologies.
->>>>>>> 16052d35957db3f6a4640c0c86802fb5d6c873e4
+## Setup Instructions
+
+### 1. Clone Repository
+
+```bash
+git clone <repository-url>
+cd dlass-project
+```
+
+---
+
+### 2. Backend Setup
+
+```bash
+cd backend/dlass-backend
+mvn clean install
+mvn spring-boot:run
+```
+
+Backend runs at:
+
+```
+http://localhost:8080
+```
+
+---
+
+### 3. Frontend Setup
+
+```bash
+cd frontend/dlass-frontend
+npm install
+npm run dev
+```
+
+Frontend runs at:
+
+```
+http://localhost:5173
+```
+
+---
+
+### 4. Environment Variables
+
+Create a `.env` file in the backend root:
+
+```
+ADMIN_EMAIL=admin@dlass.com
+ADMIN_PASSWORD=StrongPassword@123
+
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USERNAME=your_email
+MAIL_PASSWORD=your_app_password
+```
+
+Ensure `.env` is added to `.gitignore`.
+
+---
+
+## Security
+
+* JWT-based authentication
+* Role-based access control
+* Password hashing using BCrypt
+* Environment-based configuration for sensitive data
+* Admin credentials not exposed via frontend
+
+---
+
+## Workflow
+
+```
+User registers → applies as provider → admin reviews → provider becomes ACTIVE → visible in search
+```
+
+---
+
+## Future Enhancements
+
+* Payment integration (Razorpay)
+* Email notifications (booking confirmations and reminders)
+* Advanced analytics dashboard
+* Distance-based provider sorting
+* AI-based recommendations
+
+---
+
+## Developer Note
+
+This project is structured as a real-world service marketplace system and demonstrates:
+
+* Backend architecture and API design
+* Secure authentication and authorization
+* Approval workflows
+* Scalable frontend-backend integration
+* Product-oriented system design
+
+---
+
+## License
+
+MIT License
