@@ -21,6 +21,7 @@ public class UserController {
 
     @PostMapping
     public UserResponseDTO registerUser(@RequestBody User user) {
+        user.setRole("USER");
         return userService.registerUser(user);
     }
 

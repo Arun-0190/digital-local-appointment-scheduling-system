@@ -1,6 +1,7 @@
 package com.dlass.backend.model;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
@@ -17,7 +18,9 @@ public class ServiceProvider {
     private String businessName;
     private String description;
 
+    @Indexed
     private String categoryId;
+    @Indexed
     private String subCategoryId;
 
     private int experienceYears;
@@ -27,8 +30,10 @@ public class ServiceProvider {
     private double rating = 0;
     private int reviewCount = 0;
 
+    @Indexed
     private String city;
     private String area;
+    @Indexed
     private String pincode;
 
     private String status; // PENDING, ACTIVE, SUSPENDED

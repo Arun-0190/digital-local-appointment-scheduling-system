@@ -22,6 +22,8 @@ public class Appointment {
 
     private String status;    //BOOKED, PAID, CANCELLED, COMPLETED
 
+    private String serviceId;
+    private String serviceName;
     private String paymentId;
     private double amount;
 
@@ -60,6 +62,9 @@ public class Appointment {
     public String getStatus() {
         return status;
     }
+
+    public String getServiceId() { return serviceId; }
+    public String getServiceName() { return serviceName; }
 
     public String getPaymentId() {
         return paymentId;
@@ -100,6 +105,9 @@ public class Appointment {
     public void setStatus(String status) {
         this.status = status;
     }
+
+    public void setServiceId(String serviceId) { this.serviceId = serviceId; }
+    public void setServiceName(String serviceName) { this.serviceName = serviceName; }
 
     public void setPaymentId(String paymentId) {
         this.paymentId = paymentId;

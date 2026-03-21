@@ -83,13 +83,16 @@ function UserDashboard() {
         >
           Browse All Providers →
         </button>
-        <button
-          className="btn-primary"
-          style={{ marginLeft: "1rem" }}
-          onClick={() => navigate("/apply")}
-        >
-          Become a Provider &rarr;
-        </button>
+        <div className="dashboard-card action-card">
+          <h3>Become a Provider</h3>
+          <p>Offer your own services on DLASS to the local community.</p>
+          <button
+            className="btn-secondary"
+            onClick={() => navigate("/apply-provider")}
+          >
+            Apply Now
+          </button>
+        </div>
       </section>
     </div>
   );

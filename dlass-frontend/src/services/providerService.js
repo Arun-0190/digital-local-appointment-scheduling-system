@@ -36,12 +36,12 @@ export async function getPendingProviders() {
 
 // Approve provider application (ADMIN only)
 export async function approveProvider(providerId) {
-  const response = await api.patch(`/api/admin/providers/${providerId}/approve`);
+  const response = await api.post(`/api/admin/providers/${providerId}/approve`);
   return response.data;
 }
 
 // Reject provider application (ADMIN only)
 export async function rejectProvider(providerId) {
-  const response = await api.patch(`/api/admin/providers/${providerId}/reject`);
+  const response = await api.post(`/api/admin/providers/${providerId}/reject`);
   return response.data;
 }

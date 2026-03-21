@@ -68,7 +68,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/subcategories/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/subcategories/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/providers/register").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/api/providers/apply").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/providers/apply").authenticated()
 
                         //For Service Provider
                         .requestMatchers(HttpMethod.GET, "/api/providers/search/**").permitAll()
@@ -76,7 +76,7 @@ public class SecurityConfig {
                         
                         //For Admin Providers
                         .requestMatchers(HttpMethod.GET, "/api/admin/providers/pending").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PATCH, "/api/admin/providers/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/admin/providers/**").hasRole("ADMIN")
 
                         //For Provider Availability
                         .requestMatchers(HttpMethod.POST, "/api/provider-availability/**").hasRole("PROVIDER")

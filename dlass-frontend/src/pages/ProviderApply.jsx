@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
-import { CATEGORY_MAP } from "../services/categoryMap";
+import { getCategories, getSubCategories } from "../services/catalogService";
 import { applyAsProvider } from "../services/providerService";
 import { getToken } from "../services/authService";
 
@@ -10,6 +10,11 @@ function ProviderApply() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+
+  // Category/Subcategory data from API
+  const [categories, setCategories] = useState([]);
+  const [subCategories, setSubCategories] = useState([]);
+  const [availableServices, setAvailableServices] = useState([]);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -22,26 +27,36 @@ function ProviderApply() {
     area: "",
     pincode: "",
   });
-  
-  // Services uses a separate state because it's an array for multi-select
+
   const [selectedServices, setSelectedServices] = useState([]);
 
-  // Derive subcategories and services based on selections
-  const selectedCategoryObj = CATEGORY_MAP.find((c) => c.name === formData.categoryId);
-  const subCategories = selectedCategoryObj ? selectedCategoryObj.subcategories : [];
-  
-  const selectedSubCategoryObj = subCategories.find((sc) => sc.name === formData.subCategoryId);
-  const availableServices = selectedSubCategoryObj ? selectedSubCategoryObj.services : [];
-
-  // Reset dependent fields when parent changes
+  // Fetch categories on mount
   useEffect(() => {
-    setFormData((prev) => ({ ...prev, subCategoryId: "" }));
-    setSelectedServices([]);
+    getCategories().then(setCategories).catch(console.error);
+  }, []);
+
+  // Fetch subcategories when category changes
+  useEffect(() => {
+    if (formData.categoryId) {
+      getSubCategories(formData.categoryId).then(setSubCategories).catch(console.error);
+      setFormData((prev) => ({ ...prev, subCategoryId: "" }));
+      setSelectedServices([]);
+      setAvailableServices([]);
+    } else {
+      setSubCategories([]);
+    }
   }, [formData.categoryId]);
 
+  // Update available services when subcategory changes
   useEffect(() => {
-    setSelectedServices([]);
-  }, [formData.subCategoryId]);
+    if (formData.subCategoryId) {
+      const sub = subCategories.find(sc => sc.id === formData.subCategoryId);
+      setAvailableServices(sub?.services || []);
+      setSelectedServices([]);
+    } else {
+      setAvailableServices([]);
+    }
+  }, [formData.subCategoryId, subCategories]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -132,8 +147,8 @@ function ProviderApply() {
           <label htmlFor="categoryId">Category *</label>
           <select id="categoryId" name="categoryId" required value={formData.categoryId} onChange={handleChange}>
             <option value="">-- Select Category --</option>
-            {CATEGORY_MAP.map((cat) => (
-              <option key={cat.name} value={cat.name}>{cat.name}</option>
+            {categories.map((cat) => (
+              <option key={cat.id} value={cat.id}>{cat.name}</option>
             ))}
           </select>
         </div>
@@ -150,7 +165,7 @@ function ProviderApply() {
           >
             <option value="">-- Select Subcategory --</option>
             {subCategories.map((sc) => (
-              <option key={sc.name} value={sc.name}>{sc.name}</option>
+              <option key={sc.id} value={sc.id}>{sc.name}</option>
             ))}
           </select>
         </div>

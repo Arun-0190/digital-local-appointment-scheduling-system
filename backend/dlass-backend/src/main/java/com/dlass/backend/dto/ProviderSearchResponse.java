@@ -1,5 +1,7 @@
 package com.dlass.backend.dto;
 
+import java.util.List;
+
 public class ProviderSearchResponse {
 
     private String id;
@@ -10,12 +12,14 @@ public class ProviderSearchResponse {
     private int experienceYears;
     private double rating;
     private int reviewCount;
+    private List<String> services;
 
     public ProviderSearchResponse() {}
 
     public ProviderSearchResponse(String id, String businessName, String area,
                                   String city, String pincode,
-                                  int experienceYears, double rating, int reviewCount) {
+                                  int experienceYears, double rating, int reviewCount,
+                                  List<String> services) {
         this.id = id;
         this.businessName = businessName;
         this.area = area;
@@ -24,70 +28,33 @@ public class ProviderSearchResponse {
         this.experienceYears = experienceYears;
         this.rating = rating;
         this.reviewCount = reviewCount;
+        this.services = services;
     }
 
-    public String getId() {
-        return id;
-    }
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
 
-    public void setId(String id) {
-        this.id = id;
-    }
+    public String getBusinessName() { return businessName; }
+    public void setBusinessName(String businessName) { this.businessName = businessName; }
 
-    public String getBusinessName() {
-        return businessName;
-    }
+    public String getArea() { return area; }
+    public void setArea(String area) { this.area = area; }
 
-    public void setBusinessName(String businessName) {
-        this.businessName = businessName;
-    }
+    public String getCity() { return city; }
+    public void setCity(String city) { this.city = city; }
 
-    public String getArea() {
-        return area;
-    }
+    public String getPincode() { return pincode; }
+    public void setPincode(String pincode) { this.pincode = pincode; }
 
-    public void setArea(String area) {
-        this.area = area;
-    }
+    public int getExperienceYears() { return experienceYears; }
+    public void setExperienceYears(int experienceYears) { this.experienceYears = experienceYears; }
 
-    public String getCity() {
-        return city;
-    }
+    public double getRating() { return rating; }
+    public void setRating(double rating) { this.rating = rating; }
 
-    public void setCity(String city) {
-        this.city = city;
-    }
+    public int getReviewCount() { return reviewCount; }
+    public void setReviewCount(int reviewCount) { this.reviewCount = reviewCount; }
 
-    public String getPincode() {
-        return pincode;
-    }
-
-    public void setPincode(String pincode) {
-        this.pincode = pincode;
-    }
-
-    public int getExperienceYears() {
-        return experienceYears;
-    }
-
-    public void setExperienceYears(int experienceYears) {
-        this.experienceYears = experienceYears;
-    }
-
-    public double getRating() {
-        return rating;
-    }
-
-    public void setRating(double rating) {
-        this.rating = rating;
-    }
-
-    public int getReviewCount() {
-        return reviewCount;
-    }
-
-    public void setReviewCount(int reviewCount) {
-        this.reviewCount = reviewCount;
-    }
-
+    public List<String> getServices() { return services; }
+    public void setServices(List<String> services) { this.services = services; }
 }
