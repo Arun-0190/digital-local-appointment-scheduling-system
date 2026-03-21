@@ -2,9 +2,11 @@ package com.dlass.backend.service;
 
 import com.dlass.backend.dto.AppointmentRequest;
 import com.dlass.backend.model.Appointment;
+import com.dlass.backend.model.ServiceOffering;
 import com.dlass.backend.model.ServiceProvider;
 import com.dlass.backend.model.User;
 import com.dlass.backend.repository.AppointmentRepository;
+import com.dlass.backend.repository.ServiceOfferingRepository;
 import com.dlass.backend.repository.ServiceProviderRepository;
 import com.dlass.backend.repository.UserRepository;
 import org.springframework.dao.DuplicateKeyException;
@@ -21,16 +23,19 @@ public class AppointmentService {
     private final AppointmentRepository appointmentRepository;
     private final UserRepository userRepository;
     private final ServiceProviderRepository serviceProviderRepository;
+    private final ServiceOfferingRepository serviceOfferingRepository;
     private final EmailService emailService;
 
     public AppointmentService(AppointmentRepository appointmentRepository,
                               UserRepository userRepository,
                               ServiceProviderRepository serviceProviderRepository,
+                              ServiceOfferingRepository serviceOfferingRepository,
                               EmailService emailService) {
 
         this.appointmentRepository = appointmentRepository;
         this.userRepository = userRepository;
         this.serviceProviderRepository = serviceProviderRepository;
+        this.serviceOfferingRepository = serviceOfferingRepository;
         this.emailService = emailService;
     }
 
@@ -47,25 +52,40 @@ public class AppointmentService {
                         request.getDate()
                 );
 
+        // Strict overlap check: existing.start < newEnd AND existing.end > newStart
         boolean alreadyBooked = existing.stream()
+                .filter(a -> !"CANCELLED".equals(a.getStatus()))
                 .anyMatch(a ->
-                        a.getStartTime().equals(request.getStartTime())
-                                && a.getEndTime().equals(request.getEndTime())
-                                && !"CANCELLED".equals(a.getStatus())
+                        a.getStartTime().isBefore(request.getEndTime())
+                                && a.getEndTime().isAfter(request.getStartTime())
                 );
 
         if (alreadyBooked) {
             throw new RuntimeException("Slot already booked");
         }
 
+        // Fetch service details if serviceId provided
+        String serviceName = null;
+        double amount = 0;
+        if (request.getServiceId() != null) {
+            ServiceOffering offering = serviceOfferingRepository.findById(request.getServiceId()).orElse(null);
+            if (offering != null) {
+                serviceName = offering.getName();
+                amount = offering.getPrice();
+            }
+        }
+
         Appointment appointment = new Appointment();
 
         appointment.setProviderId(request.getProviderId());
         appointment.setUserId(userId);
+        appointment.setServiceId(request.getServiceId());
+        appointment.setServiceName(serviceName);
         appointment.setDate(request.getDate());
         appointment.setStartTime(request.getStartTime());
         appointment.setEndTime(request.getEndTime());
         appointment.setStatus("BOOKED");
+        appointment.setAmount(amount);
         appointment.setCreatedAt(LocalDateTime.now());
 
         try {

@@ -1,219 +1,295 @@
-import { useState, useEffect, useCallback } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { searchProviders } from "../services/providerService";
-import { CATEGORY_MAP } from "../services/categoryMap";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { getCategories, getSubCategories } from "../services/catalogService";
 
-// ── Star rating component ─────────────────────────────────────────────────────
-function StarRating({ rating }) {
+const API_BASE = "http://localhost:8080/api";
+
+const StarRating = ({ rating }) => {
   return (
-    <span className="stars" aria-label={`Rating: ${rating} out of 5`}>
-      {[1, 2, 3, 4, 5].map((s) => (
-        <span key={s} className={s <= Math.round(rating) ? "star filled" : "star"}>
-          ★
-        </span>
-      ))}
-      <span className="rating-num">({rating?.toFixed(1) ?? "N/A"})</span>
+    <span style={{ color: "#facc15", fontSize: "1rem" }}>
+      {"★".repeat(Math.round(rating))}{"☆".repeat(5 - Math.round(rating))}
+      <span style={{ color: "#888", fontSize: ".85rem", marginLeft: "6px" }}>({rating.toFixed(1)})</span>
     </span>
   );
-}
+};
 
-// ── Provider card ─────────────────────────────────────────────────────────────
-function ProviderCard({ provider }) {
-  const navigate = useNavigate();
-  return (
-    <div className="provider-card">
-      <div className="provider-card-header">
-        <h3 className="provider-name">{provider.businessName}</h3>
-        <span className="provider-exp">{provider.experienceYears} yrs exp.</span>
-      </div>
-      <p className="provider-location">
-        📍 {provider.area}, {provider.city} – <strong>{provider.pincode}</strong>
-      </p>
-      <div className="provider-rating">
-        <StarRating rating={provider.rating} />
-        <span className="review-count">{provider.reviewCount || 0} reviews</span>
-      </div>
-      <button
-        className="btn-secondary"
-        onClick={() => navigate(`/search?categoryId=${provider.categoryId}&subCategoryId=${provider.subCategoryId}&pincode=${provider.pincode}`)}
-      >
-        View Area
-      </button>
-    </div>
-  );
-}
-
-// ── Main page ─────────────────────────────────────────────────────────────────
 function SearchProviders() {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [categoryId, setCategoryId] = useState(searchParams.get("categoryId") || "");
-  const [subCategoryId, setSubCategoryId] = useState(searchParams.get("subCategoryId") || "");
-  const [pincode, setPincode] = useState(searchParams.get("pincode") || "");
-  
-  const [providers, setProviders] = useState([]);
+  const navigate = useNavigate();
+  const [categories, setCategories] = useState([]);;
+  const [subCategories, setSubCategories] = useState([]);
+
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedSubCategory, setSelectedSubCategory] = useState("");
+  const [city, setCity] = useState("");
+  const [pincode, setPincode] = useState("");
+
+  const [results, setResults] = useState([]);
+  const [hasSearched, setHasSearched] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [hasSearched, setHasSearched] = useState(false);
 
-  // Derive subcategories based on selected category
-  const selectedCategoryObj = CATEGORY_MAP.find((c) => c.name === categoryId);
-  const subCategories = selectedCategoryObj ? selectedCategoryObj.subcategories : [];
-
-  // Reset subcategory when category changes
   useEffect(() => {
-    if (!selectedCategoryObj) {
-      setSubCategoryId("");
-    } else if (subCategoryId && !subCategories.find((sc) => sc.name === subCategoryId)) {
-      setSubCategoryId("");
-    }
-  }, [categoryId]);
+    getCategories().then(setCategories).catch(() => setError("Failed to load categories."));
+  }, []);
 
-  const doSearch = useCallback(async (catId, subCatId, pin) => {
-    const trimmedPin = pin.trim();
-    if (!catId) {
-      setError("Please select a category.");
-      return;
+  useEffect(() => {
+    if (selectedCategory) {
+      getSubCategories(selectedCategory).then(setSubCategories).catch(console.error);
+      setSelectedSubCategory("");
+    } else {
+      setSubCategories([]);
     }
-    if (!subCatId) {
-      setError("Please select a subcategory.");
-      return;
-    }
-    if (!trimmedPin) {
-      setError("Please enter a pincode.");
-      return;
-    }
-    if (!/^\d{4,10}$/.test(trimmedPin)) {
-      setError("Pincode must be 4–10 digits.");
-      return;
-    }
+  }, [selectedCategory]);
 
-    setLoading(true);
+  const handleSearch = async (e) => {
+    e.preventDefault();
+    if (!selectedCategory || !selectedSubCategory) {
+      setError("Please select a Category and Subcategory before searching.");
+      return;
+    }
     setError("");
+    setLoading(true);
     setHasSearched(true);
-    setProviders([]);
 
     try {
-      const data = await searchProviders(catId, subCatId, trimmedPin);
-      setProviders(data);
+      const params = { categoryId: selectedCategory, subCategoryId: selectedSubCategory };
+      if (city.trim()) params.city = city.trim();
+      if (pincode.trim()) params.pincode = pincode.trim();
+
+      const res = await axios.get(`${API_BASE}/providers/search`, { params });
+      setResults(res.data);
     } catch (err) {
-      const msg = err.response?.data?.message || err.response?.data || "";
-      setError(msg || "Failed to fetch providers. Please try again.");
+      setError(err.response?.data?.message || "Search failed. Please try again.");
+      setResults([]);
     } finally {
       setLoading(false);
     }
-  }, []);
-
-  // Auto-search if parameters are in URL on mount
-  useEffect(() => {
-    const urlCat = searchParams.get("categoryId");
-    const urlSubCat = searchParams.get("subCategoryId");
-    const urlPincode = searchParams.get("pincode");
-    if (urlCat && urlSubCat && urlPincode) {
-      setCategoryId(urlCat);
-      setSubCategoryId(urlSubCat);
-      setPincode(urlPincode);
-      doSearch(urlCat, urlSubCat, urlPincode);
-    }
-  }, []); // run once on mount
-
-  const handleSearch = () => {
-    if (categoryId && subCategoryId && pincode.trim()) {
-      setSearchParams({ categoryId, subCategoryId, pincode: pincode.trim() });
-    }
-    doSearch(categoryId, subCategoryId, pincode);
   };
 
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter") handleSearch();
+  const inputStyle = {
+    width: "100%",
+    padding: "12px 16px",
+    borderRadius: "10px",
+    border: "1.5px solid #334155",
+    background: "#1e293b",
+    color: "#f1f5f9",
+    fontSize: "0.95rem",
+    outline: "none",
+    boxSizing: "border-box",
+    transition: "border-color 0.2s",
+  };
+
+  const labelStyle = {
+    display: "block",
+    marginBottom: "6px",
+    fontSize: "0.85rem",
+    fontWeight: "600",
+    color: "#94a3b8",
+    textTransform: "uppercase",
+    letterSpacing: "0.05em",
+  };
+
+  const fieldStyle = {
+    display: "flex",
+    flexDirection: "column",
+    flex: "1 1 calc(50% - 12px)",
+    minWidth: "220px",
   };
 
   return (
-    <div className="page-container">
-      <h1 className="page-title">Find Service Providers</h1>
-      <p className="page-subtitle">Select a category and enter a pincode to discover providers near you</p>
-
-      <div className="search-bar" style={{ display: "flex", flexDirection: "column", gap: "10px", alignItems: "stretch", maxWidth: "600px", margin: "0 auto 2rem auto" }}>
-        <select 
-          value={categoryId} 
-          onChange={(e) => setCategoryId(e.target.value)} 
-          className="search-input"
-          style={{ width: "100%" }}
-        >
-          <option value="">-- Select Category --</option>
-          {CATEGORY_MAP.map((cat) => (
-            <option key={cat.name} value={cat.name}>{cat.name}</option>
-          ))}
-        </select>
-
-        <select 
-          value={subCategoryId} 
-          onChange={(e) => setSubCategoryId(e.target.value)} 
-          className="search-input"
-          disabled={!categoryId}
-          style={{ width: "100%" }}
-        >
-          <option value="">-- Select Subcategory --</option>
-          {subCategories.map((sc) => (
-            <option key={sc.name} value={sc.name}>{sc.name}</option>
-          ))}
-        </select>
-
-        <div style={{ display: "flex", gap: "10px" }}>
-          <input
-            type="text"
-            id="pincode-input"
-            placeholder="e.g. 400001"
-            value={pincode}
-            onChange={(e) => setPincode(e.target.value)}
-            onKeyDown={handleKeyDown}
-            maxLength={10}
-            disabled={loading}
-            className="search-input"
-            style={{ flex: 1 }}
-          />
-          <button
-            id="search-btn"
-            onClick={handleSearch}
-            disabled={loading}
-            className="btn-primary"
-            style={{ whiteSpace: "nowrap" }}
-          >
-            {loading ? "Searching…" : "Search"}
-          </button>
-        </div>
+    <div style={{ minHeight: "100vh", background: "#0f172a", padding: "40px 24px", fontFamily: "'Inter', sans-serif" }}>
+      
+      {/* Header */}
+      <div style={{ textAlign: "center", maxWidth: "760px", margin: "0 auto 40px" }}>
+        <h1 style={{ fontSize: "2.4rem", fontWeight: "800", color: "#f1f5f9", marginBottom: "12px" }}>
+          Find Service Providers
+        </h1>
+        <p style={{ color: "#64748b", fontSize: "1.05rem" }}>
+          Search for trusted, vetted professionals near you.
+        </p>
       </div>
 
-      {/* Error */}
-      {error && <div className="alert alert-error" style={{ maxWidth: "600px", margin: "0 auto 1rem auto" }}>{error}</div>}
+      {/* Search Form */}
+      <form
+        onSubmit={handleSearch}
+        style={{
+          maxWidth: "860px",
+          margin: "0 auto 48px",
+          background: "#1e293b",
+          borderRadius: "20px",
+          padding: "32px",
+          border: "1px solid #334155",
+          boxShadow: "0 20px 60px rgba(0,0,0,0.4)",
+        }}
+      >
+        {error && (
+          <div style={{ background: "#450a0a", color: "#fca5a5", borderRadius: "8px", padding: "12px 16px", marginBottom: "20px", border: "1px solid #7f1d1d" }}>
+            {error}
+          </div>
+        )}
 
-      {/* Loading skeleton */}
-      {loading && (
-        <div className="loading-state">
-          <div className="spinner" />
-          <p>Finding providers in <strong>{pincode}</strong>…</p>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "20px" }}>
+          {/* Category */}
+          <div style={fieldStyle}>
+            <label style={labelStyle}>Category *</label>
+            <select
+              style={inputStyle}
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              required
+            >
+              <option value="">Select Category</option>
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.id}>{cat.name}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Subcategory */}
+          <div style={fieldStyle}>
+            <label style={labelStyle}>Subcategory *</label>
+            <select
+              style={{ ...inputStyle, opacity: !selectedCategory ? 0.5 : 1 }}
+              value={selectedSubCategory}
+              onChange={(e) => setSelectedSubCategory(e.target.value)}
+              disabled={!selectedCategory}
+              required
+            >
+              <option value="">Select Subcategory</option>
+              {subCategories.map((sc) => (
+                <option key={sc.id} value={sc.id}>{sc.name}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* City */}
+          <div style={fieldStyle}>
+            <label style={labelStyle}>City</label>
+            <input
+              type="text"
+              style={inputStyle}
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              placeholder="e.g. Mumbai"
+            />
+          </div>
+
+          {/* Pincode */}
+          <div style={fieldStyle}>
+            <label style={labelStyle}>Pincode</label>
+            <input
+              type="text"
+              style={inputStyle}
+              value={pincode}
+              onChange={(e) => setPincode(e.target.value)}
+              placeholder="e.g. 400001"
+              maxLength={6}
+            />
+          </div>
         </div>
-      )}
+
+        <button
+          type="submit"
+          disabled={loading}
+          style={{
+            marginTop: "24px",
+            width: "100%",
+            padding: "14px",
+            background: loading ? "#334155" : "linear-gradient(135deg, #6366f1, #8b5cf6)",
+            color: "#fff",
+            border: "none",
+            borderRadius: "12px",
+            fontSize: "1rem",
+            fontWeight: "700",
+            cursor: loading ? "not-allowed" : "pointer",
+            letterSpacing: "0.03em",
+            transition: "all 0.2s",
+          }}
+        >
+          {loading ? "Searching..." : "🔍 Search Providers"}
+        </button>
+      </form>
 
       {/* Results */}
-      {!loading && hasSearched && providers.length === 0 && !error && (
-        <div className="empty-state">
-          <p>😕 No active providers found for <strong>{subCategoryId}</strong> in pincode <strong>{pincode}</strong>.</p>
-          <p>Try a nearby pincode or check for typos.</p>
-        </div>
-      )}
-
-      {!loading && providers.length > 0 && (
-        <>
-          <p className="result-count">
-            Found <strong>{providers.length}</strong> active provider{providers.length !== 1 ? "s" : ""}
-          </p>
-          <div className="provider-grid">
-            {providers.map((p) => (
-              <ProviderCard key={p.id} provider={p} />
-            ))}
+      <div style={{ maxWidth: "860px", margin: "0 auto" }}>
+        {hasSearched && !loading && results.length === 0 && (
+          <div style={{ textAlign: "center", padding: "60px 0", color: "#64748b" }}>
+            <div style={{ fontSize: "3rem", marginBottom: "16px" }}>🔍</div>
+            <p style={{ fontSize: "1.15rem" }}>No providers found for your search criteria.</p>
+            <p style={{ fontSize: "0.9rem", marginTop: "8px" }}>Try a broader pincode or different city.</p>
           </div>
-        </>
-      )}
+        )}
+
+        {results.length > 0 && (
+          <>
+            <p style={{ color: "#64748b", marginBottom: "20px", fontSize: "0.9rem" }}>
+              Found <strong style={{ color: "#94a3b8" }}>{results.length}</strong> provider{results.length !== 1 ? "s" : ""}
+            </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+              {results.map((provider) => (
+                <div
+                  key={provider.id}
+                  style={{
+                    background: "#1e293b",
+                    borderRadius: "16px",
+                    padding: "24px",
+                    border: "1px solid #334155",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "12px",
+                    transition: "border-color 0.2s, transform 0.2s",
+                    cursor: "pointer",
+                  }}
+                  onClick={() => navigate(`/provider/${provider.id}`)}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = "#6366f1";
+                    e.currentTarget.style.transform = "translateY(-2px)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = "#334155";
+                    e.currentTarget.style.transform = "translateY(0)";
+                  }}
+                >
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "8px" }}>
+                    <div>
+                      <h3 style={{ margin: 0, color: "#f1f5f9", fontSize: "1.2rem", fontWeight: "700" }}>
+                        {provider.businessName}
+                      </h3>
+                      <p style={{ margin: "4px 0 0", color: "#64748b", fontSize: "0.9rem" }}>
+                        📍 {provider.area ? `${provider.area}, ` : ""}{provider.city}
+                        {provider.pincode ? ` – ${provider.pincode}` : ""}
+                      </p>
+                    </div>
+                    <div style={{ textAlign: "right" }}>
+                      <StarRating rating={provider.rating} />
+                      <p style={{ margin: "4px 0 0", color: "#475569", fontSize: "0.8rem" }}>
+                        {provider.reviewCount} review{provider.reviewCount !== 1 ? "s" : ""}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", alignItems: "center" }}>
+                    <span style={{ background: "#0f172a", color: "#818cf8", padding: "4px 12px", borderRadius: "9999px", fontSize: "0.8rem", border: "1px solid #312e81", fontWeight: "600" }}>
+                      {provider.experienceYears} yr{provider.experienceYears !== 1 ? "s" : ""} exp.
+                    </span>
+                    {provider.services && provider.services.slice(0, 4).map((srv) => (
+                      <span key={srv} style={{ background: "#1e3a5f", color: "#93c5fd", padding: "4px 12px", borderRadius: "9999px", fontSize: "0.8rem", border: "1px solid #1e40af" }}>
+                        {srv}
+                      </span>
+                    ))}
+                    {provider.services && provider.services.length > 4 && (
+                      <span style={{ color: "#64748b", fontSize: "0.8rem" }}>
+                        +{provider.services.length - 4} more
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 }

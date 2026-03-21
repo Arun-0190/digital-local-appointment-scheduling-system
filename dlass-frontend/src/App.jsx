@@ -11,6 +11,7 @@ import UserDashboard from "./pages/UserDashboard";
 import ProviderDashboard from "./pages/ProviderDashboard";
 import ProviderApply from "./pages/ProviderApply";
 import AdminDashboard from "./pages/AdminDashboard";
+import ProviderDetail from "./pages/ProviderDetail";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import { checkAndClearExpiredToken, getUserRole, getToken } from "./services/authService";
@@ -34,6 +35,9 @@ function App() {
 
         <Route path="/search" element={<SearchProviders />} />
 
+        {/* Provider detail page – public */}
+        <Route path="/provider/:id" element={<ProviderDetail />} />
+
         {/* USER-only route */}
         <Route
           path="/dashboard"
@@ -45,7 +49,7 @@ function App() {
         />
 
         <Route
-          path="/apply"
+          path="/apply-provider"
           element={
             <ProtectedRoute>
               <ProviderApply />

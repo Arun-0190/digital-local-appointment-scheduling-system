@@ -4,6 +4,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Document(collection = "subcategories")
 public class SubCategory {
@@ -22,6 +23,8 @@ public class SubCategory {
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    private List<String> services;
 
     // getters & setters
     public String getId() {
@@ -94,5 +97,13 @@ public class SubCategory {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public List<String> getServices() {
+        return services;
+    }
+
+    public void setServices(List<String> services) {
+        this.services = services;
     }
 }

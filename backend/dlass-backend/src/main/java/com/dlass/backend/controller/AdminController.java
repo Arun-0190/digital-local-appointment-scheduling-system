@@ -2,11 +2,13 @@ package com.dlass.backend.controller;
 
 import com.dlass.backend.model.ServiceProvider;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import com.dlass.backend.service.ServiceProviderService;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin")
+@CrossOrigin(origins = "http://localhost:5173")
 public class AdminController {
 
     private final ServiceProviderService serviceProviderService;
@@ -26,12 +28,12 @@ public class AdminController {
     }
 
     //For Approval of Provider
-    @PatchMapping("/providers/{id}/approve")
+    @PostMapping("/providers/{id}/approve")
     public ServiceProvider approveProvider(@PathVariable String id) {
         return serviceProviderService.approve(id);
     }
 
-    @PatchMapping("/providers/{id}/reject")
+    @PostMapping("/providers/{id}/reject")
     public ServiceProvider rejectProvider(@PathVariable String id) {
         return serviceProviderService.reject(id);
     }
