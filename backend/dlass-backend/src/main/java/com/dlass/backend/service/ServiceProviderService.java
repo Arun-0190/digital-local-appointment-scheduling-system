@@ -158,7 +158,7 @@ public class ServiceProviderService {
                                         .stream().map(s -> new ServiceDTO(
                                             s.getId(),
                                             s.getName(),
-                                            s.getDuration(),
+                                            s.getDurationMinutes(),
                                             s.getPrice()
                                         )).toList();
                                         
@@ -187,8 +187,23 @@ public class ServiceProviderService {
         return serviceOfferingRepository.findByProviderId(providerId)
                 .stream()
                 .filter(ServiceOffering::isActive)
-                .map(s -> new ServiceDTO(s.getId(), s.getName(), s.getDuration(), s.getPrice()))
+                .map(s -> new ServiceDTO(s.getId(), s.getName(), s.getDurationMinutes(), s.getPrice()))
                 .toList();
+    }
+
+    public ServiceOffering addServiceOffering(String email, ServiceOffering offering) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        ServiceProvider provider = repository.findByUserId(user.getId())
+                .orElseThrow(() -> new RuntimeException("Provider profile not found"));
+
+        offering.setProviderId(provider.getId());
+        offering.setCreatedAt(LocalDateTime.now());
+        offering.setUpdatedAt(LocalDateTime.now());
+        offering.setActive(true);
+
+        return serviceOfferingRepository.save(offering);
     }
 
     /**
@@ -205,7 +220,7 @@ public class ServiceProviderService {
         // 2. Fetch service duration
         ServiceOffering offering = serviceOfferingRepository.findById(serviceId)
                 .orElseThrow(() -> new RuntimeException("Service not found"));
-        int durationMinutes = offering.getDuration();
+        int durationMinutes = offering.getDurationMinutes();
 
         // 3. Fetch provider availabilities for that day-of-week
         List<ProviderAvailability> availabilities = availabilityRepository
@@ -224,6 +239,9 @@ public class ServiceProviderService {
 
         // 6. Generate slots across all availability windows for that day
         List<Map<String, String>> slots = new ArrayList<>();
+        LocalDateTime now = LocalDateTime.now();
+        boolean isToday = date.isEqual(now.toLocalDate());
+
         for (ProviderAvailability avail : availabilities) {
             LocalTime cursor = avail.getStartTime();
             LocalTime windowEnd = avail.getEndTime();
@@ -231,6 +249,12 @@ public class ServiceProviderService {
             while (!cursor.plusMinutes(durationMinutes).isAfter(windowEnd)) {
                 LocalTime slotStart = cursor;
                 LocalTime slotEnd = cursor.plusMinutes(durationMinutes);
+
+                // Skip past slots if booking for today
+                if (isToday && !slotStart.isAfter(now.toLocalTime())) {
+                    cursor = slotEnd;
+                    continue;
+                }
 
                 // 7. Strict overlap check: existing.start < slotEnd AND existing.end > slotStart
                 boolean hasConflict = existing.stream().anyMatch(a ->

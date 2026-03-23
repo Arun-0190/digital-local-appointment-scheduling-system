@@ -103,4 +103,12 @@ public class ServiceProviderController {
         return service.getAvailableSlots(providerId, serviceId, date);
     }
 
+    @PostMapping("/services")
+    public com.dlass.backend.model.ServiceOffering addService(
+            @RequestBody com.dlass.backend.model.ServiceOffering serviceOffering,
+            Authentication authentication) {
+        String email = authentication.getName();
+        return service.addServiceOffering(email, serviceOffering);
+    }
+
 }

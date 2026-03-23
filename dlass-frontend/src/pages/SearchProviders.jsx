@@ -240,6 +240,8 @@ function SearchProviders() {
                     gap: "12px",
                     transition: "border-color 0.2s, transform 0.2s",
                     cursor: "pointer",
+                    position: "relative",
+                    zIndex: 10
                   }}
                   onClick={() => navigate(`/provider/${provider.id}`)}
                   onMouseEnter={(e) => {

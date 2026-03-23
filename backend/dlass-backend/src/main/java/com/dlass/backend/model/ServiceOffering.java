@@ -2,8 +2,8 @@ package com.dlass.backend.model;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-
 import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Document(collection = "services")
 public class ServiceOffering {
@@ -16,7 +16,8 @@ public class ServiceOffering {
     private String name;
     private String description;
 
-    private int duration; // minutes
+    @JsonProperty("duration")
+    private int durationMinutes; // minutes
     private double price;
 
     private boolean active = true;
@@ -42,8 +43,8 @@ public class ServiceOffering {
         return description;
     }
 
-    public int getDuration() {
-        return duration;
+    public int getDurationMinutes() {
+        return durationMinutes;
     }
 
     public double getPrice() {
@@ -78,8 +79,8 @@ public class ServiceOffering {
         this.description = description;
     }
 
-    public void setDuration(int duration) {
-        this.duration = duration;
+    public void setDurationMinutes(int durationMinutes) {
+        this.durationMinutes = durationMinutes;
     }
 
     public void setPrice(double price) {

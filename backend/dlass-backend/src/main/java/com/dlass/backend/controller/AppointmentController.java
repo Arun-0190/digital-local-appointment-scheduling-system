@@ -43,21 +43,17 @@ public class AppointmentController {
     }
 
     @GetMapping("/my")
-    public List<Appointment> getMyAppointments(Authentication authentication) {
-
+    public List<com.dlass.backend.dto.AppointmentResponse> getMyAppointments(Authentication authentication) {
         String email = authentication.getName();
-
         return service.getUserAppointments(email);
     }
 
     @GetMapping("/provider")
-    public List<Appointment> getProviderAppointments(
-            @RequestParam LocalDate date,
+    public List<com.dlass.backend.dto.AppointmentResponse> getProviderAppointments(
+            @RequestParam(required = false) LocalDate date,
             Authentication authentication
     ) {
-
         String email = authentication.getName();
-
         return service.getProviderAppointments(email, date);
     }
 }

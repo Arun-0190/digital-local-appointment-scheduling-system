@@ -11,7 +11,17 @@ public class ProviderDashboardDTO {
     private double averageRating;
     private long reviewCount;
 
+    private String providerId;
+
     public ProviderDashboardDTO() {}
+
+    public String getProviderId() {
+        return providerId;
+    }
+
+    public void setProviderId(String providerId) {
+        this.providerId = providerId;
+    }
 
     public long getTotalAppointments() {
         return totalAppointments;

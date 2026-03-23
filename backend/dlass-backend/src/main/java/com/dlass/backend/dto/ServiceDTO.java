@@ -4,13 +4,13 @@ public class ServiceDTO {
 
     private String id;
     private String name;
-    private int duration;
+    private int durationMinutes;
     private double price;
 
-    public ServiceDTO(String id, String name, int duration, double price) {
+    public ServiceDTO(String id, String name, int durationMinutes, double price) {
         this.id = id;
         this.name = name;
-        this.duration = duration;
+        this.durationMinutes = durationMinutes;
         this.price = price;
     }
 
@@ -22,8 +22,8 @@ public class ServiceDTO {
         return name;
     }
 
-    public int getDuration() {
-        return duration;
+    public int getDurationMinutes() {
+        return durationMinutes;
     }
 
     public double getPrice() {
