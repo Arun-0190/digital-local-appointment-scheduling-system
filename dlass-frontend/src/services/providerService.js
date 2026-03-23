@@ -20,6 +20,11 @@ export async function getProviderDashboard() {
   return response.data;
 }
 
+export async function addService(serviceData) {
+  const response = await api.post("/api/providers/services", serviceData);
+  return response.data;
+}
+
 // ─── Onboarding & Admin APIs ─────────────────────────────────────────────────
 
 // Apply as a new provider (public)

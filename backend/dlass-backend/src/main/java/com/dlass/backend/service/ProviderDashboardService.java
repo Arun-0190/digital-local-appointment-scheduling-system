@@ -45,6 +45,7 @@ public class ProviderDashboardService {
         String providerId = provider.getId();
 
         ProviderDashboardDTO dto = new ProviderDashboardDTO();
+        dto.setProviderId(providerId);
 
         dto.setTotalAppointments(
                 appointmentRepository.countByProviderId(providerId)

@@ -58,7 +58,7 @@ public class ServiceOfferingService {
 
         existing.setName(updatedService.getName());
         existing.setDescription(updatedService.getDescription());
-        existing.setDuration(updatedService.getDuration());
+        existing.setDurationMinutes(updatedService.getDurationMinutes());
         existing.setPrice(updatedService.getPrice());
         existing.setUpdatedAt(LocalDateTime.now());
 

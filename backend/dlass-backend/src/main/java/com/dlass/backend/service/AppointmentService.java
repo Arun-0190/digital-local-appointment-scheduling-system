@@ -92,17 +92,6 @@ public class AppointmentService {
 
             Appointment saved = appointmentRepository.save(appointment);
 
-            // USER confirmation email
-            emailService.sendEmail(
-                    user.getEmail(),
-                    "Appointment Confirmed",
-                    """
-                    Your appointment has been booked successfully.
-
-                    Date: """ + saved.getDate() + "\n"
-                            + "Time: " + saved.getStartTime()
-            );
-
             // PROVIDER notification email
             ServiceProvider provider = serviceProviderRepository
                     .findById(saved.getProviderId())
@@ -112,13 +101,21 @@ public class AppointmentService {
                     .findById(provider.getUserId())
                     .orElseThrow(() -> new RuntimeException("Provider user not found"));
 
+            // USER confirmation email
+            emailService.sendEmail(
+                    user.getEmail(),
+                    "Appointment Confirmed",
+                    "Your appointment is confirmed:\n"
+                            + "Service: " + serviceName + "\n"
+                            + "Time: " + saved.getStartTime() + "\n"
+                            + "Provider: " + provider.getBusinessName()
+            );
+
             emailService.sendEmail(
                     providerUser.getEmail(),
                     "New Appointment Booked",
-                    """
-                    A new appointment has been booked.
-
-                    Customer: """ + user.getFullName() + "\n"
+                    "A new appointment has been booked.\n"
+                            + "Customer: " + user.getFullName() + "\n"
                             + "Date: " + saved.getDate() + "\n"
                             + "Time: " + saved.getStartTime()
             );
@@ -149,6 +146,10 @@ public class AppointmentService {
 
         LocalDateTime now = LocalDateTime.now();
 
+        if (appointmentTime.isBefore(now)) {
+            throw new RuntimeException("Cannot cancel an appointment that has already passed");
+        }
+
         if (Duration.between(now, appointmentTime).toMinutes() < 30) {
             throw new RuntimeException("Appointment cannot be cancelled within 30 minutes of start time");
         }
@@ -160,11 +161,7 @@ public class AppointmentService {
         emailService.sendEmail(
                 user.getEmail(),
                 "Appointment Cancelled",
-                "Your appointment scheduled on "
-                        + appointment.getDate()
-                        + " at "
-                        + appointment.getStartTime()
-                        + " has been cancelled."
+                "Your appointment has been cancelled"
         );
 
         // PROVIDER cancellation email
@@ -179,26 +176,53 @@ public class AppointmentService {
         emailService.sendEmail(
                 providerUser.getEmail(),
                 "Appointment Cancelled",
-                """
-                An appointment has been cancelled.
-
-                Customer: """ + user.getFullName() + "\n"
+                "An appointment has been cancelled.\n"
+                        + "Customer: " + user.getFullName() + "\n"
                         + "Date: " + appointment.getDate() + "\n"
                         + "Time: " + appointment.getStartTime()
         );
     }
 
-    public List<Appointment> getUserAppointments(String email) {
+    private com.dlass.backend.dto.AppointmentResponse mapToResponse(Appointment a) {
+        com.dlass.backend.dto.AppointmentResponse res = new com.dlass.backend.dto.AppointmentResponse();
+        res.setId(a.getId());
+        res.setServiceName(a.getServiceName());
+        res.setDate(a.getDate());
+        res.setStartTime(a.getStartTime());
+        res.setEndTime(a.getEndTime());
+        res.setStatus(a.getStatus());
+        res.setAmount(a.getAmount());
+        return res;
+    }
 
+    public List<com.dlass.backend.dto.AppointmentResponse> getUserAppointments(String email) {
         String userId = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"))
                 .getId();
 
-        return appointmentRepository.findByUserId(userId);
+        List<Appointment> apps = appointmentRepository.findByUserId(userId);
+        LocalDateTime now = LocalDateTime.now();
+
+        apps.forEach(a -> {
+            if ("BOOKED".equals(a.getStatus()) && LocalDateTime.of(a.getDate(), a.getEndTime()).isBefore(now)) {
+                a.setStatus("COMPLETED");
+                appointmentRepository.save(a);
+            }
+        });
+
+        return apps.stream().map(a -> {
+            com.dlass.backend.dto.AppointmentResponse dto = mapToResponse(a);
+            ServiceProvider sp = serviceProviderRepository.findById(a.getProviderId()).orElse(null);
+            if (sp != null) {
+                dto.setProviderName(sp.getBusinessName());
+                User pUser = userRepository.findById(sp.getUserId()).orElse(null);
+                if (pUser != null) dto.setProviderEmail(pUser.getEmail());
+            }
+            return dto;
+        }).toList();
     }
 
-    public List<Appointment> getProviderAppointments(String email, LocalDate date) {
-
+    public List<com.dlass.backend.dto.AppointmentResponse> getProviderAppointments(String email, LocalDate date) {
         String userId = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"))
                 .getId();
@@ -207,6 +231,30 @@ public class AppointmentService {
                 .findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("Provider not found"));
 
-        return appointmentRepository.findByProviderIdAndDate(provider.getId(), date);
+        List<Appointment> apps;
+        if (date != null) {
+            apps = appointmentRepository.findByProviderIdAndDate(provider.getId(), date);
+        } else {
+            apps = appointmentRepository.findByProviderId(provider.getId());
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+
+        apps.forEach(a -> {
+            if ("BOOKED".equals(a.getStatus()) && LocalDateTime.of(a.getDate(), a.getEndTime()).isBefore(now)) {
+                a.setStatus("COMPLETED");
+                appointmentRepository.save(a);
+            }
+        });
+
+        return apps.stream().map(a -> {
+            com.dlass.backend.dto.AppointmentResponse dto = mapToResponse(a);
+            User u = userRepository.findById(a.getUserId()).orElse(null);
+            if (u != null) {
+                dto.setUserName(u.getFullName());
+                dto.setUserEmail(u.getEmail());
+            }
+            return dto;
+        }).toList();
     }
 }

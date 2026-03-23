@@ -6,6 +6,19 @@ const API = "http://localhost:8080/api";
 
 const DAYS = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"];
 
+const MASTER_SERVICES = [
+  "Plumbing Repair",
+  "Electrical Installation",
+  "Deep Home Cleaning",
+  "AC Servicing",
+  "Pest Control",
+  "Carpentry Work",
+  "Painting Service",
+  "Appliance Repair",
+  "Sofa Cleaning",
+  "Bathroom Cleaning"
+];
+
 function authHeaders() {
   return { Authorization: `Bearer ${getToken()}` };
 }
@@ -85,7 +98,7 @@ export default function ProviderDashboard() {
   useEffect(() => {
     if (!providerId || tab !== "appointments") return;
     axios
-      .get(`${API}/appointments/provider`, { headers: authHeaders(), params: { date: apptDate } })
+      .get(`${API}/appointments/provider`, { headers: authHeaders(), params: { date: apptDate || undefined } })
       .then(r => setAppointments(r.data))
       .catch(() => setAppointments([]));
   }, [providerId, tab, apptDate]);
@@ -95,7 +108,7 @@ export default function ProviderDashboard() {
     e.preventDefault();
     try {
       await axios.post(
-        `${API}/provider/services`,
+        `${API}/providers/services`,
         { name: svcForm.name, price: parseFloat(svcForm.price), duration: parseInt(svcForm.duration) },
         { headers: authHeaders() }
       );
@@ -162,8 +175,11 @@ export default function ProviderDashboard() {
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
                 <div style={fieldWrap}>
                   <label style={label}>Service Name *</label>
-                  <input style={input} required value={svcForm.name}
-                    onChange={e => setSvcForm({ ...svcForm, name: e.target.value })} placeholder="e.g. Deep Cleaning" />
+                  <select style={input} required value={svcForm.name}
+                    onChange={e => setSvcForm({ ...svcForm, name: e.target.value })}>
+                    <option value="" disabled>Select a service</option>
+                    {MASTER_SERVICES.map(s => <option key={s} value={s}>{s}</option>)}
+                  </select>
                 </div>
                 <div style={fieldWrap}>
                   <label style={label}>Price (₹) *</label>
@@ -259,30 +275,45 @@ export default function ProviderDashboard() {
       {tab === "appointments" && (
         <div>
           <h2 style={{ color: "#e2e8f0", marginBottom: "1rem" }}>Bookings</h2>
-          <div style={{ marginBottom: "1.2rem" }}>
-            <label style={label}>Select Date</label>
-            <input type="date" style={{ ...input, maxWidth: "220px" }} value={apptDate}
-              onChange={e => setApptDate(e.target.value)} />
+          <div style={{ marginBottom: "1.2rem", display: "flex", alignItems: "center", gap: "10px" }}>
+            <div>
+              <label style={label}>Select Date</label>
+              <input type="date" style={{ ...input, maxWidth: "220px", marginBottom: 0 }} value={apptDate}
+                onChange={e => setApptDate(e.target.value)} />
+            </div>
+            {apptDate && (
+              <button onClick={() => setApptDate("")} style={{
+                marginTop: "16px", padding: "10px 14px", borderRadius: "8px", border: "none",
+                background: "#334155", color: "#f1f5f9", cursor: "pointer", fontSize: "0.85rem"
+              }}>
+                Clear Date Filter
+              </button>
+            )}
           </div>
           {appointments.length === 0 ? (
-            <p style={{ color: "#64748b" }}>No bookings for this date.</p>
+            <p style={{ color: "#64748b" }}>No bookings found for the selected view.</p>
           ) : (
             appointments.map(a => (
               <div key={a.id} style={card}>
                 <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: ".5rem" }}>
                   <div>
                     <div style={{ fontWeight: 700, color: "#f1f5f9" }}>{a.serviceName || "Appointment"}</div>
-                    <div style={{ color: "#64748b", fontSize: ".85rem", marginTop: ".2rem" }}>
-                      🕐 {a.startTime} – {a.endTime}
+                    <div style={{ color: "#94a3b8", fontSize: ".9rem", marginTop: ".3rem" }}>
+                      Customer: <span style={{ color: "#cbd5e1", fontWeight: 500 }}>{a.userName}</span> ({a.userEmail})
+                    </div>
+                    <div style={{ color: "#64748b", fontSize: ".85rem", marginTop: ".3rem" }}>
+                      📅 {a.date} | 🕐 {a.startTime} – {a.endTime}
                     </div>
                   </div>
-                  <span style={{
-                    padding: "3px 12px", borderRadius: "20px", fontSize: ".75rem", fontWeight: 700, alignSelf: "flex-start",
-                    background: a.status === "BOOKED" ? "#166534" : a.status === "CANCELLED" ? "#7f1d1d" : "#1e3a5f",
-                    color: "#fff"
-                  }}>
-                    {a.status}
-                  </span>
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "0.5rem" }}>
+                    <span style={{
+                      padding: "4px 12px", borderRadius: "20px", fontSize: ".75rem", fontWeight: 700,
+                      background: a.status === "BOOKED" ? "#166534" : a.status === "CANCELLED" ? "#7f1d1d" : "#1e3a5f",
+                      color: a.status === "CANCELLED" ? "#fca5a5" : "#4ade80"
+                    }}>
+                      {a.status}
+                    </span>
+                  </div>
                 </div>
                 {a.amount > 0 && <div style={{ color: "#818cf8", fontSize: ".9rem", marginTop: ".4rem" }}>₹{a.amount}</div>}
               </div>

@@ -57,7 +57,7 @@ export default function ProviderDetail() {
   }, [id]);
 
   // ── Load slots when service + date change ────────────────────────────────
-  useEffect(() => {
+  const fetchSlots = () => {
     if (!selectedService || !bookDate) { setSlots([]); return; }
     setSlotsLoading(true);
     setSelectedSlot(null);
@@ -67,6 +67,10 @@ export default function ProviderDetail() {
       .then(r => setSlots(r.data))
       .catch(() => setSlots([]))
       .finally(() => setSlotsLoading(false));
+  };
+
+  useEffect(() => {
+    fetchSlots();
   }, [selectedService, bookDate, id]);
 
   // ── Book slot ────────────────────────────────────────────────────────────
@@ -90,8 +94,8 @@ export default function ProviderDetail() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setBookSuccess("Appointment booked! Check your dashboard.");
-      // Remove booked slot from list immediately
-      setSlots(prev => prev.filter(s => s.startTime !== selectedSlot.startTime));
+      // Refresh slots from backend to guarantee accurate availability
+      fetchSlots();
       setSelectedSlot(null);
     } catch (e) {
       setBookError(e.response?.data?.message || "Booking failed. That slot may be taken.");
@@ -177,7 +181,7 @@ export default function ProviderDetail() {
             >
               <div style={{ fontWeight: 700, fontSize: "1rem", color: "#f1f5f9", marginBottom: ".4rem" }}>{svc.name}</div>
               <div style={{ color: "#818cf8", fontWeight: 700, fontSize: "1.15rem" }}>₹{svc.price}</div>
-              <div style={{ color: "#64748b", fontSize: ".85rem", marginTop: ".3rem" }}>⏱ {svc.duration} min</div>
+              <div style={{ color: "#64748b", fontSize: ".85rem", marginTop: ".3rem" }}>⏱ {svc.durationMinutes} min</div>
             </div>
           ))}
         </div>
