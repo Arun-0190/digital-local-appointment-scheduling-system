@@ -42,6 +42,15 @@ public class AppointmentController {
         return ResponseEntity.ok("Appointment cancelled successfully");
     }
 
+    /** Provider-initiated cancellation — no time restriction, validates provider ownership. */
+    @PutMapping("/{id}/cancel-by-provider")
+    public ResponseEntity<String> cancelByProvider(
+            @PathVariable String id,
+            Authentication authentication) {
+        service.cancelByProvider(id, authentication.getName());
+        return ResponseEntity.ok("Appointment cancelled by provider");
+    }
+
     @GetMapping("/my")
     public List<com.dlass.backend.dto.AppointmentResponse> getMyAppointments(Authentication authentication) {
         String email = authentication.getName();
@@ -56,4 +65,4 @@ public class AppointmentController {
         String email = authentication.getName();
         return service.getProviderAppointments(email, date);
     }
-}
+}

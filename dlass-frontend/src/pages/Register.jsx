@@ -10,6 +10,7 @@ function Register() {
     email: "",
     password: "",
     pincode: "",
+    phone: "+91",
     role: "USER",
   });
   const [error, setError] = useState("");
@@ -27,6 +28,9 @@ function Register() {
     if (form.password.length < 6) return "Password must be at least 6 characters.";
     if (!form.pincode.trim()) return "Pincode is required.";
     if (!/^\d{6}$/.test(form.pincode)) return "Pincode must be exactly 6 digits.";
+    if (!form.phone.trim()) return "Phone number is required.";
+    if (!/^\+91\d{10}$/.test(form.phone.trim()))
+      return "Phone must be in format +91XXXXXXXXXX (10 digits after +91).";
     return null;
   };
 
@@ -140,6 +144,30 @@ function Register() {
                   value={form.pincode} onChange={handleChange} maxLength={6} disabled={loading}
                   className={inputClass} />
               </div>
+            </div>
+
+            {/* Phone */}
+            <div>
+              <label htmlFor="phone" className={labelClass}>Phone Number</label>
+              <div className="relative">
+                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">phone</span>
+                <input
+                  id="phone"
+                  type="tel"
+                  name="phone"
+                  placeholder="+91XXXXXXXXXX"
+                  value={form.phone}
+                  onChange={(e) => {
+                    let val = e.target.value;
+                    if (!val.startsWith("+91")) val = "+91";
+                    setForm((prev) => ({ ...prev, phone: val }));
+                  }}
+                  maxLength={13}
+                  disabled={loading}
+                  className={inputClass}
+                />
+              </div>
+              <p className="text-xs text-on-surface-variant/60 mt-1 ml-1">Format: +91 followed by 10 digits</p>
             </div>
 
             {/* Submit */}

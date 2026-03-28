@@ -1,8 +1,10 @@
 package com.dlass.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -37,6 +39,9 @@ public class ServiceProvider {
     private String pincode;
 
     private String status; // PENDING, ACTIVE, SUSPENDED
+
+    @Field("isActive")
+    private boolean isActive = true; // soft-delete flag
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -169,4 +174,8 @@ public class ServiceProvider {
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
-}
+
+    @JsonProperty("isActive")
+    public boolean isActive() { return isActive; }
+    public void setActive(boolean active) { this.isActive = active; }
+}

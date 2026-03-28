@@ -71,7 +71,9 @@ public class ProviderDashboardService {
 
         dto.setAverageRating(provider.getRating());
         dto.setReviewCount(provider.getReviewCount());
+        dto.setCategoryId(provider.getCategoryId());
+        dto.setSubCategoryId(provider.getSubCategoryId());
 
         return dto;
     }
-}
+}

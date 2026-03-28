@@ -1,7 +1,9 @@
 package com.dlass.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.time.LocalDateTime;
 
@@ -21,10 +23,16 @@ public class User {
 
     private String pincode;
 
+    private String phone; // Format: +91XXXXXXXXXX
+
+    @Field("isActive")
+    private boolean isActive = true; // soft-delete flag
+
     private LocalDateTime createdAt;
 
     public User() {
         this.createdAt = LocalDateTime.now();
+        this.isActive = true;
     }
 
     // Getters and Setters
@@ -47,6 +55,14 @@ public class User {
     public String getPincode() { return pincode; }
     public void setPincode(String pincode) { this.pincode = pincode; }
 
+    public String getPhone() { return phone; }
+    public void setPhone(String phone) { this.phone = phone; }
+
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    @JsonProperty("isActive")
+    public boolean isActive() { return isActive; }
+    public void setActive(boolean active) { this.isActive = active; }
 }
+

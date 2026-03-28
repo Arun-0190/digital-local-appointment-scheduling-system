@@ -3,6 +3,7 @@ package com.dlass.backend.controller;
 import com.dlass.backend.dto.TimeSlotDTO;
 import com.dlass.backend.model.ProviderAvailability;
 import com.dlass.backend.service.ProviderAvailabilityService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -51,4 +52,22 @@ public class ProviderAvailabilityController {
 
         return service.getWeeklyCalendar(providerId, startDate);
     }
-}
+
+    /** Delete an availability slot (provider must own it). */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteAvailability(
+            @PathVariable String id,
+            Authentication authentication) {
+        service.delete(id, authentication.getName());
+        return ResponseEntity.ok("Availability deleted");
+    }
+
+    /** Update an existing availability slot (provider must own it). */
+    @PutMapping("/{id}")
+    public ProviderAvailability updateAvailability(
+            @PathVariable String id,
+            @RequestBody ProviderAvailability updated,
+            Authentication authentication) {
+        return service.update(id, updated, authentication.getName());
+    }
+}

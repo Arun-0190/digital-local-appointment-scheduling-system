@@ -12,6 +12,8 @@ public class ProviderDashboardDTO {
     private long reviewCount;
 
     private String providerId;
+    private String categoryId;
+    private String subCategoryId;
 
     public ProviderDashboardDTO() {}
 
@@ -70,4 +72,10 @@ public class ProviderDashboardDTO {
     public void setReviewCount(long reviewCount) {
         this.reviewCount = reviewCount;
     }
-}
+
+    public String getCategoryId() { return categoryId; }
+    public void setCategoryId(String categoryId) { this.categoryId = categoryId; }
+
+    public String getSubCategoryId() { return subCategoryId; }
+    public void setSubCategoryId(String subCategoryId) { this.subCategoryId = subCategoryId; }
+}
