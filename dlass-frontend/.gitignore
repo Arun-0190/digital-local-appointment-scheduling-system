@@ -1,24 +1,58 @@
-# Logs
+# GENERAL
 logs
 *.log
+
+# OS FILES
+.DS_Store
+Thumbs.db
+
+# FRONTEND (VITE + REACT)
+node_modules/
+dist/
+dist-ssr/
+.vite/
+*.local
+
+# ENV FILES (IMPORTANT)
+.env
+.env.local
+.env.*.local
+
+# LOG FILES
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
+# BACKEND (SPRING BOOT)
+backend/**/target/
+backend/**/.classpath
+backend/**/.project
+backend/**/.settings/
 
-# Editor directories and files
+# IDE / EDITOR
 .vscode/*
 !.vscode/extensions.json
 .idea
-.DS_Store
+*.iml
+
+# VISUAL STUDIO
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
-*.sw?
+
+# PROJECT-SPECIFIC
+Stitch/
+tmp/
+temp/
+.cache/
+coverage/
+
+# ZIP FILES
+*.zip
+
+# OPTIONAL
+*.env.backup
+*.env.production

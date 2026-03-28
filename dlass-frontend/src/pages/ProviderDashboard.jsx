@@ -16,58 +16,31 @@ const MASTER_SERVICES = [
   "Painting Service",
   "Appliance Repair",
   "Sofa Cleaning",
-  "Bathroom Cleaning"
+  "Bathroom Cleaning",
 ];
 
 function authHeaders() {
   return { Authorization: `Bearer ${getToken()}` };
 }
 
-// ─── Tab Button ──────────────────────────────────────────────────────────────
-function Tab({ label, active, onClick }) {
-  return (
-    <button
-      onClick={onClick}
-      style={{
-        padding: "10px 22px",
-        borderRadius: "8px",
-        border: "none",
-        background: active ? "linear-gradient(135deg,#6366f1,#8b5cf6)" : "#1e293b",
-        color: active ? "#fff" : "#64748b",
-        fontWeight: active ? 700 : 400,
-        cursor: "pointer",
-        transition: "all .2s",
-        fontSize: ".9rem",
-      }}
-    >
-      {label}
-    </button>
-  );
-}
-
-// ─── Main ─────────────────────────────────────────────────────────────────────
 export default function ProviderDashboard() {
-  const [tab, setTab] = useState("services");
+  const [tab, setTab] = useState("appointments");
   const [providerId, setProviderId] = useState(null);
 
-  // Services tab state
   const [services, setServices] = useState([]);
   const [svcForm, setSvcForm] = useState({ name: "", price: "", duration: 30 });
   const [svcMsg, setSvcMsg] = useState("");
 
-  // Availability tab state
   const [availability, setAvailability] = useState([]);
   const [availForm, setAvailForm] = useState({ dayOfWeek: "MONDAY", startTime: "09:00", endTime: "18:00" });
   const [availMsg, setAvailMsg] = useState("");
 
-  // Appointments tab state
   const [appointments, setAppointments] = useState([]);
   const [apptDate, setApptDate] = useState(new Date().toISOString().split("T")[0]);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // ── Fetch provider profile to get our providerId ─────────────────────────
   useEffect(() => {
     async function init() {
       try {
@@ -82,28 +55,29 @@ export default function ProviderDashboard() {
     init();
   }, []);
 
-  // ── Load services when tab or providerId changes ──────────────────────────
   useEffect(() => {
     if (!providerId || tab !== "services") return;
-    axios.get(`${API}/providers/${providerId}/services`).then(r => setServices(r.data));
+    axios.get(`${API}/providers/${providerId}/services`).then((r) => setServices(r.data));
   }, [providerId, tab]);
 
-  // ── Load availability ──────────────────────────────────────────────────────
   useEffect(() => {
     if (!providerId || tab !== "availability") return;
-    axios.get(`${API}/provider-availability/provider/${providerId}`).then(r => setAvailability(r.data));
+    axios
+      .get(`${API}/provider-availability/provider/${providerId}`)
+      .then((r) => setAvailability(r.data));
   }, [providerId, tab]);
 
-  // ── Load appointments ──────────────────────────────────────────────────────
   useEffect(() => {
     if (!providerId || tab !== "appointments") return;
     axios
-      .get(`${API}/appointments/provider`, { headers: authHeaders(), params: { date: apptDate || undefined } })
-      .then(r => setAppointments(r.data))
+      .get(`${API}/appointments/provider`, {
+        headers: authHeaders(),
+        params: { date: apptDate || undefined },
+      })
+      .then((r) => setAppointments(r.data))
       .catch(() => setAppointments([]));
   }, [providerId, tab, apptDate]);
 
-  // ── Add service ───────────────────────────────────────────────────────────
   async function addService(e) {
     e.preventDefault();
     try {
@@ -122,7 +96,6 @@ export default function ProviderDashboard() {
     setTimeout(() => setSvcMsg(""), 3000);
   }
 
-  // ── Add availability ──────────────────────────────────────────────────────
   async function addAvailability(e) {
     e.preventDefault();
     try {
@@ -140,187 +113,360 @@ export default function ProviderDashboard() {
     setTimeout(() => setAvailMsg(""), 3000);
   }
 
-  // ── Styles ────────────────────────────────────────────────────────────────
-  const card = { background: "#1e293b", border: "1.5px solid #334155", borderRadius: "12px", padding: "1.2rem", marginBottom: ".8rem" };
-  const input = {
-    width: "100%", padding: "10px 14px", borderRadius: "8px", border: "1.5px solid #334155",
-    background: "#0f172a", color: "#f1f5f9", fontSize: ".9rem", outline: "none", boxSizing: "border-box",
-  };
-  const label = { display: "block", color: "#94a3b8", fontSize: ".8rem", marginBottom: ".35rem" };
-  const fieldWrap = { marginBottom: ".9rem" };
+  const inputClass =
+    "w-full px-4 py-3 bg-surface-container-highest/50 border border-outline-variant/20 rounded-xl text-on-surface placeholder:text-on-surface-variant/40 focus:outline-none focus:ring-2 focus:ring-secondary/40 transition-all text-sm";
+  const labelClass =
+    "block text-xs font-label font-bold text-on-surface-variant uppercase tracking-widest mb-1.5";
 
-  if (loading) return <div className="page-container"><p style={{ color: "#94a3b8" }}>Loading…</p></div>;
-  if (error) return <div className="page-container"><p style={{ color: "#f87171" }}>{error}</p></div>;
+  const statusBadge = (status) => {
+    if (status === "BOOKED")
+      return "bg-secondary-container/20 text-secondary";
+    if (status === "CANCELLED")
+      return "bg-red-500/10 text-red-300";
+    return "bg-primary-container/20 text-primary";
+  };
+
+  if (loading)
+    return (
+      <div className="min-h-screen flex items-center justify-center pt-16">
+        <div className="spinner" />
+      </div>
+    );
+  if (error)
+    return (
+      <div className="min-h-screen flex items-center justify-center pt-16">
+        <p className="text-red-400 text-center max-w-sm">{error}</p>
+      </div>
+    );
 
   return (
-    <div className="page-container" style={{ maxWidth: "800px", margin: "0 auto" }}>
-      <h1 className="page-title">Provider Dashboard</h1>
-
-      {/* ── Tabs ── */}
-      <div style={{ display: "flex", gap: ".6rem", marginBottom: "1.8rem", flexWrap: "wrap" }}>
-        <Tab label="🔧 Services" active={tab === "services"} onClick={() => setTab("services")} />
-        <Tab label="📅 Availability" active={tab === "availability"} onClick={() => setTab("availability")} />
-        <Tab label="📋 Appointments" active={tab === "appointments"} onClick={() => setTab("appointments")} />
-      </div>
-
-      {/* ═══════════════ SERVICES TAB ═══════════════ */}
-      {tab === "services" && (
-        <div>
-          <h2 style={{ color: "#e2e8f0", marginBottom: "1rem" }}>My Services</h2>
-
-          {/* Add form */}
-          <div style={{ ...card, borderColor: "#6366f1", marginBottom: "1.5rem" }}>
-            <h3 style={{ color: "#f1f5f9", marginTop: 0 }}>Add New Service</h3>
-            <form onSubmit={addService}>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
-                <div style={fieldWrap}>
-                  <label style={label}>Service Name *</label>
-                  <select style={input} required value={svcForm.name}
-                    onChange={e => setSvcForm({ ...svcForm, name: e.target.value })}>
-                    <option value="" disabled>Select a service</option>
-                    {MASTER_SERVICES.map(s => <option key={s} value={s}>{s}</option>)}
-                  </select>
-                </div>
-                <div style={fieldWrap}>
-                  <label style={label}>Price (₹) *</label>
-                  <input style={input} required type="number" min="0" step="0.01" value={svcForm.price}
-                    onChange={e => setSvcForm({ ...svcForm, price: e.target.value })} placeholder="e.g. 499" />
-                </div>
-                <div style={fieldWrap}>
-                  <label style={label}>Duration (minutes) *</label>
-                  <input style={input} required type="number" min="10" max="240" value={svcForm.duration}
-                    onChange={e => setSvcForm({ ...svcForm, duration: e.target.value })} />
-                </div>
-              </div>
-              {svcMsg && <p style={{ color: svcMsg.startsWith("✓") ? "#4ade80" : "#f87171", marginBottom: ".6rem" }}>{svcMsg}</p>}
-              <button type="submit" style={{
-                padding: "10px 24px", borderRadius: "8px", border: "none",
-                background: "linear-gradient(135deg,#6366f1,#8b5cf6)", color: "#fff", fontWeight: 700, cursor: "pointer"
-              }}>Add Service</button>
-            </form>
+    <div className="min-h-screen pt-20 pb-16 px-4 md:px-8">
+      <div className="max-w-7xl mx-auto pt-8 space-y-10">
+        {/* Page Header + Tab Nav */}
+        <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div>
+            <h1 className="text-4xl md:text-5xl font-headline font-extrabold tracking-tight text-on-surface mb-2">
+              Provider Dashboard
+            </h1>
+            <p className="text-on-surface-variant max-w-xl text-sm">
+              Manage your workspace, optimize availability, and track upcoming appointments.
+            </p>
           </div>
 
-          {/* Service list */}
-          {services.length === 0 ? (
-            <p style={{ color: "#64748b" }}>No services added yet. Add your first service above.</p>
-          ) : (
-            services.map(s => (
-              <div key={s.id} style={card}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <div>
-                    <div style={{ fontWeight: 700, color: "#f1f5f9" }}>{s.name}</div>
-                    <div style={{ color: "#64748b", fontSize: ".85rem", marginTop: ".2rem" }}>⏱ {s.durationMinutes} min</div>
-                  </div>
-                  <div style={{ color: "#818cf8", fontWeight: 700, fontSize: "1.15rem" }}>₹{s.price}</div>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      )}
-
-      {/* ═══════════════ AVAILABILITY TAB ═══════════════ */}
-      {tab === "availability" && (
-        <div>
-          <h2 style={{ color: "#e2e8f0", marginBottom: "1rem" }}>Working Hours</h2>
-
-          {/* Add form */}
-          <div style={{ ...card, borderColor: "#6366f1", marginBottom: "1.5rem" }}>
-            <h3 style={{ color: "#f1f5f9", marginTop: 0 }}>Add Availability Window</h3>
-            <form onSubmit={addAvailability}>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "1rem" }}>
-                <div style={fieldWrap}>
-                  <label style={label}>Day</label>
-                  <select style={input} value={availForm.dayOfWeek}
-                    onChange={e => setAvailForm({ ...availForm, dayOfWeek: e.target.value })}>
-                    {DAYS.map(d => <option key={d} value={d}>{d}</option>)}
-                  </select>
-                </div>
-                <div style={fieldWrap}>
-                  <label style={label}>Start Time</label>
-                  <input type="time" style={input} value={availForm.startTime}
-                    onChange={e => setAvailForm({ ...availForm, startTime: e.target.value })} />
-                </div>
-                <div style={fieldWrap}>
-                  <label style={label}>End Time</label>
-                  <input type="time" style={input} value={availForm.endTime}
-                    onChange={e => setAvailForm({ ...availForm, endTime: e.target.value })} />
-                </div>
-              </div>
-              {availMsg && <p style={{ color: availMsg.startsWith("✓") ? "#4ade80" : "#f87171", marginBottom: ".6rem" }}>{availMsg}</p>}
-              <button type="submit" style={{
-                padding: "10px 24px", borderRadius: "8px", border: "none",
-                background: "linear-gradient(135deg,#6366f1,#8b5cf6)", color: "#fff", fontWeight: 700, cursor: "pointer"
-              }}>Save Schedule</button>
-            </form>
-          </div>
-
-          {/* Existing schedule */}
-          {availability.length === 0 ? (
-            <p style={{ color: "#64748b" }}>No availability windows set yet.</p>
-          ) : (
-            availability.map(a => (
-              <div key={a.id} style={card}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{ color: "#f1f5f9", fontWeight: 700 }}>{a.dayOfWeek}</span>
-                  <span style={{ color: "#818cf8" }}>{a.startTime} – {a.endTime}</span>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      )}
-
-      {/* ═══════════════ APPOINTMENTS TAB ═══════════════ */}
-      {tab === "appointments" && (
-        <div>
-          <h2 style={{ color: "#e2e8f0", marginBottom: "1rem" }}>Bookings</h2>
-          <div style={{ marginBottom: "1.2rem", display: "flex", alignItems: "center", gap: "10px" }}>
-            <div>
-              <label style={label}>Select Date</label>
-              <input type="date" style={{ ...input, maxWidth: "220px", marginBottom: 0 }} value={apptDate}
-                onChange={e => setApptDate(e.target.value)} />
-            </div>
-            {apptDate && (
-              <button onClick={() => setApptDate("")} style={{
-                marginTop: "16px", padding: "10px 14px", borderRadius: "8px", border: "none",
-                background: "#334155", color: "#f1f5f9", cursor: "pointer", fontSize: "0.85rem"
-              }}>
-                Clear Date Filter
+          {/* Tab Nav – pill style */}
+          <div className="flex bg-surface-container-low p-1.5 rounded-full shadow-inner border border-outline-variant/10 shrink-0">
+            {[
+              { key: "appointments", icon: "calendar_month", label: "Appointments" },
+              { key: "services", icon: "build", label: "Services" },
+              { key: "availability", icon: "schedule", label: "Availability" },
+            ].map(({ key, icon, label }) => (
+              <button
+                key={key}
+                onClick={() => setTab(key)}
+                className={`flex items-center gap-1.5 px-4 py-2 rounded-full font-headline font-bold text-xs uppercase tracking-widest transition-all ${
+                  tab === key
+                    ? "bg-primary-container text-on-primary-container shadow-lg"
+                    : "text-on-surface-variant hover:text-white"
+                }`}
+              >
+                <span className="material-symbols-outlined text-sm">{icon}</span>
+                <span className="hidden sm:inline">{label}</span>
               </button>
-            )}
+            ))}
           </div>
-          {appointments.length === 0 ? (
-            <p style={{ color: "#64748b" }}>No bookings found for the selected view.</p>
-          ) : (
-            appointments.map(a => (
-              <div key={a.id} style={card}>
-                <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: ".5rem" }}>
-                  <div>
-                    <div style={{ fontWeight: 700, color: "#f1f5f9" }}>{a.serviceName || "Appointment"}</div>
-                    <div style={{ color: "#94a3b8", fontSize: ".9rem", marginTop: ".3rem" }}>
-                      Customer: <span style={{ color: "#cbd5e1", fontWeight: 500 }}>{a.userName}</span> ({a.userEmail})
-                    </div>
-                    <div style={{ color: "#64748b", fontSize: ".85rem", marginTop: ".3rem" }}>
-                      📅 {a.date} | 🕐 {a.startTime} – {a.endTime}
-                    </div>
-                  </div>
-                  <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "0.5rem" }}>
-                    <span style={{
-                      padding: "4px 12px", borderRadius: "20px", fontSize: ".75rem", fontWeight: 700,
-                      background: a.status === "BOOKED" ? "#166534" : a.status === "CANCELLED" ? "#7f1d1d" : "#1e3a5f",
-                      color: a.status === "CANCELLED" ? "#fca5a5" : "#4ade80"
-                    }}>
-                      {a.status}
-                    </span>
-                  </div>
-                </div>
-                {a.amount > 0 && <div style={{ color: "#818cf8", fontSize: ".9rem", marginTop: ".4rem" }}>₹{a.amount}</div>}
+        </header>
+
+        {/* ══════════ APPOINTMENTS TAB ══════════ */}
+        {tab === "appointments" && (
+          <div className="space-y-6">
+            {/* Date filter */}
+            <div className="flex flex-wrap items-center gap-4">
+              <div>
+                <label className={labelClass}>Filter by Date</label>
+                <input
+                  type="date"
+                  value={apptDate}
+                  onChange={(e) => setApptDate(e.target.value)}
+                  className={`${inputClass} max-w-[220px]`}
+                />
               </div>
-            ))
-          )}
-        </div>
-      )}
+              {apptDate && (
+                <button
+                  onClick={() => setApptDate("")}
+                  className="mt-5 px-4 py-2.5 rounded-xl border border-outline-variant/30 bg-surface-container-high text-on-surface-variant text-sm hover:bg-surface-bright transition-colors"
+                >
+                  Clear Filter
+                </button>
+              )}
+            </div>
+
+            <div className="glass-card rounded-3xl p-6 md:p-8 shadow-2xl">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-headline font-bold tracking-tight text-on-surface">
+                  Bookings
+                </h2>
+                <span className="text-xs font-label tracking-widest text-on-surface-variant uppercase bg-white/5 px-4 py-2 rounded-full">
+                  {appointments.length} total
+                </span>
+              </div>
+
+              {appointments.length === 0 ? (
+                <div className="text-center py-16">
+                  <span className="material-symbols-outlined text-5xl text-on-surface-variant/20 mb-3 block">
+                    event_busy
+                  </span>
+                  <p className="text-on-surface-variant/50 font-headline font-bold">
+                    No bookings for the selected view
+                  </p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full border-separate border-spacing-y-3">
+                    <thead>
+                      <tr className="text-left">
+                        {["Customer", "Service", "Date & Time", "Status"].map((h) => (
+                          <th key={h} className="pb-1 px-4 text-xs font-label uppercase tracking-widest text-on-surface-variant font-medium">
+                            {h}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {appointments.map((a) => (
+                        <tr
+                          key={a.id}
+                          className="bg-surface-container-low hover:bg-surface-container-high transition-colors"
+                        >
+                          <td className="py-4 px-4 rounded-l-2xl border-l-2 border-primary-container">
+                            <div className="text-sm font-bold text-on-surface">{a.userName}</div>
+                            <div className="text-xs text-on-surface-variant">{a.userEmail}</div>
+                          </td>
+                          <td className="py-4 px-4 text-sm font-medium text-primary">
+                            {a.serviceName || "Appointment"}
+                          </td>
+                          <td className="py-4 px-4">
+                            <div className="text-sm text-on-surface">{a.date}</div>
+                            <div className="text-xs text-on-surface-variant">
+                              {a.startTime} – {a.endTime}
+                            </div>
+                          </td>
+                          <td className="py-4 px-4 rounded-r-2xl">
+                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ${statusBadge(a.status)}`}>
+                              {a.status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ══════════ SERVICES TAB ══════════ */}
+        {tab === "services" && (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            {/* Add Form */}
+            <div className="lg:col-span-5">
+              <div className="glass-card rounded-3xl p-6 md:p-8">
+                <h2 className="text-xl font-headline font-bold text-on-surface mb-6">
+                  Add New Service
+                </h2>
+                <form onSubmit={addService} className="space-y-4">
+                  <div>
+                    <label className={labelClass}>Service Name *</label>
+                    <select
+                      required
+                      value={svcForm.name}
+                      onChange={(e) => setSvcForm({ ...svcForm, name: e.target.value })}
+                      className={inputClass}
+                    >
+                      <option value="" disabled>
+                        Select a service
+                      </option>
+                      {MASTER_SERVICES.map((s) => (
+                        <option key={s} value={s}>
+                          {s}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className={labelClass}>Price (₹) *</label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        required
+                        placeholder="e.g. 499"
+                        value={svcForm.price}
+                        onChange={(e) => setSvcForm({ ...svcForm, price: e.target.value })}
+                        className={inputClass}
+                      />
+                    </div>
+                    <div>
+                      <label className={labelClass}>Duration (min) *</label>
+                      <input
+                        type="number"
+                        min="10"
+                        max="240"
+                        required
+                        value={svcForm.duration}
+                        onChange={(e) => setSvcForm({ ...svcForm, duration: e.target.value })}
+                        className={inputClass}
+                      />
+                    </div>
+                  </div>
+
+                  {svcMsg && (
+                    <p className={`text-sm font-bold ${svcMsg.startsWith("✓") ? "text-green-400" : "text-red-400"}`}>
+                      {svcMsg}
+                    </p>
+                  )}
+
+                  <button
+                    type="submit"
+                    className="w-full py-3.5 rounded-xl bg-gradient-to-r from-primary-container to-secondary-container text-white font-headline font-bold text-sm uppercase tracking-wider hover:scale-[1.02] active:scale-95 transition-all"
+                  >
+                    Add Service
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            {/* Services List */}
+            <div className="lg:col-span-7 space-y-4">
+              <h2 className="text-xl font-headline font-bold text-on-surface">My Services</h2>
+              {services.length === 0 ? (
+                <div className="glass-panel rounded-2xl p-10 text-center">
+                  <span className="material-symbols-outlined text-4xl text-on-surface-variant/20 mb-2 block">
+                    category
+                  </span>
+                  <p className="text-on-surface-variant/50 text-sm">No services added yet.</p>
+                </div>
+              ) : (
+                services.map((s) => (
+                  <div key={s.id} className="glass-card rounded-2xl p-5 flex justify-between items-center hover:scale-[1.01] transition-transform">
+                    <div>
+                      <div className="font-headline font-bold text-on-surface">{s.name}</div>
+                      <div className="text-xs text-on-surface-variant mt-1">
+                        ⏱ {s.durationMinutes} min
+                      </div>
+                    </div>
+                    <div className="text-2xl font-headline font-black text-primary">
+                      ₹{s.price}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ══════════ AVAILABILITY TAB ══════════ */}
+        {tab === "availability" && (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            {/* Add Form */}
+            <div className="lg:col-span-5">
+              <div className="glass-card rounded-3xl p-6 md:p-8">
+                <h2 className="text-xl font-headline font-bold text-on-surface mb-6">
+                  Add Availability Window
+                </h2>
+                <form onSubmit={addAvailability} className="space-y-4">
+                  <div>
+                    <label className={labelClass}>Day of Week</label>
+                    <select
+                      value={availForm.dayOfWeek}
+                      onChange={(e) => setAvailForm({ ...availForm, dayOfWeek: e.target.value })}
+                      className={inputClass}
+                    >
+                      {DAYS.map((d) => (
+                        <option key={d} value={d}>
+                          {d}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className={labelClass}>Start Time</label>
+                      <input
+                        type="time"
+                        value={availForm.startTime}
+                        onChange={(e) => setAvailForm({ ...availForm, startTime: e.target.value })}
+                        className={inputClass}
+                      />
+                    </div>
+                    <div>
+                      <label className={labelClass}>End Time</label>
+                      <input
+                        type="time"
+                        value={availForm.endTime}
+                        onChange={(e) => setAvailForm({ ...availForm, endTime: e.target.value })}
+                        className={inputClass}
+                      />
+                    </div>
+                  </div>
+
+                  {availMsg && (
+                    <p className={`text-sm font-bold ${availMsg.startsWith("✓") ? "text-green-400" : "text-red-400"}`}>
+                      {availMsg}
+                    </p>
+                  )}
+
+                  <button
+                    type="submit"
+                    className="w-full py-3.5 rounded-xl bg-gradient-to-r from-primary-container to-secondary-container text-white font-headline font-bold text-sm uppercase tracking-wider hover:scale-[1.02] active:scale-95 transition-all"
+                  >
+                    Save Schedule
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            {/* Availability List */}
+            <div className="lg:col-span-7 space-y-4">
+              <h2 className="text-xl font-headline font-bold text-on-surface">Working Hours</h2>
+              {availability.length === 0 ? (
+                <div className="glass-panel rounded-2xl p-10 text-center">
+                  <span className="material-symbols-outlined text-4xl text-on-surface-variant/20 mb-2 block">
+                    event_available
+                  </span>
+                  <p className="text-on-surface-variant/50 text-sm">
+                    No availability windows set yet.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {availability.map((a) => (
+                    <div
+                      key={a.id}
+                      className="glass-card rounded-2xl px-5 py-4 flex justify-between items-center"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-primary-container/30 flex items-center justify-center">
+                          <span className="material-symbols-outlined text-primary text-lg">
+                            event
+                          </span>
+                        </div>
+                        <span className="font-headline font-bold text-on-surface text-sm">
+                          {a.dayOfWeek}
+                        </span>
+                      </div>
+                      <span className="text-secondary font-mono text-sm font-bold">
+                        {a.startTime} – {a.endTime}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

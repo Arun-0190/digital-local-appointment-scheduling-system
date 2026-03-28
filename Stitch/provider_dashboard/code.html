@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>DLASS Provider Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-secondary-fixed-variant": "#004e5a",
+              "primary-fixed-dim": "#d2bbff",
+              "on-tertiary": "#490081",
+              "background": "#0c1324",
+              "on-tertiary-container": "#f2e0ff",
+              "surface": "#0c1324",
+              "outline": "#958da1",
+              "surface-tint": "#d2bbff",
+              "surface-dim": "#0c1324",
+              "error": "#ffb4ab",
+              "on-tertiary-fixed": "#2c0051",
+              "error-container": "#93000a",
+              "outline-variant": "#4a4455",
+              "on-secondary-fixed": "#001f25",
+              "on-primary-fixed": "#25005a",
+              "surface-container-high": "#23293c",
+              "secondary-container": "#00cbe6",
+              "secondary-fixed": "#a2eeff",
+              "primary": "#d2bbff",
+              "surface-bright": "#33394c",
+              "secondary-fixed-dim": "#2fd9f4",
+              "on-primary": "#3f008e",
+              "on-error-container": "#ffdad6",
+              "surface-variant": "#2e3447",
+              "on-secondary-container": "#00515d",
+              "inverse-surface": "#dce1fb",
+              "inverse-primary": "#732ee4",
+              "on-primary-container": "#ede0ff",
+              "primary-container": "#7c3aed",
+              "inverse-on-surface": "#2a3043",
+              "on-background": "#dce1fb",
+              "tertiary-fixed": "#f0dbff",
+              "tertiary-fixed-dim": "#ddb8ff",
+              "surface-container-highest": "#2e3447",
+              "surface-container-low": "#151b2d",
+              "tertiary": "#ddb8ff",
+              "on-tertiary-fixed-variant": "#62259b",
+              "surface-container-lowest": "#070d1f",
+              "surface-container": "#191f31",
+              "on-secondary": "#00363e",
+              "tertiary-container": "#844abe",
+              "on-error": "#690005",
+              "primary-fixed": "#eaddff",
+              "on-surface-variant": "#ccc3d8",
+              "secondary": "#5de6ff",
+              "on-surface": "#dce1fb",
+              "on-primary-fixed-variant": "#5a00c6"
+            },
+            fontFamily: {
+              "headline": ["Manrope"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            background: radial-gradient(circle at top right, #1e1b4b, #0c1324 60%);
+            min-height: 100vh;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+    </style>
+</head>
+<body class="font-body text-on-surface selection:bg-secondary/30">
+<!-- TopNavBar Component -->
+<nav class="fixed top-0 w-full z-50 rounded-b-2xl bg-white/10 backdrop-blur-xl shadow-[0_20px_40px_rgba(0,0,0,0.4)]">
+<div class="flex justify-between items-center px-8 h-16 max-w-7xl mx-auto">
+<div class="flex items-center gap-8">
+<span class="text-2xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-violet-500 to-cyan-400 font-headline uppercase">DLASS</span>
+<div class="hidden md:flex gap-6 items-center">
+<a class="font-headline font-bold tracking-tight text-sm text-slate-300 hover:text-white transition-colors hover:scale-105 transition-all duration-300" href="#">Home</a>
+<a class="font-headline font-bold tracking-tight text-sm text-slate-300 hover:text-white transition-colors hover:scale-105 transition-all duration-300" href="#">Search</a>
+<a class="font-headline font-bold tracking-tight text-sm text-cyan-400 border-b-2 border-cyan-400 pb-1 hover:scale-105 transition-all duration-300" href="#">Dashboard</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<span class="text-xs text-slate-400 font-label tracking-widest hidden sm:block">user@email.com</span>
+<button class="px-4 py-2 bg-gradient-to-r from-primary-container to-secondary-container rounded-lg text-white font-bold text-xs uppercase tracking-wider hover:scale-105 active:scale-95 transition-all duration-300">Logout</button>
+</div>
+</div>
+</nav>
+<main class="pt-24 pb-20 px-4 md:px-8 max-w-7xl mx-auto space-y-12">
+<!-- Header Section -->
+<header class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+<div>
+<h1 class="text-4xl md:text-5xl font-headline font-extrabold tracking-tight text-on-surface mb-2">Provider Dashboard</h1>
+<p class="text-on-surface-variant max-w-xl">Manage your celestial workspace, optimize availability, and track upcoming appointments with precision.</p>
+</div>
+<!-- Tab Navigation (Bento Style) -->
+<div class="flex bg-surface-container-low p-1.5 rounded-full shadow-inner border border-outline-variant/10">
+<button class="px-6 py-2 rounded-full bg-primary-container text-on-primary-container font-headline font-bold text-sm transition-all shadow-lg">Appointments</button>
+<button class="px-6 py-2 rounded-full text-on-surface-variant hover:text-white font-headline font-bold text-sm transition-all">Services</button>
+<button class="px-6 py-2 rounded-full text-on-surface-variant hover:text-white font-headline font-bold text-sm transition-all">Availability</button>
+</div>
+</header>
+<!-- Main Content Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<!-- Left Column: Appointments (Large Glass Card) -->
+<section class="lg:col-span-8 space-y-6">
+<div class="glass-card rounded-3xl p-8 shadow-[0_20px_40px_rgba(0,0,0,0.4)]">
+<div class="flex justify-between items-center mb-8">
+<h2 class="text-2xl font-headline font-bold tracking-tight text-on-surface">Upcoming Appointments</h2>
+<button class="text-secondary font-headline font-bold text-sm flex items-center gap-2 hover:gap-3 transition-all">
+                            View History <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full border-separate border-spacing-y-4">
+<thead>
+<tr class="text-left">
+<th class="pb-2 px-4 text-xs font-label uppercase tracking-widest text-on-surface-variant font-medium">User Details</th>
+<th class="pb-2 px-4 text-xs font-label uppercase tracking-widest text-on-surface-variant font-medium">Service</th>
+<th class="pb-2 px-4 text-xs font-label uppercase tracking-widest text-on-surface-variant font-medium">Time &amp; Date</th>
+<th class="pb-2 px-4 text-xs font-label uppercase tracking-widest text-on-surface-variant font-medium">Status</th>
+<th class="pb-2 px-4 text-xs font-label uppercase tracking-widest text-on-surface-variant font-medium">Action</th>
+</tr>
+</thead>
+<tbody>
+<!-- Appointment Row 1 -->
+<tr class="bg-surface-container-low group hover:bg-surface-container-high transition-colors">
+<td class="py-4 px-4 rounded-l-2xl border-l-2 border-primary-container">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-gradient-to-br from-primary-container to-secondary-container p-[1px]">
+<div class="w-full h-full rounded-full bg-surface-container overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="portrait of a young man with a slight smile in soft studio lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAa6PipCwKRCJB1iYNuKXmfowlGIg8p2fJTAxrZEQ4Be3lVs3NOR0WNIdImEOXl8t1e_GslgqbmuZGHBXwZ4qmLripUc-U6ipXhjmYZaiJdmx2yU4XSNshTAF_9wbEiXT7XBhA4vNCHG2S0AtcdjHoPQ1z5rNldh6piscTPIxZ7A9DMDS9w3cLYoMHgP7P8p89eKMQ5eC643AJjNDX3YXZKujsNyeAOGDx_LB-K-gqHP6lQfNUWSE5O1aht2_Js3iI4Z51EQf0uYFQ"/>
+</div>
+</div>
+<div>
+<div class="text-sm font-bold text-on-surface">Alex Rivera</div>
+<div class="text-xs text-on-surface-variant">alex.r@mail.com</div>
+</div>
+</div>
+</td>
+<td class="py-4 px-4 text-sm font-medium text-primary">Strategic Consulting</td>
+<td class="py-4 px-4">
+<div class="text-sm text-on-surface">Oct 24, 2024</div>
+<div class="text-xs text-on-surface-variant">10:30 AM</div>
+</td>
+<td class="py-4 px-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary-container/20 text-secondary">Confirmed</span>
+</td>
+<td class="py-4 px-4 rounded-r-2xl">
+<button class="p-2 hover:bg-surface-bright rounded-lg transition-colors text-on-surface-variant hover:text-white">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Appointment Row 2 -->
+<tr class="bg-surface-container-low group hover:bg-surface-container-high transition-colors">
+<td class="py-4 px-4 rounded-l-2xl border-l-2 border-transparent">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-gradient-to-br from-primary-container to-secondary-container p-[1px]">
+<div class="w-full h-full rounded-full bg-surface-container overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="professional headshot of a mature woman in a bright modern office setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCunz8ks-qzAC_nNAZbCk_ITFADi4vB1IlM94cDELRaaa9ZUh_M5lPYLyEM-Mb7HbrLGsnmi1R7CQZVCUqjN-svpvOZb5Yd1Am9ZMu-MmALJc7MgAQb59NFvGwFuDoAxLZBnDvzR9VQaygzT369lmGPbjmM4LMCu_6KtyQhBAAuVh5XoqF289fen_n0wS8JIZmcR6Ploy6u-Chkt1Q54yMiTHLsyP8m65tAMg2zaucdGti_ZTM4f4hZ6FNb1bVj_xl4KRbf-mxNOSw"/>
+</div>
+</div>
+<div>
+<div class="text-sm font-bold text-on-surface">Elena Vance</div>
+<div class="text-xs text-on-surface-variant">elena.v@cloud.io</div>
+</div>
+</div>
+</td>
+<td class="py-4 px-4 text-sm font-medium text-primary">Digital Audit</td>
+<td class="py-4 px-4">
+<div class="text-sm text-on-surface">Oct 24, 2024</div>
+<div class="text-xs text-on-surface-variant">02:00 PM</div>
+</td>
+<td class="py-4 px-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-container/20 text-primary">Pending</span>
+</td>
+<td class="py-4 px-4 rounded-r-2xl">
+<button class="p-2 hover:bg-surface-bright rounded-lg transition-colors text-on-surface-variant hover:text-white">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Appointment Row 3 -->
+<tr class="bg-surface-container-low group hover:bg-surface-container-high transition-colors">
+<td class="py-4 px-4 rounded-l-2xl border-l-2 border-transparent">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-gradient-to-br from-primary-container to-secondary-container p-[1px]">
+<div class="w-full h-full rounded-full bg-surface-container overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="lifestyle portrait of a smiling woman with glasses in a soft focus cafe background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDndvAyM1BeHIG5VZw9JzmjbXOQXd2zO65OS4BeAlMAgcLryIXMKkeVQLmvC_-BKhdONFyKIlgmcPZpxTBGktbYaQKKQu_xF8GeOGYaMpFkujpGT_TU7V4s_nOoQmejPi4DF4ARPFf3cqXyLa-3_Jw7XZKcU8MlcSwjaN-FXTOdsb7a5oXKZSMHUzWDI4PlPR0YBfP-jTs-aj0LEx8SfGonf5RiLpQLpix_I_EBr0Yq8FyHOEBd4heAcNUc7rwhrHEF6SYt3XNylp4"/>
+</div>
+</div>
+<div>
+<div class="text-sm font-bold text-on-surface">Sarah Chen</div>
+<div class="text-xs text-on-surface-variant">schen.design@mail.com</div>
+</div>
+</div>
+</td>
+<td class="py-4 px-4 text-sm font-medium text-primary">UI Architecture</td>
+<td class="py-4 px-4">
+<div class="text-sm text-on-surface">Oct 25, 2024</div>
+<div class="text-xs text-on-surface-variant">09:00 AM</div>
+</td>
+<td class="py-4 px-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary-container/20 text-secondary">Confirmed</span>
+</td>
+<td class="py-4 px-4 rounded-r-2xl">
+<button class="p-2 hover:bg-surface-bright rounded-lg transition-colors text-on-surface-variant hover:text-white">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Availability Section (Glass Grid) -->
+<div class="glass-card rounded-3xl p-8">
+<div class="flex justify-between items-center mb-6">
+<h2 class="text-2xl font-headline font-bold tracking-tight text-on-surface">Weekly Availability</h2>
+<div class="flex gap-2">
+<button class="p-2 bg-surface-container-high rounded-full text-on-surface hover:bg-primary-container transition-colors">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="p-2 bg-surface-container-high rounded-full text-on-surface hover:bg-primary-container transition-colors">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+<div class="grid grid-cols-7 gap-4">
+<!-- Days of week -->
+<div class="space-y-4 text-center" v-for="day in ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']">
+<div class="text-xs font-label uppercase tracking-widest text-on-surface-variant font-bold">Mon</div>
+<div class="aspect-square rounded-2xl bg-primary-container flex flex-col items-center justify-center p-2 group hover:scale-105 transition-transform cursor-pointer">
+<span class="text-lg font-bold">21</span>
+<span class="text-[10px] uppercase font-bold text-on-primary-container/80">Available</span>
+</div>
+</div>
+<div class="space-y-4 text-center">
+<div class="text-xs font-label uppercase tracking-widest text-on-surface-variant font-bold">Tue</div>
+<div class="aspect-square rounded-2xl bg-surface-container-highest flex flex-col items-center justify-center p-2 opacity-50">
+<span class="text-lg font-bold">22</span>
+<span class="text-[10px] uppercase font-bold">Blocked</span>
+</div>
+</div>
+<div class="space-y-4 text-center">
+<div class="text-xs font-label uppercase tracking-widest text-on-surface-variant font-bold">Wed</div>
+<div class="aspect-square rounded-2xl bg-primary-container flex flex-col items-center justify-center p-2 group hover:scale-105 transition-transform cursor-pointer">
+<span class="text-lg font-bold">23</span>
+<span class="text-[10px] uppercase font-bold text-on-primary-container/80">Available</span>
+</div>
+</div>
+<div class="space-y-4 text-center">
+<div class="text-xs font-label uppercase tracking-widest text-on-surface-variant font-bold">Thu</div>
+<div class="aspect-square rounded-2xl bg-primary-container flex flex-col items-center justify-center p-2 group hover:scale-105 transition-transform cursor-pointer">
+<span class="text-lg font-bold">24</span>
+<span class="text-[10px] uppercase font-bold text-on-primary-container/80">Available</span>
+</div>
+</div>
+<div class="space-y-4 text-center">
+<div class="text-xs font-label uppercase tracking-widest text-on-surface-variant font-bold">Fri</div>
+<div class="aspect-square rounded-2xl border-2 border-secondary/30 bg-surface-container-high flex flex-col items-center justify-center p-2 group hover:scale-105 transition-transform cursor-pointer">
+<span class="text-lg font-bold">25</span>
+<span class="text-[10px] uppercase font-bold text-secondary">Partial</span>
+</div>
+</div>
+<div class="space-y-4 text-center">
+<div class="text-xs font-label uppercase tracking-widest text-on-surface-variant font-bold">Sat</div>
+<div class="aspect-square rounded-2xl bg-surface-container-highest flex flex-col items-center justify-center p-2 opacity-50">
+<span class="text-lg font-bold">26</span>
+<span class="text-[10px] uppercase font-bold">Weekend</span>
+</div>
+</div>
+<div class="space-y-4 text-center">
+<div class="text-xs font-label uppercase tracking-widest text-on-surface-variant font-bold">Sun</div>
+<div class="aspect-square rounded-2xl bg-surface-container-highest flex flex-col items-center justify-center p-2 opacity-50">
+<span class="text-lg font-bold">27</span>
+<span class="text-[10px] uppercase font-bold">Weekend</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Right Column: Services (Asymmetric Layout) -->
+<aside class="lg:col-span-4 space-y-8">
+<div class="flex items-center justify-between">
+<h3 class="text-xl font-headline font-bold text-on-surface">Your Services</h3>
+<button class="w-10 h-10 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center hover:scale-110 active:scale-95 transition-all">
+<span class="material-symbols-outlined">add</span>
+</button>
+</div>
+<div class="space-y-6">
+<!-- Service Card 1 -->
+<div class="glass-card rounded-2xl overflow-hidden group hover:scale-[1.02] transition-all duration-300">
+<div class="h-32 w-full overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" data-alt="abstract architectural lines in blue and purple tones with sleek glassy textures" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDvXxTlQlrgKO_FO9j8_r31pgdoFBXVB7WR6bm0J1DPKPCoikRX7uS4KN_QW0fhDCGnCodlD1XkVOPTUfPohA3JTC7lSP1SGJp9tZEwFLSYslxci6IRuvzrY7ufm1FWTlWwCyeCE9iphXeNwNTrDa7_-rQsyuOCZso_nGSTrjB4b7uQlUsUMfAJWdHwko6CRPe39vliI79A9aQgkO0cMSgjFKTGwb2Z_ImnPqMEFqB3XKvP_lMMdqJ2MwfXH4LdlIsAqt-sy6ghNVg"/>
+</div>
+<div class="p-6 space-y-4">
+<div>
+<h4 class="text-lg font-bold font-headline">Strategic Consulting</h4>
+<p class="text-sm text-on-surface-variant">60 min • $150.00</p>
+</div>
+<div class="flex gap-3">
+<button class="flex-1 py-2 bg-surface-container-high rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-surface-bright transition-colors">Edit</button>
+<button class="flex-1 py-2 border border-outline-variant/30 rounded-xl text-xs font-bold uppercase tracking-widest hover:border-secondary transition-colors">Details</button>
+</div>
+</div>
+</div>
+<!-- Service Card 2 -->
+<div class="glass-card rounded-2xl overflow-hidden group hover:scale-[1.02] transition-all duration-300">
+<div class="h-32 w-full overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" data-alt="close-up of a high-resolution futuristic dashboard with data visualizations and clean glowing lines" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDKIC1iDKKaL3vDrJnrSp6dlh_Yo8SXAWJYDTJDlHLyxh7yalPKaR5F5SPOrjo80qY2oFKwk7ATae-zKFVhUEKkDNXacp48uN_88hvNacOjya86ybQKN2ZkeSdc5Ou7a9d7AfxYlOpp4vn9arWoC8OzRXV_LJHjyW6ALAt4_250iyy-VvTdBls9SkcgOaRVI66lxOXmWiRNmKM_OdTv0ZqLV03J_2uk6s6QGgYJCmenpgDqn79s92f5asMg8EiufZRcyNUFlwNTUpM"/>
+</div>
+<div class="p-6 space-y-4">
+<div>
+<h4 class="text-lg font-bold font-headline">Digital Audit</h4>
+<p class="text-sm text-on-surface-variant">45 min • $95.00</p>
+</div>
+<div class="flex gap-3">
+<button class="flex-1 py-2 bg-surface-container-high rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-surface-bright transition-colors">Edit</button>
+<button class="flex-1 py-2 border border-outline-variant/30 rounded-xl text-xs font-bold uppercase tracking-widest hover:border-secondary transition-colors">Details</button>
+</div>
+</div>
+</div>
+<!-- Quick Stats Bento Item -->
+<div class="p-6 bg-gradient-to-br from-primary-container/40 to-secondary-container/20 rounded-2xl border border-white/10 shadow-xl space-y-4">
+<div class="text-xs font-label uppercase tracking-widest text-on-primary-container font-bold">Monthly Revenue</div>
+<div class="flex items-end gap-2">
+<span class="text-3xl font-headline font-black tracking-tighter">$4,280</span>
+<span class="text-secondary text-sm font-bold mb-1">+12%</span>
+</div>
+<div class="h-1.5 w-full bg-surface-container-low rounded-full overflow-hidden">
+<div class="h-full w-3/4 bg-secondary rounded-full shadow-[0_0_10px_#5de6ff]"></div>
+</div>
+<p class="text-[10px] text-on-surface-variant leading-relaxed">You've reached 75% of your monthly goal of $5,700.</p>
+</div>
+</div>
+</aside>
+</div>
+</main>
+<!-- Footer Component -->
+<footer class="w-full mt-auto py-8 flex flex-col md:flex-row justify-between items-center px-12 w-full bg-slate-950/80 backdrop-blur-lg">
+<div class="text-lg font-bold text-slate-400 font-headline mb-4 md:mb-0">DLASS</div>
+<div class="flex gap-8 mb-4 md:mb-0">
+<a class="font-body text-xs uppercase tracking-widest text-slate-500 hover:text-cyan-400 transition-colors" href="#">Privacy Policy</a>
+<a class="font-body text-xs uppercase tracking-widest text-slate-500 hover:text-cyan-400 transition-colors" href="#">Terms of Service</a>
+<a class="font-body text-xs uppercase tracking-widest text-slate-500 hover:text-cyan-400 transition-colors" href="#">Support</a>
+</div>
+<div class="font-body text-xs uppercase tracking-widest text-slate-500">© 2024 DLASS Digital Nebula</div>
+</footer>
+<!-- FAB for Quick Actions (Suppressed on details, shown here as it is primary dashboard) -->
+<button class="fixed bottom-8 right-8 w-14 h-14 rounded-full bg-primary-container text-white shadow-[0_10px_30px_rgba(124,58,237,0.5)] flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-40 group">
+<span class="material-symbols-outlined text-2xl group-hover:rotate-90 transition-transform">add</span>
+</button>
+</body></html>
