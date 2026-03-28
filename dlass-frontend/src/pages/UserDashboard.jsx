@@ -57,129 +57,225 @@ function UserDashboard() {
 
   const now = new Date();
 
-  // Sort upcoming by soonest first
   const upcoming = appointments
-    .filter(a => a.status === "BOOKED" && new Date(`${a.date}T${a.startTime}`) >= now)
+    .filter((a) => a.status === "BOOKED" && new Date(`${a.date}T${a.startTime}`) >= now)
     .sort((a, b) => new Date(`${a.date}T${a.startTime}`) - new Date(`${b.date}T${b.startTime}`));
 
-  // Sort past by most recent first
   const past = appointments
-    .filter(a => a.status === "CANCELLED" || a.status === "COMPLETED" || new Date(`${a.date}T${a.startTime}`) < now)
+    .filter(
+      (a) =>
+        a.status === "CANCELLED" ||
+        a.status === "COMPLETED" ||
+        new Date(`${a.date}T${a.startTime}`) < now
+    )
     .sort((a, b) => new Date(`${b.date}T${b.startTime}`) - new Date(`${a.date}T${a.startTime}`));
 
-  const cardStyle = { background: "#1e293b", border: "1.5px solid #334155", borderRadius: "12px", padding: "1.2rem", marginBottom: ".8rem" };
+  const statusPill = (status) => {
+    if (status === "BOOKED")
+      return "px-4 py-1.5 bg-primary-container/20 text-primary-fixed-dim rounded-full text-xs font-bold border border-primary/30";
+    if (status === "CANCELLED")
+      return "px-4 py-1.5 bg-red-500/10 text-red-300 rounded-full text-xs font-bold border border-red-500/20";
+    return "px-4 py-1.5 bg-surface-container-high text-on-surface-variant rounded-full text-xs font-bold border border-outline-variant/20";
+  };
 
   return (
-    <div className="page-container" style={{ maxWidth: "800px", margin: "0 auto" }}>
-      <div className="dashboard-header" style={{ marginBottom: "2rem" }}>
-        <h1 className="page-title" style={{ fontSize: "2rem", marginBottom: "0.2rem" }}>Hello, {username} 👋</h1>
-        <p style={{ color: "#94a3b8" }}>Manage your bookings and discover new services.</p>
-      </div>
+    <div className="min-h-screen pt-20 pb-16 px-4 md:px-6">
+      <div className="max-w-7xl mx-auto pt-8 space-y-10">
+        {/* Welcome Header */}
+        <header className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-end">
+          <div className="space-y-3">
+            <h1 className="font-headline text-4xl md:text-5xl font-extrabold tracking-tight text-on-surface">
+              Welcome back,
+              <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">
+                {username}
+              </span>
+            </h1>
+            <p className="text-on-surface-variant text-base leading-relaxed max-w-md">
+              {upcoming.length > 0
+                ? `You have ${upcoming.length} upcoming appointment${upcoming.length > 1 ? "s" : ""} this week.`
+                : "No upcoming appointments. Book a service now!"}
+            </p>
+          </div>
 
-      {loading ? (
-        <p style={{ color: "#94a3b8" }}>Loading appointments...</p>
-      ) : (
-        <>
-          <section style={{ marginBottom: "2.5rem" }}>
-            <h2 style={{ color: "#e2e8f0", marginBottom: "1rem" }}>Upcoming Appointments</h2>
-            {upcoming.length === 0 ? (
-              <p style={{ color: "#64748b" }}>No upcoming appointments.</p>
+          {/* Quick Search */}
+          <div className="relative group">
+            <div className="absolute inset-0 bg-secondary/10 blur-2xl rounded-full opacity-0 group-focus-within:opacity-100 transition-opacity duration-500" />
+            <div className="relative flex items-center gap-3 bg-surface-container-highest/50 backdrop-blur-xl border border-outline-variant/20 rounded-2xl p-3 focus-within:ring-2 focus-within:ring-secondary/40 transition-all duration-300">
+              <span className="material-symbols-outlined text-on-surface-variant px-1">location_on</span>
+              <input
+                type="text"
+                placeholder="Enter pincode to find providers…"
+                value={pincode}
+                onChange={(e) => setPincode(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleQuickSearch()}
+                className="bg-transparent border-none focus:ring-0 focus:outline-none w-full text-on-surface placeholder:text-on-surface-variant/50 text-sm font-body"
+              />
+              <button
+                onClick={handleQuickSearch}
+                className="shrink-0 px-4 py-2 bg-gradient-to-r from-primary-container to-secondary-container rounded-xl text-white font-headline font-bold text-xs uppercase tracking-wider hover:scale-105 active:scale-95 transition-all"
+              >
+                Search
+              </button>
+            </div>
+          </div>
+        </header>
+
+        {/* Main Bento Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
+          {/* Upcoming Appointments – 8 col */}
+          <section className="md:col-span-8 space-y-5">
+            <div className="flex justify-between items-center">
+              <h2 className="font-headline text-xl font-bold flex items-center gap-3">
+                <span className="w-1.5 h-7 bg-primary-container rounded-full" />
+                Upcoming Appointments
+              </h2>
+              <button
+                onClick={() => navigate("/search")}
+                className="text-secondary text-sm font-label tracking-widest uppercase hover:underline underline-offset-4 transition-all"
+              >
+                Find Services
+              </button>
+            </div>
+
+            {loading ? (
+              <div className="flex justify-center py-10">
+                <div className="spinner" />
+              </div>
+            ) : upcoming.length === 0 ? (
+              <div className="glass-panel rounded-3xl p-12 text-center border-dashed border border-outline-variant/20">
+                <span className="material-symbols-outlined text-5xl text-on-surface-variant/20 mb-3 block">
+                  calendar_today
+                </span>
+                <p className="font-headline text-lg font-bold text-on-surface-variant/40">
+                  No upcoming appointments
+                </p>
+                <button
+                  onClick={() => navigate("/search")}
+                  className="mt-4 px-6 py-2.5 bg-gradient-to-r from-primary-container to-secondary-container rounded-xl text-white font-bold text-sm hover:scale-105 active:scale-95 transition-all"
+                >
+                  Book a Service
+                </button>
+              </div>
             ) : (
-              upcoming.map(a => (
-                <div key={a.id} style={{ ...cardStyle, borderLeft: "4px solid #4ade80" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: "1rem" }}>
-                    <div>
-                      <div style={{ fontWeight: 700, color: "#f1f5f9", fontSize: "1.1rem" }}>{a.serviceName}</div>
-                      <div style={{ color: "#cbd5e1", marginTop: "0.3rem" }}>Provider: {a.providerName}</div>
-                      <div style={{ color: "#94a3b8", fontSize: "0.9rem", marginTop: "0.2rem" }}>
-                        📅 {a.date} at 🕐 {a.startTime}
+              <div className="space-y-4">
+                {upcoming.map((a) => (
+                  <div
+                    key={a.id}
+                    className="glass-panel p-5 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center gap-5 hover:translate-x-1 transition-transform duration-300 group border-l-2 border-primary-container"
+                  >
+                    <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary-container to-secondary-container flex items-center justify-center shrink-0">
+                      <span className="material-symbols-outlined text-2xl text-white">
+                        handyman
+                      </span>
+                    </div>
+                    <div className="flex-grow">
+                      <h3 className="font-headline text-base font-bold text-white">
+                        {a.serviceName}
+                      </h3>
+                      <p className="text-on-surface-variant text-sm">
+                        Provider: {a.providerName}
+                      </p>
+                      <div className="flex flex-wrap gap-4 mt-2 text-sm text-secondary/80 font-label tracking-wide">
+                        <span className="flex items-center gap-1.5">
+                          <span className="material-symbols-outlined text-sm">calendar_today</span>
+                          {a.date}
+                        </span>
+                        <span className="flex items-center gap-1.5">
+                          <span className="material-symbols-outlined text-sm">schedule</span>
+                          {a.startTime}
+                        </span>
                       </div>
                     </div>
-                    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "0.5rem" }}>
-                      <span style={{
-                        padding: "4px 12px", borderRadius: "20px", fontSize: "0.8rem", fontWeight: 700,
-                        background: "#166534", color: "#4ade80"
-                      }}>
-                        {a.status}
-                      </span>
+                    <div className="flex flex-col items-start sm:items-end gap-3 shrink-0">
+                      <span className={statusPill(a.status)}>{a.status}</span>
                       <button
                         onClick={() => handleCancel(a.id)}
-                        style={{
-                          background: "transparent", border: "1px solid #f87171", color: "#f87171",
-                          padding: "6px 12px", borderRadius: "6px", cursor: "pointer", fontSize: "0.85rem",
-                          transition: "all 0.2s"
-                        }}
-                        onMouseOver={e => e.target.style.background = "rgba(248, 113, 113, 0.1)"}
-                        onMouseOut={e => e.target.style.background = "transparent"}
+                        className="text-red-400 hover:text-red-300 text-xs font-bold flex items-center gap-1 transition-colors"
                       >
-                        Cancel Appointment
+                        <span className="material-symbols-outlined text-sm">cancel</span>
+                        Cancel
                       </button>
                     </div>
                   </div>
-                </div>
-              ))
+                ))}
+              </div>
             )}
           </section>
 
-          <section style={{ marginBottom: "2.5rem" }}>
-            <h2 style={{ color: "#e2e8f0", marginBottom: "1rem" }}>Past Appointments</h2>
-            {past.length === 0 ? (
-              <p style={{ color: "#64748b" }}>No past appointments.</p>
-            ) : (
-              past.map(a => (
-                <div key={a.id} style={{ ...cardStyle, opacity: 0.8 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: "1rem" }}>
-                    <div>
-                      <div style={{ fontWeight: 600, color: "#cbd5e1" }}>{a.serviceName}</div>
-                      <div style={{ color: "#94a3b8", fontSize: "0.9rem" }}>Provider: {a.providerName}</div>
-                      <div style={{ color: "#64748b", fontSize: "0.85rem", marginTop: "0.2rem" }}>
-                        📅 {a.date} | 🕐 {a.startTime}
-                      </div>
-                    </div>
-                    <div>
-                      <span style={{
-                        padding: "3px 10px", borderRadius: "20px", fontSize: "0.75rem", fontWeight: 700,
-                        background: a.status === "CANCELLED" ? "#7f1d1d" : "#1e3a5f",
-                        color: a.status === "CANCELLED" ? "#fca5a5" : "#93c5fd"
-                      }}>
-                        {a.status}
+          {/* Sidebar – 4 col */}
+          <aside className="md:col-span-4 space-y-6">
+            {/* Insights card */}
+            <div className="glass-panel rounded-2xl p-6 space-y-5 overflow-hidden relative">
+              <div className="absolute top-0 right-0 w-28 h-28 bg-primary/10 blur-3xl rounded-full -mr-14 -mt-14" />
+              <h2 className="font-headline text-lg font-bold">Your Insights</h2>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center bg-white/5 p-3.5 rounded-xl border border-white/5">
+                  <span className="text-on-surface-variant text-sm">Total Bookings</span>
+                  <span className="text-primary font-bold">{appointments.length}</span>
+                </div>
+                <div className="flex justify-between items-center bg-white/5 p-3.5 rounded-xl border border-white/5">
+                  <span className="text-on-surface-variant text-sm">Upcoming</span>
+                  <span className="text-secondary font-bold">{upcoming.length}</span>
+                </div>
+                <div className="flex justify-between items-center bg-white/5 p-3.5 rounded-xl border border-white/5">
+                  <span className="text-on-surface-variant text-sm">Completed</span>
+                  <span className="text-green-400 font-bold">
+                    {appointments.filter((a) => a.status === "COMPLETED").length}
+                  </span>
+                </div>
+              </div>
+              <button
+                onClick={() => navigate("/search")}
+                className="w-full py-3 bg-gradient-to-r from-primary-container to-secondary-container rounded-xl font-bold text-white text-sm shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
+              >
+                Schedule New Service
+              </button>
+            </div>
+
+            {/* Past Appointments */}
+            {past.length > 0 && (
+              <div className="space-y-3">
+                <h2 className="font-headline text-base font-bold px-1">Recently Completed</h2>
+                {past.slice(0, 4).map((a) => (
+                  <div
+                    key={a.id}
+                    className="p-4 bg-surface-container-low/50 rounded-xl border-l-2 border-outline-variant hover:bg-surface-container-high transition-colors group cursor-default"
+                  >
+                    <div className="flex justify-between">
+                      <span className="text-sm font-bold text-white truncate pr-2">
+                        {a.serviceName}
                       </span>
+                      <span className={statusPill(a.status)}>{a.status}</span>
                     </div>
+                    <p className="text-xs text-on-surface-variant mt-1">
+                      {a.date} · {a.providerName}
+                    </p>
                   </div>
-                </div>
-              ))
+                ))}
+              </div>
             )}
-          </section>
-        </>
-      )}
-
-      {/* Quick Search */}
-      <section style={{ ...cardStyle }}>
-        <h3 style={{ marginTop: 0, color: "#f1f5f9" }}>Need another service?</h3>
-        <p style={{ color: "#94a3b8", fontSize: "0.9rem", marginBottom: "1rem" }}>Find top-rated local providers instantly.</p>
-        <div style={{ display: "flex", gap: "0.5rem" }}>
-          <input
-            type="text"
-            placeholder="Enter pincode (e.g. 400001)"
-            value={pincode}
-            onChange={(e) => setPincode(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleQuickSearch()}
-            style={{
-              flex: 1, padding: "10px 14px", borderRadius: "8px", border: "1.5px solid #334155",
-              background: "#0f172a", color: "#f1f5f9", outline: "none"
-            }}
-          />
-          <button
-            onClick={handleQuickSearch}
-            style={{
-              padding: "10px 20px", borderRadius: "8px", border: "none",
-              background: "linear-gradient(135deg,#6366f1,#8b5cf6)", color: "#fff", fontWeight: 600, cursor: "pointer"
-            }}
-          >
-            Search
-          </button>
+          </aside>
         </div>
-      </section>
+
+        {/* Apply as provider CTA */}
+        <section className="glass-panel rounded-3xl p-8 md:p-10 flex flex-col md:flex-row items-center justify-between gap-6 border border-outline-variant/10">
+          <div>
+            <h3 className="font-headline text-xl font-bold text-on-surface mb-1">
+              Are you a service professional?
+            </h3>
+            <p className="text-on-surface-variant text-sm">
+              Apply to become a DLASS provider and grow your business.
+            </p>
+          </div>
+          <button
+            onClick={() => navigate("/apply-provider")}
+            className="shrink-0 px-8 py-3 rounded-xl border border-secondary/30 bg-secondary/5 text-secondary font-headline font-bold text-sm hover:bg-secondary/10 hover:border-secondary/60 transition-all"
+          >
+            Apply as Provider →
+          </button>
+        </section>
+      </div>
     </div>
   );
 }

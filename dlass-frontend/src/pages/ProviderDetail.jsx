@@ -5,7 +5,6 @@ import { getToken } from "../services/authService";
 
 const API = "http://localhost:8080/api";
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
 function fmt(t) {
   if (!t) return "";
   const [h, m] = t.split(":");
@@ -17,7 +16,6 @@ function todayISO() {
   return new Date().toISOString().split("T")[0];
 }
 
-// ─── Component ────────────────────────────────────────────────────────────────
 export default function ProviderDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -27,7 +25,7 @@ export default function ProviderDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // Booking modal state
+  // Booking state
   const [selectedService, setSelectedService] = useState(null);
   const [bookDate, setBookDate] = useState(todayISO());
   const [slots, setSlots] = useState([]);
@@ -37,7 +35,6 @@ export default function ProviderDetail() {
   const [bookSuccess, setBookSuccess] = useState("");
   const [bookError, setBookError] = useState("");
 
-  // ── Load profile + services ──────────────────────────────────────────────
   useEffect(() => {
     async function load() {
       try {
@@ -56,7 +53,6 @@ export default function ProviderDetail() {
     load();
   }, [id]);
 
-  // ── Load slots when service + date change ────────────────────────────────
   const fetchSlots = () => {
     if (!selectedService || !bookDate) { setSlots([]); return; }
     setSlotsLoading(true);
@@ -64,16 +60,13 @@ export default function ProviderDetail() {
     setBookError("");
     axios
       .get(`${API}/providers/${id}/slots`, { params: { serviceId: selectedService.id, date: bookDate } })
-      .then(r => setSlots(r.data))
+      .then((r) => setSlots(r.data))
       .catch(() => setSlots([]))
       .finally(() => setSlotsLoading(false));
   };
 
-  useEffect(() => {
-    fetchSlots();
-  }, [selectedService, bookDate, id]);
+  useEffect(() => { fetchSlots(); }, [selectedService, bookDate, id]);
 
-  // ── Book slot ────────────────────────────────────────────────────────────
   async function handleBook() {
     if (!selectedSlot) return;
     const token = getToken();
@@ -94,7 +87,6 @@ export default function ProviderDetail() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setBookSuccess("Appointment booked! Check your dashboard.");
-      // Refresh slots from backend to guarantee accurate availability
       fetchSlots();
       setSelectedSlot(null);
     } catch (e) {
@@ -104,176 +96,254 @@ export default function ProviderDetail() {
     }
   }
 
-  // ── Styles ───────────────────────────────────────────────────────────────
-  const card = {
-    background: "#1e293b",
-    border: "1.5px solid #334155",
-    borderRadius: "14px",
-    padding: "1.5rem",
-    marginBottom: "1rem",
-  };
+  if (loading)
+    return (
+      <div className="min-h-screen flex items-center justify-center pt-16">
+        <div className="spinner" />
+      </div>
+    );
+  if (error)
+    return (
+      <div className="min-h-screen flex items-center justify-center pt-16">
+        <p className="text-red-400 text-center">{error}</p>
+      </div>
+    );
 
-  const badge = (c) => ({
-    display: "inline-block",
-    padding: "3px 10px",
-    borderRadius: "20px",
-    fontSize: ".75rem",
-    fontWeight: 700,
-    background: c,
-    color: "#fff",
-    marginRight: "6px",
-  });
-
-  if (loading) return <div className="page-container"><p style={{ color: "#94a3b8" }}>Loading…</p></div>;
-  if (error) return <div className="page-container"><p style={{ color: "#f87171" }}>{error}</p></div>;
+  const starCount = Math.round(profile?.rating || 0);
 
   return (
-    <div className="page-container" style={{ maxWidth: "860px", margin: "0 auto" }}>
-      {/* ── Back ── */}
-      <button
-        onClick={() => navigate(-1)}
-        style={{ background: "none", border: "none", color: "#818cf8", cursor: "pointer", marginBottom: "1.2rem", fontSize: ".95rem" }}
-      >
-        ← Back to Search
-      </button>
+    <div className="min-h-screen pt-20 pb-16 px-4 md:px-6">
+      <div className="max-w-6xl mx-auto">
+        {/* Back button */}
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-2 text-on-surface-variant hover:text-white font-headline font-bold text-sm mb-8 transition-colors mt-4"
+        >
+          <span className="material-symbols-outlined text-sm">arrow_back</span>
+          Back to Search
+        </button>
 
-      {/* ── Provider Header ── */}
-      <div style={{ ...card, borderColor: "#6366f1", background: "linear-gradient(135deg,#1e1b4b 0%,#1e293b 100%)" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: "1rem" }}>
-          <div>
-            <h1 style={{ margin: 0, fontSize: "1.8rem", color: "#f1f5f9" }}>{profile?.businessName}</h1>
-            <p style={{ color: "#94a3b8", marginTop: ".4rem" }}>{profile?.description}</p>
-            <p style={{ color: "#64748b", fontSize: ".9rem", marginTop: ".5rem" }}>
-              📍 {profile?.area}, {profile?.city} — {profile?.pincode}
-            </p>
-          </div>
-          <div style={{ textAlign: "right" }}>
-            <div style={{ color: "#facc15", fontSize: "1.3rem", marginBottom: ".3rem" }}>
-              {"★".repeat(Math.round(profile?.rating || 0))}{"☆".repeat(5 - Math.round(profile?.rating || 0))}
+        {/* Provider Header Card */}
+        <section className="mb-10">
+          <div className="glass-card rounded-3xl p-6 md:p-8 flex flex-col md:flex-row gap-6 md:gap-8 items-start md:items-center relative overflow-hidden group">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-secondary/5 opacity-50" />
+
+            {/* Avatar placeholder */}
+            <div className="relative w-24 h-24 md:w-32 md:h-32 rounded-2xl bg-gradient-to-br from-primary-container to-secondary-container flex items-center justify-center shrink-0 border border-outline-variant/20 shadow-xl">
+              <span className="material-symbols-outlined text-4xl text-white">business_center</span>
             </div>
-            <span style={{ color: "#94a3b8", fontSize: ".85rem" }}>
-              {profile?.rating?.toFixed(1) || "0.0"} ({profile?.reviewCount || 0} reviews)
-            </span>
-            <div style={{ marginTop: ".5rem" }}>
-              <span style={badge("#10b981")}>{profile?.experienceYears} yrs exp.</span>
+
+            <div className="relative flex-1 space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h1 className="text-3xl md:text-4xl font-headline font-extrabold tracking-tighter text-on-surface">
+                    {profile?.businessName}
+                  </h1>
+                  <p className="text-secondary font-headline font-bold tracking-tight flex items-center gap-1 mt-1 text-sm">
+                    <span className="material-symbols-outlined text-sm">verified_user</span>
+                    {profile?.experienceYears} Year{profile?.experienceYears !== 1 ? "s" : ""} Experience
+                  </p>
+                </div>
+                <div className="flex flex-col items-start sm:items-end gap-2">
+                  <div className="flex items-center gap-1 bg-white/5 px-3 py-1.5 rounded-full border border-outline-variant/10">
+                    <span
+                      className="material-symbols-outlined text-secondary text-base"
+                      style={{ fontVariationSettings: "'FILL' 1" }}
+                    >
+                      star
+                    </span>
+                    <span className="text-on-surface font-bold text-lg">{profile?.rating?.toFixed(1) || "0.0"}</span>
+                    <span className="text-on-surface-variant text-sm">({profile?.reviewCount || 0} reviews)</span>
+                  </div>
+                  <div className="text-on-surface-variant text-sm flex items-center gap-1">
+                    <span className="material-symbols-outlined text-xs">location_on</span>
+                    {profile?.area}, {profile?.city} — {profile?.pincode}
+                  </div>
+                </div>
+              </div>
+              {profile?.description && (
+                <p className="text-on-surface-variant leading-relaxed max-w-2xl font-body italic text-sm">
+                  &quot;{profile.description}&quot;
+                </p>
+              )}
+            </div>
+          </div>
+        </section>
+
+        {/* Main 2-col grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          {/* Services List */}
+          <div className="lg:col-span-5 space-y-4">
+            <h2 className="text-2xl font-headline font-bold tracking-tight text-on-surface flex items-center gap-3">
+              Available Services
+              <span className="h-px flex-1 bg-gradient-to-r from-outline-variant/30 to-transparent" />
+            </h2>
+
+            {services.length === 0 ? (
+              <div className="glass-panel rounded-2xl p-8 text-center">
+                <span className="material-symbols-outlined text-4xl text-on-surface-variant/30 mb-2 block">
+                  category
+                </span>
+                <p className="text-on-surface-variant/60 text-sm">No services listed yet.</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {services.map((svc) => {
+                  const isSelected = selectedService?.id === svc.id;
+                  return (
+                    <div
+                      key={svc.id}
+                      onClick={() => { setSelectedService(svc); setBookSuccess(""); setBookError(""); }}
+                      className={`glass-card p-5 rounded-2xl cursor-pointer transition-all duration-200 hover:translate-x-1 ${
+                        isSelected
+                          ? "border-l-4 border-secondary ring-1 ring-secondary/30 relative"
+                          : "border-l-4 border-primary/40 hover:border-primary"
+                      }`}
+                    >
+                      {isSelected && (
+                        <div className="absolute -top-2 -right-2">
+                          <span className="w-7 h-7 rounded-full bg-secondary flex items-center justify-center shadow-lg">
+                            <span className="material-symbols-outlined text-on-secondary text-sm">check</span>
+                          </span>
+                        </div>
+                      )}
+                      <div className="flex justify-between items-start mb-1.5">
+                        <h3 className="text-base font-headline font-bold text-on-primary-container">
+                          {svc.name}
+                        </h3>
+                        <span className="text-secondary font-bold font-headline">₹{svc.price}</span>
+                      </div>
+                      <p className="text-sm text-on-surface-variant">
+                        ⏱ {svc.durationMinutes} min
+                      </p>
+                      <button
+                        className={`w-full mt-4 py-2 rounded-xl text-xs font-headline font-bold uppercase tracking-tight transition-all ${
+                          isSelected
+                            ? "bg-surface-container-highest text-on-surface-variant cursor-default"
+                            : "bg-primary-container text-on-primary-container hover:brightness-110 active:scale-95"
+                        }`}
+                      >
+                        {isSelected ? "Selected" : "Select Service"}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Booking Section */}
+          <div className="lg:col-span-7">
+            <div className="glass-card rounded-3xl p-6 md:p-8 h-full">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-headline font-bold tracking-tight text-on-surface">
+                  Schedule Appointment
+                </h2>
+                {selectedService && (
+                  <span className="text-xs font-label tracking-widest text-on-surface-variant uppercase bg-white/5 px-4 py-2 rounded-full">
+                    {selectedService.name}
+                  </span>
+                )}
+              </div>
+
+              {!selectedService ? (
+                <div className="flex flex-col items-center justify-center py-16 text-center">
+                  <span className="material-symbols-outlined text-5xl text-on-surface-variant/20 mb-4">
+                    touch_app
+                  </span>
+                  <p className="text-on-surface-variant/50 font-headline font-bold">
+                    Select a service to book
+                  </p>
+                </div>
+              ) : (
+                <>
+                  {/* Date Picker */}
+                  <div className="mb-6">
+                    <label className="block text-xs font-label font-bold text-on-surface-variant uppercase tracking-widest mb-2">
+                      Select Date
+                    </label>
+                    <input
+                      type="date"
+                      value={bookDate}
+                      min={todayISO()}
+                      onChange={(e) => setBookDate(e.target.value)}
+                      className="w-full px-4 py-3 bg-surface-container-highest/50 border border-outline-variant/20 rounded-xl text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/40 transition-all text-sm"
+                    />
+                  </div>
+
+                  {/* Time Slots */}
+                  <div className="mb-8">
+                    <h3 className="text-sm font-label tracking-widest text-on-surface-variant uppercase mb-4 flex items-center gap-2">
+                      <span className="material-symbols-outlined text-sm">schedule</span>
+                      Available Time Slots
+                    </h3>
+                    {slotsLoading ? (
+                      <div className="flex justify-center py-6">
+                        <div className="spinner" />
+                      </div>
+                    ) : slots.length === 0 ? (
+                      <p className="text-on-surface-variant/50 text-sm py-4">
+                        No available slots for this date.
+                      </p>
+                    ) : (
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                        {slots.map((slot) => {
+                          const isSelected = selectedSlot?.startTime === slot.startTime;
+                          return (
+                            <button
+                              key={slot.startTime}
+                              onClick={() => setSelectedSlot(slot)}
+                              className={`py-3 px-3 rounded-full text-xs font-bold transition-all duration-200 ${
+                                isSelected
+                                  ? "bg-secondary-container text-on-secondary-container ring-2 ring-secondary/50 shadow-[0_0_15px_rgba(93,230,255,0.4)]"
+                                  : "bg-surface-container-high text-on-surface hover:bg-primary-container hover:text-white border border-outline-variant/20"
+                              }`}
+                            >
+                              {fmt(slot.startTime)}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Feedback */}
+                  {bookSuccess && (
+                    <div className="mb-4 flex items-center gap-3 p-4 rounded-xl bg-green-500/10 border border-green-500/20">
+                      <span className="material-symbols-outlined text-green-400">task_alt</span>
+                      <p className="text-green-300 text-sm font-bold">{bookSuccess}</p>
+                    </div>
+                  )}
+                  {bookError && (
+                    <div className="mb-4 flex items-center gap-3 p-4 rounded-xl bg-red-500/10 border border-red-500/20">
+                      <span className="material-symbols-outlined text-red-400">error</span>
+                      <p className="text-red-300 text-sm">{bookError}</p>
+                    </div>
+                  )}
+
+                  {/* Confirm Button */}
+                  <button
+                    onClick={handleBook}
+                    disabled={!selectedSlot || booking}
+                    className="w-full py-4 rounded-2xl bg-gradient-to-r from-primary to-secondary text-on-primary font-headline font-black text-base shadow-2xl hover:scale-[1.02] active:scale-95 transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed disabled:transform-none"
+                  >
+                    {booking ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        Booking…
+                      </span>
+                    ) : selectedSlot ? (
+                      `Confirm ${fmt(selectedSlot.startTime)} – ${fmt(selectedSlot.endTime)}`
+                    ) : (
+                      "Select a slot to book"
+                    )}
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>
       </div>
-
-      {/* ── Services ── */}
-      <h2 style={{ color: "#e2e8f0", marginBottom: ".8rem" }}>Services</h2>
-      {services.length === 0 ? (
-        <p style={{ color: "#64748b" }}>This provider hasn't listed any services yet.</p>
-      ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: "1rem", marginBottom: "2rem" }}>
-          {services.map(svc => (
-            <div
-              key={svc.id}
-              onClick={() => { setSelectedService(svc); setBookSuccess(""); setBookError(""); }}
-              style={{
-                ...card,
-                cursor: "pointer",
-                borderColor: selectedService?.id === svc.id ? "#6366f1" : "#334155",
-                boxShadow: selectedService?.id === svc.id ? "0 0 0 2px #6366f1" : "none",
-                transition: "all .2s",
-              }}
-            >
-              <div style={{ fontWeight: 700, fontSize: "1rem", color: "#f1f5f9", marginBottom: ".4rem" }}>{svc.name}</div>
-              <div style={{ color: "#818cf8", fontWeight: 700, fontSize: "1.15rem" }}>₹{svc.price}</div>
-              <div style={{ color: "#64748b", fontSize: ".85rem", marginTop: ".3rem" }}>⏱ {svc.durationMinutes} min</div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* ── Booking Section ── */}
-      {selectedService && (
-        <div style={{ ...card, borderColor: "#6366f1" }}>
-          <h3 style={{ color: "#f1f5f9", marginTop: 0 }}>
-            Book: <span style={{ color: "#818cf8" }}>{selectedService.name}</span>
-            <span style={{ color: "#64748b", fontSize: ".85rem", fontWeight: 400, marginLeft: "8px" }}>
-              ₹{selectedService.price} · {selectedService.durationMinutes} min
-            </span>
-          </h3>
-
-          {/* Date Picker */}
-          <label style={{ color: "#94a3b8", fontSize: ".85rem", display: "block", marginBottom: ".4rem" }}>Select Date</label>
-          <input
-            type="date"
-            value={bookDate}
-            min={todayISO()}
-            onChange={e => setBookDate(e.target.value)}
-            style={{
-              padding: "10px 14px",
-              borderRadius: "8px",
-              border: "1.5px solid #334155",
-              background: "#0f172a",
-              color: "#f1f5f9",
-              fontSize: ".95rem",
-              marginBottom: "1.2rem",
-              outline: "none",
-              colorScheme: "dark",
-            }}
-          />
-
-          {/* Slot Grid */}
-          <label style={{ color: "#94a3b8", fontSize: ".85rem", display: "block", marginBottom: ".6rem" }}>
-            Available Slots
-          </label>
-          {slotsLoading ? (
-            <p style={{ color: "#64748b" }}>Loading slots…</p>
-          ) : slots.length === 0 ? (
-            <p style={{ color: "#64748b" }}>No available slots for this date.</p>
-          ) : (
-            <div style={{ display: "flex", flexWrap: "wrap", gap: ".6rem", marginBottom: "1.2rem" }}>
-              {slots.map(slot => (
-                <button
-                  key={slot.startTime}
-                  onClick={() => setSelectedSlot(slot)}
-                  style={{
-                    padding: "8px 16px",
-                    borderRadius: "8px",
-                    border: `2px solid ${selectedSlot?.startTime === slot.startTime ? "#6366f1" : "#334155"}`,
-                    background: selectedSlot?.startTime === slot.startTime ? "#6366f1" : "#0f172a",
-                    color: "#f1f5f9",
-                    fontSize: ".88rem",
-                    cursor: "pointer",
-                    fontWeight: selectedSlot?.startTime === slot.startTime ? 700 : 400,
-                    transition: "all .15s",
-                  }}
-                >
-                  {fmt(slot.startTime)} – {fmt(slot.endTime)}
-                </button>
-              ))}
-            </div>
-          )}
-
-          {/* Feedback */}
-          {bookSuccess && <div style={{ color: "#4ade80", marginBottom: ".8rem", fontWeight: 600 }}>✓ {bookSuccess}</div>}
-          {bookError && <div style={{ color: "#f87171", marginBottom: ".8rem" }}>✕ {bookError}</div>}
-
-          {/* Confirm Button */}
-          <button
-            onClick={handleBook}
-            disabled={!selectedSlot || booking}
-            style={{
-              padding: "12px 28px",
-              borderRadius: "10px",
-              border: "none",
-              background: !selectedSlot ? "#334155" : "linear-gradient(135deg,#6366f1,#8b5cf6)",
-              color: "#fff",
-              fontWeight: 700,
-              fontSize: "1rem",
-              cursor: !selectedSlot ? "not-allowed" : "pointer",
-              opacity: booking ? 0.6 : 1,
-              transition: "all .2s",
-            }}
-          >
-            {booking ? "Booking…" : selectedSlot ? `Confirm ${fmt(selectedSlot.startTime)} – ${fmt(selectedSlot.endTime)}` : "Select a slot to book"}
-          </button>
-        </div>
-      )}
     </div>
   );
 }

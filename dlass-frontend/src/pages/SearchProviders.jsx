@@ -5,18 +5,27 @@ import { getCategories, getSubCategories } from "../services/catalogService";
 
 const API_BASE = "http://localhost:8080/api";
 
-const StarRating = ({ rating }) => {
+function StarRating({ rating }) {
+  const full = Math.round(rating);
   return (
-    <span style={{ color: "#facc15", fontSize: "1rem" }}>
-      {"★".repeat(Math.round(rating))}{"☆".repeat(5 - Math.round(rating))}
-      <span style={{ color: "#888", fontSize: ".85rem", marginLeft: "6px" }}>({rating.toFixed(1)})</span>
+    <span className="flex items-center gap-0.5">
+      {Array.from({ length: 5 }, (_, i) => (
+        <span
+          key={i}
+          className="material-symbols-outlined text-sm text-secondary"
+          style={{ fontVariationSettings: i < full ? "'FILL' 1" : "'FILL' 0" }}
+        >
+          star
+        </span>
+      ))}
+      <span className="ml-1 text-xs text-on-surface-variant">({rating.toFixed(1)})</span>
     </span>
   );
-};
+}
 
 function SearchProviders() {
   const navigate = useNavigate();
-  const [categories, setCategories] = useState([]);;
+  const [categories, setCategories] = useState([]);
   const [subCategories, setSubCategories] = useState([]);
 
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -67,224 +76,234 @@ function SearchProviders() {
     }
   };
 
-  const inputStyle = {
-    width: "100%",
-    padding: "12px 16px",
-    borderRadius: "10px",
-    border: "1.5px solid #334155",
-    background: "#1e293b",
-    color: "#f1f5f9",
-    fontSize: "0.95rem",
-    outline: "none",
-    boxSizing: "border-box",
-    transition: "border-color 0.2s",
-  };
-
-  const labelStyle = {
-    display: "block",
-    marginBottom: "6px",
-    fontSize: "0.85rem",
-    fontWeight: "600",
-    color: "#94a3b8",
-    textTransform: "uppercase",
-    letterSpacing: "0.05em",
-  };
-
-  const fieldStyle = {
-    display: "flex",
-    flexDirection: "column",
-    flex: "1 1 calc(50% - 12px)",
-    minWidth: "220px",
-  };
+  const selectClass =
+    "w-full pl-10 pr-4 py-3.5 bg-surface-container-highest/50 border border-outline-variant/20 rounded-2xl text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/40 focus:bg-surface-bright transition-all text-sm appearance-none";
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0f172a", padding: "40px 24px", fontFamily: "'Inter', sans-serif" }}>
-      
-      {/* Header */}
-      <div style={{ textAlign: "center", maxWidth: "760px", margin: "0 auto 40px" }}>
-        <h1 style={{ fontSize: "2.4rem", fontWeight: "800", color: "#f1f5f9", marginBottom: "12px" }}>
-          Find Service Providers
-        </h1>
-        <p style={{ color: "#64748b", fontSize: "1.05rem" }}>
-          Search for trusted, vetted professionals near you.
-        </p>
-      </div>
+    <div className="min-h-screen pt-20 pb-16 px-4 md:px-8">
+      <div className="max-w-6xl mx-auto">
+        {/* Page Header */}
+        <header className="mb-10 pt-8">
+          <h1 className="font-headline text-4xl md:text-5xl font-extrabold tracking-tighter text-white mb-3">
+            Find your{" "}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">
+              expert
+            </span>
+            .
+          </h1>
+          <p className="text-on-surface-variant text-lg max-w-xl">
+            Connect with top-tier service providers. Refined scheduling for modern life.
+          </p>
+        </header>
 
-      {/* Search Form */}
-      <form
-        onSubmit={handleSearch}
-        style={{
-          maxWidth: "860px",
-          margin: "0 auto 48px",
-          background: "#1e293b",
-          borderRadius: "20px",
-          padding: "32px",
-          border: "1px solid #334155",
-          boxShadow: "0 20px 60px rgba(0,0,0,0.4)",
-        }}
-      >
-        {error && (
-          <div style={{ background: "#450a0a", color: "#fca5a5", borderRadius: "8px", padding: "12px 16px", marginBottom: "20px", border: "1px solid #7f1d1d" }}>
-            {error}
-          </div>
-        )}
-
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "20px" }}>
-          {/* Category */}
-          <div style={fieldStyle}>
-            <label style={labelStyle}>Category *</label>
-            <select
-              style={inputStyle}
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              required
-            >
-              <option value="">Select Category</option>
-              {categories.map((cat) => (
-                <option key={cat.id} value={cat.id}>{cat.name}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Subcategory */}
-          <div style={fieldStyle}>
-            <label style={labelStyle}>Subcategory *</label>
-            <select
-              style={{ ...inputStyle, opacity: !selectedCategory ? 0.5 : 1 }}
-              value={selectedSubCategory}
-              onChange={(e) => setSelectedSubCategory(e.target.value)}
-              disabled={!selectedCategory}
-              required
-            >
-              <option value="">Select Subcategory</option>
-              {subCategories.map((sc) => (
-                <option key={sc.id} value={sc.id}>{sc.name}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* City */}
-          <div style={fieldStyle}>
-            <label style={labelStyle}>City</label>
-            <input
-              type="text"
-              style={inputStyle}
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
-              placeholder="e.g. Mumbai"
-            />
-          </div>
-
-          {/* Pincode */}
-          <div style={fieldStyle}>
-            <label style={labelStyle}>Pincode</label>
-            <input
-              type="text"
-              style={inputStyle}
-              value={pincode}
-              onChange={(e) => setPincode(e.target.value)}
-              placeholder="e.g. 400001"
-              maxLength={6}
-            />
-          </div>
-        </div>
-
-        <button
-          type="submit"
-          disabled={loading}
-          style={{
-            marginTop: "24px",
-            width: "100%",
-            padding: "14px",
-            background: loading ? "#334155" : "linear-gradient(135deg, #6366f1, #8b5cf6)",
-            color: "#fff",
-            border: "none",
-            borderRadius: "12px",
-            fontSize: "1rem",
-            fontWeight: "700",
-            cursor: loading ? "not-allowed" : "pointer",
-            letterSpacing: "0.03em",
-            transition: "all 0.2s",
-          }}
+        {/* Search Form */}
+        <form
+          onSubmit={handleSearch}
+          className="glass-card rounded-3xl p-6 md:p-8 mb-12 shadow-2xl"
         >
-          {loading ? "Searching..." : "🔍 Search Providers"}
-        </button>
-      </form>
+          {error && (
+            <div className="mb-5 flex items-center gap-2 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-300 text-sm">
+              <span className="material-symbols-outlined text-base shrink-0">error</span>
+              {error}
+            </div>
+          )}
 
-      {/* Results */}
-      <div style={{ maxWidth: "860px", margin: "0 auto" }}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            {/* Category */}
+            <div>
+              <label className="block text-xs font-label font-bold text-on-surface-variant uppercase tracking-widest mb-2">
+                Category *
+              </label>
+              <div className="relative">
+                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">
+                  category
+                </span>
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  required
+                  className={selectClass}
+                >
+                  <option value="">Select Category</option>
+                  {categories.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Subcategory */}
+            <div>
+              <label className="block text-xs font-label font-bold text-on-surface-variant uppercase tracking-widest mb-2">
+                Subcategory *
+              </label>
+              <div className="relative">
+                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">
+                  workspaces
+                </span>
+                <select
+                  value={selectedSubCategory}
+                  onChange={(e) => setSelectedSubCategory(e.target.value)}
+                  disabled={!selectedCategory}
+                  required
+                  className={`${selectClass} ${!selectedCategory ? "opacity-50 cursor-not-allowed" : ""}`}
+                >
+                  <option value="">Select Subcategory</option>
+                  {subCategories.map((sc) => (
+                    <option key={sc.id} value={sc.id}>
+                      {sc.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* City */}
+            <div>
+              <label className="block text-xs font-label font-bold text-on-surface-variant uppercase tracking-widest mb-2">
+                City
+              </label>
+              <div className="relative">
+                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">
+                  location_city
+                </span>
+                <input
+                  type="text"
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  placeholder="e.g. Mumbai"
+                  className="w-full pl-10 pr-4 py-3.5 bg-surface-container-highest/50 border border-outline-variant/20 rounded-2xl text-on-surface placeholder:text-on-surface-variant/40 focus:outline-none focus:ring-2 focus:ring-secondary/40 focus:bg-surface-bright transition-all text-sm"
+                />
+              </div>
+            </div>
+
+            {/* Pincode */}
+            <div>
+              <label className="block text-xs font-label font-bold text-on-surface-variant uppercase tracking-widest mb-2">
+                Pincode
+              </label>
+              <div className="relative">
+                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">
+                  location_on
+                </span>
+                <input
+                  type="text"
+                  value={pincode}
+                  onChange={(e) => setPincode(e.target.value)}
+                  placeholder="e.g. 400001"
+                  maxLength={6}
+                  className="w-full pl-10 pr-4 py-3.5 bg-surface-container-highest/50 border border-outline-variant/20 rounded-2xl text-on-surface placeholder:text-on-surface-variant/40 focus:outline-none focus:ring-2 focus:ring-secondary/40 focus:bg-surface-bright transition-all text-sm"
+                />
+              </div>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-4 rounded-2xl bg-gradient-to-r from-primary-container to-secondary-container text-white font-headline font-black text-base shadow-xl hover:scale-[1.01] active:scale-[0.99] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+          >
+            {loading ? (
+              <span className="flex items-center justify-center gap-2">
+                <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                Searching…
+              </span>
+            ) : (
+              <span className="flex items-center justify-center gap-2">
+                <span className="material-symbols-outlined text-xl">search</span>
+                Search Providers
+              </span>
+            )}
+          </button>
+        </form>
+
+        {/* Results */}
         {hasSearched && !loading && results.length === 0 && (
-          <div style={{ textAlign: "center", padding: "60px 0", color: "#64748b" }}>
-            <div style={{ fontSize: "3rem", marginBottom: "16px" }}>🔍</div>
-            <p style={{ fontSize: "1.15rem" }}>No providers found for your search criteria.</p>
-            <p style={{ fontSize: "0.9rem", marginTop: "8px" }}>Try a broader pincode or different city.</p>
+          <div className="glass-panel rounded-3xl p-16 text-center">
+            <span className="material-symbols-outlined text-5xl text-on-surface-variant/30 mb-4 block">
+              search_off
+            </span>
+            <p className="text-xl font-headline font-bold text-on-surface-variant/50 mb-2">
+              No providers found
+            </p>
+            <p className="text-sm text-on-surface-variant/40">
+              Try a different city, pincode, or broader category.
+            </p>
           </div>
         )}
 
         {results.length > 0 && (
           <>
-            <p style={{ color: "#64748b", marginBottom: "20px", fontSize: "0.9rem" }}>
-              Found <strong style={{ color: "#94a3b8" }}>{results.length}</strong> provider{results.length !== 1 ? "s" : ""}
+            <p className="text-on-surface-variant text-sm mb-6 font-label tracking-wide">
+              Found{" "}
+              <strong className="text-white">
+                {results.length}
+              </strong>{" "}
+              provider{results.length !== 1 ? "s" : ""}
             </p>
-            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {results.map((provider) => (
                 <div
                   key={provider.id}
-                  style={{
-                    background: "#1e293b",
-                    borderRadius: "16px",
-                    padding: "24px",
-                    border: "1px solid #334155",
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "12px",
-                    transition: "border-color 0.2s, transform 0.2s",
-                    cursor: "pointer",
-                    position: "relative",
-                    zIndex: 10
-                  }}
                   onClick={() => navigate(`/provider/${provider.id}`)}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.borderColor = "#6366f1";
-                    e.currentTarget.style.transform = "translateY(-2px)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.borderColor = "#334155";
-                    e.currentTarget.style.transform = "translateY(0)";
-                  }}
+                  className="glass-card rounded-2xl p-1 group hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(93,230,255,0.15)] transition-all duration-500 cursor-pointer"
                 >
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "8px" }}>
-                    <div>
-                      <h3 style={{ margin: 0, color: "#f1f5f9", fontSize: "1.2rem", fontWeight: "700" }}>
-                        {provider.businessName}
-                      </h3>
-                      <p style={{ margin: "4px 0 0", color: "#64748b", fontSize: "0.9rem" }}>
-                        📍 {provider.area ? `${provider.area}, ` : ""}{provider.city}
-                        {provider.pincode ? ` – ${provider.pincode}` : ""}
-                      </p>
+                  <div className="bg-surface-container-low rounded-xl overflow-hidden p-6 h-full flex flex-col">
+                    <div className="flex justify-between items-start mb-5">
+                      <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary-container to-secondary-container flex items-center justify-center ring-2 ring-white/10 group-hover:ring-secondary/40 transition-all shrink-0">
+                        <span className="material-symbols-outlined text-3xl text-white">
+                          business_center
+                        </span>
+                      </div>
+                      <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-[10px] font-black tracking-widest uppercase border border-primary/20">
+                        {provider.experienceYears}+ yrs
+                      </span>
                     </div>
-                    <div style={{ textAlign: "right" }}>
-                      <StarRating rating={provider.rating} />
-                      <p style={{ margin: "4px 0 0", color: "#475569", fontSize: "0.8rem" }}>
-                        {provider.reviewCount} review{provider.reviewCount !== 1 ? "s" : ""}
-                      </p>
-                    </div>
-                  </div>
 
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", alignItems: "center" }}>
-                    <span style={{ background: "#0f172a", color: "#818cf8", padding: "4px 12px", borderRadius: "9999px", fontSize: "0.8rem", border: "1px solid #312e81", fontWeight: "600" }}>
-                      {provider.experienceYears} yr{provider.experienceYears !== 1 ? "s" : ""} exp.
-                    </span>
-                    {provider.services && provider.services.slice(0, 4).map((srv) => (
-                      <span key={srv} style={{ background: "#1e3a5f", color: "#93c5fd", padding: "4px 12px", borderRadius: "9999px", fontSize: "0.8rem", border: "1px solid #1e40af" }}>
-                        {srv}
+                    <h3 className="font-headline text-lg font-bold text-white mb-1">
+                      {provider.businessName}
+                    </h3>
+                    <p className="text-on-surface-variant text-sm mb-4 flex items-center gap-1">
+                      <span className="material-symbols-outlined text-xs text-secondary">
+                        location_on
                       </span>
-                    ))}
-                    {provider.services && provider.services.length > 4 && (
-                      <span style={{ color: "#64748b", fontSize: "0.8rem" }}>
-                        +{provider.services.length - 4} more
-                      </span>
+                      {provider.area ? `${provider.area}, ` : ""}
+                      {provider.city}
+                      {provider.pincode ? ` – ${provider.pincode}` : ""}
+                    </p>
+
+                    <StarRating rating={provider.rating} />
+                    <p className="text-xs text-on-surface-variant/60 mt-1 mb-4">
+                      {provider.reviewCount} review{provider.reviewCount !== 1 ? "s" : ""}
+                    </p>
+
+                    {provider.services && provider.services.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 mb-4">
+                        {provider.services.slice(0, 3).map((svc) => (
+                          <span
+                            key={svc}
+                            className="px-2 py-0.5 bg-surface-container-high text-on-surface-variant text-[10px] font-label tracking-widest uppercase rounded-full"
+                          >
+                            {svc}
+                          </span>
+                        ))}
+                        {provider.services.length > 3 && (
+                          <span className="text-xs text-on-surface-variant/50">
+                            +{provider.services.length - 3} more
+                          </span>
+                        )}
+                      </div>
                     )}
+
+                    <div className="mt-auto pt-4 flex items-center justify-end border-t border-white/5">
+                      <button className="text-secondary font-headline font-bold text-sm hover:underline underline-offset-4 decoration-2 transition-all flex items-center gap-1">
+                        View Profile
+                        <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
