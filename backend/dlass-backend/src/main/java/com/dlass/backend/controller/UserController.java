@@ -3,10 +3,12 @@ package com.dlass.backend.controller;
 import com.dlass.backend.dto.UserResponseDTO;
 import com.dlass.backend.model.User;
 import com.dlass.backend.service.UserService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.bind.annotation.CrossOrigin;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/users")
@@ -28,5 +30,19 @@ public class UserController {
     @GetMapping
     public List<UserResponseDTO> getAllUsers() {
         return userService.getAllUsers();
+    }
+
+    /** Returns the currently authenticated user's profile (pincode, name, role). */
+    @GetMapping("/me")
+    public ResponseEntity<Map<String, String>> getMe(Authentication authentication) {
+        String email = authentication.getName();
+        return ResponseEntity.ok(userService.getMe(email));
+    }
+
+    /** Delete a user by ID (admin use). */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteUser(@PathVariable String id) {
+        userService.deleteUser(id);
+        return ResponseEntity.ok("User deleted");
     }
 }

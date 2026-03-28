@@ -74,9 +74,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/providers/search/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/providers/**").permitAll()
                         
-                        //For Admin Providers
-                        .requestMatchers(HttpMethod.GET, "/api/admin/providers/pending").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/admin/providers/**").hasRole("ADMIN")
+                        // All admin endpoints — require ADMIN role
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
                         //For Provider Availability
                         .requestMatchers(HttpMethod.POST, "/api/provider-availability/**").hasRole("PROVIDER")

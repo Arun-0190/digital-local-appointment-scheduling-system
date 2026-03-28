@@ -132,4 +132,36 @@ public class ProviderAvailabilityService {
 
         return calendar;
     }
-}
+
+    /** Delete an availability by id. Verifies ownership via email. */
+    public void delete(String id, String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        ServiceProvider provider = serviceProviderRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new RuntimeException("Provider not found"));
+        ProviderAvailability avail = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Availability not found"));
+        if (!avail.getProviderId().equals(provider.getId())) {
+            throw new RuntimeException("Not authorized to delete this availability");
+        }
+        repository.deleteById(id);
+    }
+
+    /** Update start/end time of an availability. Verifies ownership. */
+    public ProviderAvailability update(String id, ProviderAvailability updated, String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        ServiceProvider provider = serviceProviderRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new RuntimeException("Provider not found"));
+        ProviderAvailability avail = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Availability not found"));
+        if (!avail.getProviderId().equals(provider.getId())) {
+            throw new RuntimeException("Not authorized to update this availability");
+        }
+        if (updated.getStartTime() != null) avail.setStartTime(updated.getStartTime());
+        if (updated.getEndTime() != null) avail.setEndTime(updated.getEndTime());
+        if (updated.getDayOfWeek() != null) avail.setDayOfWeek(updated.getDayOfWeek());
+        avail.setUpdatedAt(LocalDateTime.now());
+        return repository.save(avail);
+    }
+}

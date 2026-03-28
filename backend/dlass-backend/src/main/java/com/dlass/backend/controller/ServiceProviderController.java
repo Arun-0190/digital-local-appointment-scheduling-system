@@ -4,7 +4,9 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,7 +20,6 @@ import com.dlass.backend.dto.ProviderProfileResponse;
 import com.dlass.backend.dto.ProviderSearchResponse;
 import com.dlass.backend.dto.ProviderApplicationRequest;
 import com.dlass.backend.dto.ServiceDTO;
-import com.dlass.backend.dto.TimeSlotDTO;
 import com.dlass.backend.model.ServiceProvider;
 import com.dlass.backend.service.ServiceProviderService;
 
@@ -51,6 +52,12 @@ public class ServiceProviderController {
         return service.applyAsProvider(request, email);
     }
 
+    /** Returns the application status of the currently authenticated user. */
+    @GetMapping("/my-status")
+    public ResponseEntity<Map<String, String>> getMyStatus(Authentication authentication) {
+        return ResponseEntity.ok(service.getMyStatus(authentication.getName()));
+    }
+
     @GetMapping("/by-subcategory/{id}")
     public List<ServiceProvider> getBySubCategory(@PathVariable String id) {
         return service.getBySubCategory(id);
@@ -61,9 +68,10 @@ public class ServiceProviderController {
             @RequestParam String categoryId,
             @RequestParam String subCategoryId,
             @RequestParam(required = false) String pincode,
-            @RequestParam(required = false) String city) {
+            @RequestParam(required = false) String city,
+            @RequestParam(required = false, defaultValue = "50") int range) {
 
-        return service.searchProviders(categoryId, subCategoryId, pincode, city)
+        return service.searchProviders(categoryId, subCategoryId, pincode, city, range)
                 .stream()
                 .map(p -> new ProviderSearchResponse(
                         p.getId(),
@@ -111,4 +119,10 @@ public class ServiceProviderController {
         return service.addServiceOffering(email, serviceOffering);
     }
 
-}
+    /** Delete a provider (admin). */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteProvider(@PathVariable String id) {
+        service.deleteProvider(id);
+        return ResponseEntity.ok("Provider deleted");
+    }
+}

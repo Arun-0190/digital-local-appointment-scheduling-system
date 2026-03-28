@@ -97,11 +97,16 @@ public class ServiceProviderService {
     }
 
     public List<ServiceProvider> getPendingProviders() {
-        return repository.findByStatus("PENDING");
+        return repository.findByStatusAndIsActiveTrue("PENDING");
+    }
+
+    /** Returns only active (isActive=true) providers for admin list. */
+    public List<ServiceProvider> getAllProviders() {
+        return repository.findByIsActiveTrue();
     }
 
     public List<ServiceProvider> getBySubCategory(String subCategoryId) {
-        return repository.findBySubCategoryIdAndStatus(subCategoryId, "ACTIVE");
+        return repository.findBySubCategoryIdAndStatusAndIsActiveTrue(subCategoryId, "ACTIVE");
     }
 
     public ServiceProvider approve(String id) {
@@ -125,31 +130,92 @@ public class ServiceProviderService {
         return repository.save(provider);
     }
 
-    public List<ServiceProvider> searchProviders(String categoryId, String subCategoryId, String userPincode, String city) {
+    /**
+     * Search providers by category/subcategory with optional city + proximity-based pincode filter.
+     *
+     * <p>Pincode matching uses numeric proximity:
+     * {@code abs(provider.pincode - userPincode) <= range}
+     *
+     * <p>If no results are found within {@code range}, the search automatically retries with
+     * {@code range * 2} (Phase 4 fallback). Results are sorted nearest-first, with rating and
+     * review count as tie-breakers.
+     *
+     * @param range default 50, configurable via request param (Phase 2)
+     */
+    public List<ServiceProvider> searchProviders(
+            String categoryId, String subCategoryId,
+            String userPincode, String city,
+            int range) {
 
-        List<ServiceProvider> providers = repository.findByCategoryIdAndSubCategoryIdAndStatus(categoryId, subCategoryId, "ACTIVE");
+        // Fetch all active providers in the requested category/sub-category
+        List<ServiceProvider> candidates = repository
+                .findByCategoryIdAndSubCategoryIdAndStatusAndIsActiveTrue(categoryId, subCategoryId, "ACTIVE");
+
+        // Parse user pincode once (null / blank → no pincode filter at all)
+        Integer userPin = parsePincode(userPincode);
+
+        // Apply city + proximity filter
+        List<ServiceProvider> results = applyFilters(candidates, userPin, city, range);
+
+        // Phase 4 fallback: widen to range×2 when nothing found
+        if (results.isEmpty() && userPin != null) {
+            results = applyFilters(candidates, userPin, city, range * 2);
+        }
+
+        // Sort: nearest pincode first; ties broken by composite score (rating + reviews)
+        Integer finalUserPin = userPin;
+        results = new java.util.ArrayList<>(results);
+        results.sort((a, b) -> {
+            int distA = pincodeDistance(a.getPincode(), finalUserPin);
+            int distB = pincodeDistance(b.getPincode(), finalUserPin);
+            if (distA != distB) return Integer.compare(distA, distB);          // nearest first
+            return Integer.compare(calculateScore(b, userPincode),              // higher score first
+                                   calculateScore(a, userPincode));
+        });
+
+        return results;
+    }
+
+    // ── helpers ──────────────────────────────────────────────────────────────
+
+    /** Returns null when pincode is absent/blank/non-numeric. */
+    private Integer parsePincode(String raw) {
+        if (raw == null || raw.isBlank()) return null;
+        try { return Integer.parseInt(raw.trim()); }
+        catch (NumberFormatException e) { return null; }
+    }
+
+    /**
+     * Absolute numeric distance between a provider's pincode and the user pin.
+     * Returns {@link Integer#MAX_VALUE} when the provider has no parseable pincode.
+     */
+    private int pincodeDistance(String providerPincode, Integer userPin) {
+        if (userPin == null || providerPincode == null) return 0; // no filter → treat as "same"
+        try { return Math.abs(Integer.parseInt(providerPincode.trim()) - userPin); }
+        catch (NumberFormatException e) { return Integer.MAX_VALUE; }
+    }
+
+    /** Filter list by city (exact, case-insensitive) and pincode proximity. */
+    private List<ServiceProvider> applyFilters(
+            List<ServiceProvider> providers, Integer userPin, String city, int range) {
 
         return providers.stream()
                 .filter(p -> {
-                    // City filter: if city provided, match case-insensitively
+                    // City filter (optional, exact match)
                     if (city != null && !city.isBlank()) {
                         if (p.getCity() == null) return false;
                         if (!p.getCity().trim().equalsIgnoreCase(city.trim())) return false;
                     }
-                    // Pincode prefix filter: if pincode provided, provider pincode must start with it
-                    if (userPincode != null && !userPincode.isBlank()) {
-                        if (p.getPincode() == null) return false;
-                        if (!p.getPincode().startsWith(userPincode.trim())) return false;
+                    // Pincode proximity filter (optional)
+                    if (userPin != null) {
+                        int dist = pincodeDistance(p.getPincode(), userPin);
+                        if (dist > range) return false;
                     }
                     return true;
                 })
-                .sorted((p1, p2) -> {
-                    int score1 = calculateScore(p1, userPincode);
-                    int score2 = calculateScore(p2, userPincode);
-                    return Integer.compare(score2, score1); // higher score first
-                })
                 .toList();
     }
+
 
     public ProviderProfileResponse getProviderProfile(String providerId) {
         ServiceProvider provider = repository.findById(providerId)
@@ -273,6 +339,26 @@ public class ServiceProviderService {
         }
 
         return slots;
+    }
+
+    /** Returns {status: PENDING|ACTIVE|SUSPENDED|NONE} for the authenticated user. */
+    public java.util.Map<String, String> getMyStatus(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        java.util.Map<String, String> result = new java.util.HashMap<>();
+        repository.findByUserId(user.getId()).ifPresentOrElse(
+                p -> result.put("status", p.getStatus()),
+                () -> result.put("status", "NONE")
+        );
+        return result;
+    }
+
+    /** Soft-delete: marks provider inactive instead of removing from DB. */
+    public void deleteProvider(String id) {
+        ServiceProvider provider = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Provider not found"));
+        provider.setActive(false);
+        repository.save(provider);
     }
 
 }

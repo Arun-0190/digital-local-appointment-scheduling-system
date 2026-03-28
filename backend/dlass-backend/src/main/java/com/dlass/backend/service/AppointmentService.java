@@ -257,4 +257,35 @@ public class AppointmentService {
             return dto;
         }).toList();
     }
-}
+
+    /** Provider cancels an appointment they own. No time restriction. */
+    public void cancelByProvider(String appointmentId, String email) {
+        Appointment appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new RuntimeException("Appointment not found"));
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        ServiceProvider provider = serviceProviderRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new RuntimeException("Provider not found"));
+
+        if (!appointment.getProviderId().equals(provider.getId())) {
+            throw new RuntimeException("You are not the provider for this appointment");
+        }
+
+        appointment.setStatus("CANCELLED");
+        appointmentRepository.save(appointment);
+
+        // Notify the customer
+        User customer = userRepository.findById(appointment.getUserId()).orElse(null);
+        if (customer != null) {
+            emailService.sendEmail(
+                    customer.getEmail(),
+                    "Appointment Cancelled by Provider",
+                    "Your appointment has been cancelled by the service provider.\n"
+                            + "Date: " + appointment.getDate() + "\n"
+                            + "Time: " + appointment.getStartTime()
+            );
+        }
+    }
+}

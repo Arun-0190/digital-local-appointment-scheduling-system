@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect, useCallback } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { getCategories, getSubCategories } from "../services/catalogService";
 
@@ -25,6 +25,7 @@ function StarRating({ rating }) {
 
 function SearchProviders() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [categories, setCategories] = useState([]);
   const [subCategories, setSubCategories] = useState([]);
 
@@ -32,14 +33,44 @@ function SearchProviders() {
   const [selectedSubCategory, setSelectedSubCategory] = useState("");
   const [city, setCity] = useState("");
   const [pincode, setPincode] = useState("");
+  const [fromPincode, setFromPincode] = useState(false); // came from homepage with pincode
+  const [autoSearchPending, setAutoSearchPending] = useState(false);
 
   const [results, setResults] = useState([]);
   const [hasSearched, setHasSearched] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // Phase 6: Read URL query params (category name and pincode) injected by Home page
   useEffect(() => {
-    getCategories().then(setCategories).catch(() => setError("Failed to load categories."));
+    const params = new URLSearchParams(location.search);
+    const catName = params.get("category");
+    const pin = params.get("pincode");
+    if (pin) {
+      setPincode(pin);
+      setFromPincode(true);
+    }
+    // We'll match category name after categories load (see below useEffect)
+    if (catName) {
+      // Store for later matching
+      sessionStorage.setItem("_pendingCategory", catName);
+      if (pin) setAutoSearchPending(true);
+    }
+  }, [location.search]);
+
+  useEffect(() => {
+    getCategories().then((cats) => {
+      setCategories(cats);
+      // Phase 6: auto-select category from URL param
+      const pending = sessionStorage.getItem("_pendingCategory");
+      if (pending) {
+        sessionStorage.removeItem("_pendingCategory");
+        const match = cats.find(
+          (c) => c.name.toLowerCase() === pending.toLowerCase()
+        );
+        if (match) setSelectedCategory(match.id);
+      }
+    }).catch(() => setError("Failed to load categories."));
   }, []);
 
   useEffect(() => {
@@ -51,20 +82,16 @@ function SearchProviders() {
     }
   }, [selectedCategory]);
 
-  const handleSearch = async (e) => {
-    e.preventDefault();
-    if (!selectedCategory || !selectedSubCategory) {
-      setError("Please select a Category and Subcategory before searching.");
-      return;
-    }
+  const performSearch = useCallback(async (catId, subCatId, cityVal, pincodeVal) => {
+    if (!catId || !subCatId) return;
     setError("");
     setLoading(true);
     setHasSearched(true);
 
     try {
-      const params = { categoryId: selectedCategory, subCategoryId: selectedSubCategory };
-      if (city.trim()) params.city = city.trim();
-      if (pincode.trim()) params.pincode = pincode.trim();
+      const params = { categoryId: catId, subCategoryId: subCatId };
+      if (cityVal?.trim()) params.city = cityVal.trim();
+      if (pincodeVal?.trim()) params.pincode = pincodeVal.trim();
 
       const res = await axios.get(`${API_BASE}/providers/search`, { params });
       setResults(res.data);
@@ -74,6 +101,23 @@ function SearchProviders() {
     } finally {
       setLoading(false);
     }
+  }, []);
+
+  // Phase 6: Auto-search when subcategory chosen and pincode pre-filled from Home
+  useEffect(() => {
+    if (autoSearchPending && selectedSubCategory && selectedCategory && pincode) {
+      setAutoSearchPending(false);
+      performSearch(selectedCategory, selectedSubCategory, city, pincode);
+    }
+  }, [selectedSubCategory, autoSearchPending, selectedCategory, pincode, city, performSearch]);
+
+  const handleSearch = async (e) => {
+    e.preventDefault();
+    if (!selectedCategory || !selectedSubCategory) {
+      setError("Please select a Category and Subcategory before searching.");
+      return;
+    }
+    await performSearch(selectedCategory, selectedSubCategory, city, pincode);
   };
 
   const selectClass =
@@ -94,6 +138,18 @@ function SearchProviders() {
           <p className="text-on-surface-variant text-lg max-w-xl">
             Connect with top-tier service providers. Refined scheduling for modern life.
           </p>
+          {fromPincode && pincode && (
+            <div className="inline-flex items-center gap-2 mt-3 px-4 py-2 bg-secondary/10 border border-secondary/20 rounded-xl text-secondary text-sm font-bold">
+              <span className="material-symbols-outlined text-base">location_on</span>
+              Showing providers near pincode <span className="font-mono">{pincode}</span>
+              <button
+                onClick={() => { setPincode(""); setFromPincode(false); }}
+                className="ml-2 text-xs text-on-surface-variant hover:text-white transition-colors"
+              >
+                ✕ Clear
+              </button>
+            </div>
+          )}
         </header>
 
         {/* Search Form */}
@@ -236,13 +292,19 @@ function SearchProviders() {
 
         {results.length > 0 && (
           <>
-            <p className="text-on-surface-variant text-sm mb-6 font-label tracking-wide">
-              Found{" "}
-              <strong className="text-white">
-                {results.length}
-              </strong>{" "}
-              provider{results.length !== 1 ? "s" : ""}
-            </p>
+            <div className="flex flex-wrap items-center gap-3 mb-6">
+              <p className="text-on-surface-variant text-sm font-label tracking-wide">
+                Found{" "}
+                <strong className="text-white">{results.length}</strong>{" "}
+                provider{results.length !== 1 ? "s" : ""}
+              </p>
+              {pincode && (
+                <span className="inline-flex items-center gap-1 px-3 py-1 bg-secondary/10 border border-secondary/20 rounded-full text-secondary text-xs font-bold">
+                  <span className="material-symbols-outlined text-xs">near_me</span>
+                  Showing providers near your location
+                </span>
+              )}
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {results.map((provider) => (

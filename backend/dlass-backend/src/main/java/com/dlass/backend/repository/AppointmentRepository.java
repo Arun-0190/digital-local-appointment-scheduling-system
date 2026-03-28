@@ -4,6 +4,7 @@ import com.dlass.backend.model.Appointment;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
@@ -17,4 +18,10 @@ public interface AppointmentRepository extends MongoRepository<Appointment, Stri
     List<Appointment> findByProviderId(String providerId);
     boolean existsByProviderIdAndDateAndStartTime(String providerId, LocalDate date, LocalTime startTime);
 
-}
+    /** Weekly analytics: appointments in a date range */
+    List<Appointment> findByDateBetween(LocalDate from, LocalDate to);
+    long countByDateBetween(LocalDate from, LocalDate to);
+
+    /** Appointments within a createdAt range */
+    List<Appointment> findByCreatedAtBetween(LocalDateTime from, LocalDateTime to);
+}
