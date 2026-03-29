@@ -98,6 +98,15 @@ public class SecurityConfig {
 
                         //Dashboard
                         .requestMatchers(HttpMethod.GET, "/api/provider/dashboard").hasRole("PROVIDER")
+                        .requestMatchers(HttpMethod.GET, "/api/provider/dashboard/**").hasRole("PROVIDER")
+
+                        // Portfolio
+                        .requestMatchers(HttpMethod.POST, "/api/provider/upload-image").hasRole("PROVIDER")
+                        .requestMatchers(HttpMethod.GET, "/api/provider/*/portfolio").permitAll()
+                        .requestMatchers(HttpMethod.DELETE, "/api/provider/image/**").hasRole("PROVIDER")
+
+                        // Static uploads (portfolio images)
+                        .requestMatchers("/uploads/**").permitAll()
 
                         .anyRequest().authenticated()
                 )

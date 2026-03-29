@@ -11,6 +11,7 @@ import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
+import com.dlass.backend.dto.PageResponse;
 import com.dlass.backend.dto.ProviderProfileResponse;
 import com.dlass.backend.dto.ProviderSearchResponse;
 import com.dlass.backend.dto.ServiceDTO;
@@ -174,6 +175,64 @@ public class ServiceProviderService {
         });
 
         return results;
+    }
+
+    /**
+     * Paginated + sortable version of searchProviders.
+     * Applies the same filter/distance logic, then sorts and paginates in-memory.
+     *
+     * @param sortField  "rating" or "experience" (default: proximity).
+     * @param sortDir    "asc" or "desc".
+     * @param page       0-based page index.
+     * @param size       page size.
+     */
+    public PageResponse<ProviderSearchResponse> searchProvidersPageable(
+            String categoryId, String subCategoryId,
+            String userPincode, String city, int range,
+            String sortField, String sortDir,
+            int page, int size) {
+
+        // Re-use existing search + sort logic
+        List<ServiceProvider> sorted = searchProviders(categoryId, subCategoryId, userPincode, city, range);
+
+        // Additional sort override if caller specified one
+        if (sortField != null && !sortField.isBlank()) {
+            Comparator<ServiceProvider> comp;
+            switch (sortField.toLowerCase()) {
+                case "rating" -> comp = Comparator.comparingDouble(ServiceProvider::getRating);
+                case "experience" -> comp = Comparator.comparingInt(ServiceProvider::getExperienceYears);
+                default -> comp = Comparator.comparingDouble(ServiceProvider::getRating);
+            }
+            if ("asc".equalsIgnoreCase(sortDir)) {
+                sorted = new ArrayList<>(sorted);
+                sorted.sort(comp);
+            } else {
+                sorted = new ArrayList<>(sorted);
+                sorted.sort(comp.reversed());
+            }
+        }
+
+        long total = sorted.size();
+        int totalPages = size > 0 ? (int) Math.ceil((double) total / size) : 1;
+        int from = Math.min(page * size, sorted.size());
+        int to = Math.min(from + size, sorted.size());
+        List<ServiceProvider> pageContent = sorted.subList(from, to);
+
+        List<ProviderSearchResponse> responseList = pageContent.stream()
+                .map(p -> new ProviderSearchResponse(
+                        p.getId(),
+                        p.getBusinessName(),
+                        p.getArea(),
+                        p.getCity(),
+                        p.getPincode(),
+                        p.getExperienceYears(),
+                        p.getRating(),
+                        p.getReviewCount(),
+                        p.getServices()
+                ))
+                .toList();
+
+        return new PageResponse<>(responseList, page, totalPages, total, size);
     }
 
     // ── helpers ──────────────────────────────────────────────────────────────

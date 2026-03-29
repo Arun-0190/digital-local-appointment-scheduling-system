@@ -24,4 +24,15 @@ public interface AppointmentRepository extends MongoRepository<Appointment, Stri
 
     /** Appointments within a createdAt range */
     List<Appointment> findByCreatedAtBetween(LocalDateTime from, LocalDateTime to);
-}
+
+    /** Analytics: provider-scoped date range queries */
+    List<Appointment> findByProviderIdAndDateBetween(String providerId, LocalDate from, LocalDate to);
+
+    /** Analytics: provider + status filter */
+    List<Appointment> findByProviderIdAndStatus(String providerId, String status);
+
+    /** Analytics: provider + status + date range */
+    List<Appointment> findByProviderIdAndStatusAndDateBetween(
+            String providerId, String status, LocalDate from, LocalDate to);
+}
+
