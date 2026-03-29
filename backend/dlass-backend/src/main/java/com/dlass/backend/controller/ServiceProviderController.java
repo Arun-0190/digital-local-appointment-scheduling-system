@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.CrossOrigin;
 
+import com.dlass.backend.dto.PageResponse;
 import com.dlass.backend.dto.ProviderProfileResponse;
 import com.dlass.backend.dto.ProviderSearchResponse;
 import com.dlass.backend.dto.ProviderApplicationRequest;
@@ -63,28 +64,38 @@ public class ServiceProviderController {
         return service.getBySubCategory(id);
     }
 
+    /**
+     * Search providers with optional pagination + sorting.
+     *
+     * <p>Legacy callers that omit page/size get a PageResponse with all results on page 0.
+     * The frontend reads {@code response.content} so it stays backward-compatible.
+     *
+     * @param sort format "field,direction" e.g. "rating,desc" or "experience,asc"
+     */
     @GetMapping("/search")
-    public List<ProviderSearchResponse> searchProviders(
+    public PageResponse<ProviderSearchResponse> searchProviders(
             @RequestParam String categoryId,
             @RequestParam String subCategoryId,
             @RequestParam(required = false) String pincode,
             @RequestParam(required = false) String city,
-            @RequestParam(required = false, defaultValue = "50") int range) {
+            @RequestParam(required = false, defaultValue = "50") int range,
+            @RequestParam(required = false, defaultValue = "0") int page,
+            @RequestParam(required = false, defaultValue = "10") int size,
+            @RequestParam(required = false) String sort) {
 
-        return service.searchProviders(categoryId, subCategoryId, pincode, city, range)
-                .stream()
-                .map(p -> new ProviderSearchResponse(
-                        p.getId(),
-                        p.getBusinessName(),
-                        p.getArea(),
-                        p.getCity(),
-                        p.getPincode(),
-                        p.getExperienceYears(),
-                        p.getRating(),
-                        p.getReviewCount(),
-                        p.getServices()
-                ))
-                .toList();
+        String sortField = null;
+        String sortDir = "desc";
+        if (sort != null && sort.contains(",")) {
+            String[] parts = sort.split(",", 2);
+            sortField = parts[0].trim();
+            sortDir = parts[1].trim();
+        } else if (sort != null && !sort.isBlank()) {
+            sortField = sort.trim();
+        }
+
+        return service.searchProvidersPageable(
+                categoryId, subCategoryId, pincode, city, range,
+                sortField, sortDir, page, size);
     }
 
     @GetMapping("/{providerId}/profile")

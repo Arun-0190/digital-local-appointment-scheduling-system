@@ -5,6 +5,16 @@ import { getCategories, getSubCategories } from "../services/catalogService";
 
 const API_BASE = "http://localhost:8080/api";
 
+const SORT_OPTIONS = [
+  { value: "", label: "Relevance (Default)" },
+  { value: "rating,desc", label: "Rating: High → Low" },
+  { value: "rating,asc", label: "Rating: Low → High" },
+  { value: "experience,desc", label: "Experience: High → Low" },
+  { value: "experience,asc", label: "Experience: Low → High" },
+];
+
+const PAGE_SIZE_OPTIONS = [5, 10, 20];
+
 function StarRating({ rating }) {
   const full = Math.round(rating);
   return (
@@ -33,26 +43,28 @@ function SearchProviders() {
   const [selectedSubCategory, setSelectedSubCategory] = useState("");
   const [city, setCity] = useState("");
   const [pincode, setPincode] = useState("");
-  const [fromPincode, setFromPincode] = useState(false); // came from homepage with pincode
+  const [fromPincode, setFromPincode] = useState(false);
   const [autoSearchPending, setAutoSearchPending] = useState(false);
+
+  // Pagination + sorting
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
+  const [sort, setSort] = useState("");
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
 
   const [results, setResults] = useState([]);
   const [hasSearched, setHasSearched] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Phase 6: Read URL query params (category name and pincode) injected by Home page
+  // ── URL query param handling (same as before) ─────────────────────────────
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const catName = params.get("category");
     const pin = params.get("pincode");
-    if (pin) {
-      setPincode(pin);
-      setFromPincode(true);
-    }
-    // We'll match category name after categories load (see below useEffect)
+    if (pin) { setPincode(pin); setFromPincode(true); }
     if (catName) {
-      // Store for later matching
       sessionStorage.setItem("_pendingCategory", catName);
       if (pin) setAutoSearchPending(true);
     }
@@ -61,13 +73,10 @@ function SearchProviders() {
   useEffect(() => {
     getCategories().then((cats) => {
       setCategories(cats);
-      // Phase 6: auto-select category from URL param
       const pending = sessionStorage.getItem("_pendingCategory");
       if (pending) {
         sessionStorage.removeItem("_pendingCategory");
-        const match = cats.find(
-          (c) => c.name.toLowerCase() === pending.toLowerCase()
-        );
+        const match = cats.find((c) => c.name.toLowerCase() === pending.toLowerCase());
         if (match) setSelectedCategory(match.id);
       }
     }).catch(() => setError("Failed to load categories."));
@@ -82,19 +91,31 @@ function SearchProviders() {
     }
   }, [selectedCategory]);
 
-  const performSearch = useCallback(async (catId, subCatId, cityVal, pincodeVal) => {
+  // ── Core search function (with page / sort params) ────────────────────────
+  const performSearch = useCallback(async (catId, subCatId, cityVal, pincodeVal, pageNum, pageSz, sortParam) => {
     if (!catId || !subCatId) return;
     setError("");
     setLoading(true);
     setHasSearched(true);
 
     try {
-      const params = { categoryId: catId, subCategoryId: subCatId };
+      const params = {
+        categoryId: catId,
+        subCategoryId: subCatId,
+        page: pageNum,
+        size: pageSz,
+      };
       if (cityVal?.trim()) params.city = cityVal.trim();
       if (pincodeVal?.trim()) params.pincode = pincodeVal.trim();
+      if (sortParam) params.sort = sortParam;
 
       const res = await axios.get(`${API_BASE}/providers/search`, { params });
-      setResults(res.data);
+
+      // Backend now returns PageResponse { content, totalPages, totalElements, ... }
+      const data = res.data;
+      setResults(data.content ?? []);
+      setTotalPages(data.totalPages ?? 1);
+      setTotalElements(data.totalElements ?? 0);
     } catch (err) {
       setError(err.response?.data?.message || "Search failed. Please try again.");
       setResults([]);
@@ -103,13 +124,13 @@ function SearchProviders() {
     }
   }, []);
 
-  // Phase 6: Auto-search when subcategory chosen and pincode pre-filled from Home
+  // Auto-search (from home page pincode)
   useEffect(() => {
     if (autoSearchPending && selectedSubCategory && selectedCategory && pincode) {
       setAutoSearchPending(false);
-      performSearch(selectedCategory, selectedSubCategory, city, pincode);
+      performSearch(selectedCategory, selectedSubCategory, city, pincode, 0, pageSize, sort);
     }
-  }, [selectedSubCategory, autoSearchPending, selectedCategory, pincode, city, performSearch]);
+  }, [selectedSubCategory, autoSearchPending, selectedCategory, pincode, city, performSearch, pageSize, sort]);
 
   const handleSearch = async (e) => {
     e.preventDefault();
@@ -117,7 +138,32 @@ function SearchProviders() {
       setError("Please select a Category and Subcategory before searching.");
       return;
     }
-    await performSearch(selectedCategory, selectedSubCategory, city, pincode);
+    setPage(0);
+    await performSearch(selectedCategory, selectedSubCategory, city, pincode, 0, pageSize, sort);
+  };
+
+  // Pagination navigation
+  const goToPage = (newPage) => {
+    setPage(newPage);
+    performSearch(selectedCategory, selectedSubCategory, city, pincode, newPage, pageSize, sort);
+    window.scrollTo({ top: 300, behavior: "smooth" });
+  };
+
+  // Sort/PageSize change resets to page 0
+  const handleSortChange = (newSort) => {
+    setSort(newSort);
+    if (hasSearched) {
+      setPage(0);
+      performSearch(selectedCategory, selectedSubCategory, city, pincode, 0, pageSize, newSort);
+    }
+  };
+
+  const handlePageSizeChange = (newSize) => {
+    setPageSize(newSize);
+    if (hasSearched) {
+      setPage(0);
+      performSearch(selectedCategory, selectedSubCategory, city, pincode, 0, newSize, sort);
+    }
   };
 
   const selectClass =
@@ -130,10 +176,7 @@ function SearchProviders() {
         <header className="mb-10 pt-8">
           <h1 className="font-headline text-4xl md:text-5xl font-extrabold tracking-tighter text-white mb-3">
             Find your{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">
-              expert
-            </span>
-            .
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">expert</span>.
           </h1>
           <p className="text-on-surface-variant text-lg max-w-xl">
             Connect with top-tier service providers. Refined scheduling for modern life.
@@ -142,10 +185,7 @@ function SearchProviders() {
             <div className="inline-flex items-center gap-2 mt-3 px-4 py-2 bg-secondary/10 border border-secondary/20 rounded-xl text-secondary text-sm font-bold">
               <span className="material-symbols-outlined text-base">location_on</span>
               Showing providers near pincode <span className="font-mono">{pincode}</span>
-              <button
-                onClick={() => { setPincode(""); setFromPincode(false); }}
-                className="ml-2 text-xs text-on-surface-variant hover:text-white transition-colors"
-              >
+              <button onClick={() => { setPincode(""); setFromPincode(false); }} className="ml-2 text-xs text-on-surface-variant hover:text-white transition-colors">
                 ✕ Clear
               </button>
             </div>
@@ -153,10 +193,7 @@ function SearchProviders() {
         </header>
 
         {/* Search Form */}
-        <form
-          onSubmit={handleSearch}
-          className="glass-card rounded-3xl p-6 md:p-8 mb-12 shadow-2xl"
-        >
+        <form onSubmit={handleSearch} className="glass-card rounded-3xl p-6 md:p-8 mb-12 shadow-2xl">
           {error && (
             <div className="mb-5 flex items-center gap-2 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-300 text-sm">
               <span className="material-symbols-outlined text-base shrink-0">error</span>
@@ -167,97 +204,50 @@ function SearchProviders() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             {/* Category */}
             <div>
-              <label className="block text-xs font-label font-bold text-on-surface-variant uppercase tracking-widest mb-2">
-                Category *
-              </label>
+              <label className="block text-xs font-label font-bold text-on-surface-variant uppercase tracking-widest mb-2">Category *</label>
               <div className="relative">
-                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">
-                  category
-                </span>
-                <select
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                  required
-                  className={selectClass}
-                >
+                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">category</span>
+                <select id="category-select" value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)} required className={selectClass}>
                   <option value="">Select Category</option>
-                  {categories.map((cat) => (
-                    <option key={cat.id} value={cat.id}>
-                      {cat.name}
-                    </option>
-                  ))}
+                  {categories.map((cat) => (<option key={cat.id} value={cat.id}>{cat.name}</option>))}
                 </select>
               </div>
             </div>
 
             {/* Subcategory */}
             <div>
-              <label className="block text-xs font-label font-bold text-on-surface-variant uppercase tracking-widest mb-2">
-                Subcategory *
-              </label>
+              <label className="block text-xs font-label font-bold text-on-surface-variant uppercase tracking-widest mb-2">Subcategory *</label>
               <div className="relative">
-                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">
-                  workspaces
-                </span>
-                <select
-                  value={selectedSubCategory}
-                  onChange={(e) => setSelectedSubCategory(e.target.value)}
-                  disabled={!selectedCategory}
-                  required
-                  className={`${selectClass} ${!selectedCategory ? "opacity-50 cursor-not-allowed" : ""}`}
-                >
+                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">workspaces</span>
+                <select id="subcategory-select" value={selectedSubCategory} onChange={(e) => setSelectedSubCategory(e.target.value)} disabled={!selectedCategory} required className={`${selectClass} ${!selectedCategory ? "opacity-50 cursor-not-allowed" : ""}`}>
                   <option value="">Select Subcategory</option>
-                  {subCategories.map((sc) => (
-                    <option key={sc.id} value={sc.id}>
-                      {sc.name}
-                    </option>
-                  ))}
+                  {subCategories.map((sc) => (<option key={sc.id} value={sc.id}>{sc.name}</option>))}
                 </select>
               </div>
             </div>
 
             {/* City */}
             <div>
-              <label className="block text-xs font-label font-bold text-on-surface-variant uppercase tracking-widest mb-2">
-                City
-              </label>
+              <label className="block text-xs font-label font-bold text-on-surface-variant uppercase tracking-widest mb-2">City</label>
               <div className="relative">
-                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">
-                  location_city
-                </span>
-                <input
-                  type="text"
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
-                  placeholder="e.g. Mumbai"
-                  className="w-full pl-10 pr-4 py-3.5 bg-surface-container-highest/50 border border-outline-variant/20 rounded-2xl text-on-surface placeholder:text-on-surface-variant/40 focus:outline-none focus:ring-2 focus:ring-secondary/40 focus:bg-surface-bright transition-all text-sm"
-                />
+                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">location_city</span>
+                <input id="city-input" type="text" value={city} onChange={(e) => setCity(e.target.value)} placeholder="e.g. Mumbai" className="w-full pl-10 pr-4 py-3.5 bg-surface-container-highest/50 border border-outline-variant/20 rounded-2xl text-on-surface placeholder:text-on-surface-variant/40 focus:outline-none focus:ring-2 focus:ring-secondary/40 focus:bg-surface-bright transition-all text-sm" />
               </div>
             </div>
 
             {/* Pincode */}
             <div>
-              <label className="block text-xs font-label font-bold text-on-surface-variant uppercase tracking-widest mb-2">
-                Pincode
-              </label>
+              <label className="block text-xs font-label font-bold text-on-surface-variant uppercase tracking-widest mb-2">Pincode</label>
               <div className="relative">
-                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">
-                  location_on
-                </span>
-                <input
-                  type="text"
-                  value={pincode}
-                  onChange={(e) => setPincode(e.target.value)}
-                  placeholder="e.g. 400001"
-                  maxLength={6}
-                  className="w-full pl-10 pr-4 py-3.5 bg-surface-container-highest/50 border border-outline-variant/20 rounded-2xl text-on-surface placeholder:text-on-surface-variant/40 focus:outline-none focus:ring-2 focus:ring-secondary/40 focus:bg-surface-bright transition-all text-sm"
-                />
+                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">location_on</span>
+                <input id="pincode-input" type="text" value={pincode} onChange={(e) => setPincode(e.target.value)} placeholder="e.g. 400001" maxLength={6} className="w-full pl-10 pr-4 py-3.5 bg-surface-container-highest/50 border border-outline-variant/20 rounded-2xl text-on-surface placeholder:text-on-surface-variant/40 focus:outline-none focus:ring-2 focus:ring-secondary/40 focus:bg-surface-bright transition-all text-sm" />
               </div>
             </div>
           </div>
 
           <button
             type="submit"
+            id="search-btn"
             disabled={loading}
             className="w-full py-4 rounded-2xl bg-gradient-to-r from-primary-container to-secondary-container text-white font-headline font-black text-base shadow-xl hover:scale-[1.01] active:scale-[0.99] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
           >
@@ -275,38 +265,71 @@ function SearchProviders() {
           </button>
         </form>
 
-        {/* Results */}
+        {/* No results */}
         {hasSearched && !loading && results.length === 0 && (
           <div className="glass-panel rounded-3xl p-16 text-center">
-            <span className="material-symbols-outlined text-5xl text-on-surface-variant/30 mb-4 block">
-              search_off
-            </span>
-            <p className="text-xl font-headline font-bold text-on-surface-variant/50 mb-2">
-              No providers found
-            </p>
-            <p className="text-sm text-on-surface-variant/40">
-              Try a different city, pincode, or broader category.
-            </p>
+            <span className="material-symbols-outlined text-5xl text-on-surface-variant/30 mb-4 block">search_off</span>
+            <p className="text-xl font-headline font-bold text-on-surface-variant/50 mb-2">No providers found</p>
+            <p className="text-sm text-on-surface-variant/40">Try a different city, pincode, or broader category.</p>
           </div>
         )}
 
+        {/* Results */}
         {results.length > 0 && (
           <>
-            <div className="flex flex-wrap items-center gap-3 mb-6">
-              <p className="text-on-surface-variant text-sm font-label tracking-wide">
-                Found{" "}
-                <strong className="text-white">{results.length}</strong>{" "}
-                provider{results.length !== 1 ? "s" : ""}
-              </p>
-              {pincode && (
-                <span className="inline-flex items-center gap-1 px-3 py-1 bg-secondary/10 border border-secondary/20 rounded-full text-secondary text-xs font-bold">
-                  <span className="material-symbols-outlined text-xs">near_me</span>
-                  Showing providers near your location
-                </span>
-              )}
+            {/* Results header + sort/size controls */}
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+              <div className="flex flex-wrap items-center gap-3">
+                <p className="text-on-surface-variant text-sm font-label tracking-wide">
+                  Found{" "}
+                  <strong className="text-white">{totalElements}</strong>{" "}
+                  provider{totalElements !== 1 ? "s" : ""}
+                  {totalPages > 1 && (
+                    <span className="ml-2 text-on-surface-variant/60">
+                      · Page {page + 1} of {totalPages}
+                    </span>
+                  )}
+                </p>
+                {pincode && (
+                  <span className="inline-flex items-center gap-1 px-3 py-1 bg-secondary/10 border border-secondary/20 rounded-full text-secondary text-xs font-bold">
+                    <span className="material-symbols-outlined text-xs">near_me</span>
+                    Showing providers near your location
+                  </span>
+                )}
+              </div>
+
+              {/* Sort + Page size controls */}
+              <div className="flex flex-wrap items-center gap-3">
+                {/* Sort dropdown */}
+                <div className="relative">
+                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-base">sort</span>
+                  <select
+                    id="sort-select"
+                    value={sort}
+                    onChange={(e) => handleSortChange(e.target.value)}
+                    className="pl-9 pr-4 py-2.5 bg-surface-container-highest/50 border border-outline-variant/20 rounded-xl text-on-surface text-sm focus:outline-none focus:ring-2 focus:ring-secondary/40 appearance-none"
+                  >
+                    {SORT_OPTIONS.map((o) => (<option key={o.value} value={o.value}>{o.label}</option>))}
+                  </select>
+                </div>
+
+                {/* Page size dropdown */}
+                <div className="relative">
+                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-base">format_list_numbered</span>
+                  <select
+                    id="page-size-select"
+                    value={pageSize}
+                    onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+                    className="pl-9 pr-4 py-2.5 bg-surface-container-highest/50 border border-outline-variant/20 rounded-xl text-on-surface text-sm focus:outline-none focus:ring-2 focus:ring-secondary/40 appearance-none"
+                  >
+                    {PAGE_SIZE_OPTIONS.map((s) => (<option key={s} value={s}>{s} per page</option>))}
+                  </select>
+                </div>
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Provider Cards Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
               {results.map((provider) => (
                 <div
                   key={provider.id}
@@ -316,25 +339,17 @@ function SearchProviders() {
                   <div className="bg-surface-container-low rounded-xl overflow-hidden p-6 h-full flex flex-col">
                     <div className="flex justify-between items-start mb-5">
                       <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary-container to-secondary-container flex items-center justify-center ring-2 ring-white/10 group-hover:ring-secondary/40 transition-all shrink-0">
-                        <span className="material-symbols-outlined text-3xl text-white">
-                          business_center
-                        </span>
+                        <span className="material-symbols-outlined text-3xl text-white">business_center</span>
                       </div>
                       <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-[10px] font-black tracking-widest uppercase border border-primary/20">
                         {provider.experienceYears}+ yrs
                       </span>
                     </div>
 
-                    <h3 className="font-headline text-lg font-bold text-white mb-1">
-                      {provider.businessName}
-                    </h3>
+                    <h3 className="font-headline text-lg font-bold text-white mb-1">{provider.businessName}</h3>
                     <p className="text-on-surface-variant text-sm mb-4 flex items-center gap-1">
-                      <span className="material-symbols-outlined text-xs text-secondary">
-                        location_on
-                      </span>
-                      {provider.area ? `${provider.area}, ` : ""}
-                      {provider.city}
-                      {provider.pincode ? ` – ${provider.pincode}` : ""}
+                      <span className="material-symbols-outlined text-xs text-secondary">location_on</span>
+                      {provider.area ? `${provider.area}, ` : ""}{provider.city}{provider.pincode ? ` – ${provider.pincode}` : ""}
                     </p>
 
                     <StarRating rating={provider.rating} />
@@ -345,17 +360,12 @@ function SearchProviders() {
                     {provider.services && provider.services.length > 0 && (
                       <div className="flex flex-wrap gap-1.5 mb-4">
                         {provider.services.slice(0, 3).map((svc) => (
-                          <span
-                            key={svc}
-                            className="px-2 py-0.5 bg-surface-container-high text-on-surface-variant text-[10px] font-label tracking-widest uppercase rounded-full"
-                          >
+                          <span key={svc} className="px-2 py-0.5 bg-surface-container-high text-on-surface-variant text-[10px] font-label tracking-widest uppercase rounded-full">
                             {svc}
                           </span>
                         ))}
                         {provider.services.length > 3 && (
-                          <span className="text-xs text-on-surface-variant/50">
-                            +{provider.services.length - 3} more
-                          </span>
+                          <span className="text-xs text-on-surface-variant/50">+{provider.services.length - 3} more</span>
                         )}
                       </div>
                     )}
@@ -370,6 +380,61 @@ function SearchProviders() {
                 </div>
               ))}
             </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-3">
+                <button
+                  id="prev-page-btn"
+                  onClick={() => goToPage(page - 1)}
+                  disabled={page === 0 || loading}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-outline-variant/20 bg-surface-container-low text-on-surface-variant text-sm font-bold hover:bg-surface-container-high hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                >
+                  <span className="material-symbols-outlined text-base">chevron_left</span>
+                  Previous
+                </button>
+
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {
+                    // Show pages around current
+                    let pageNum;
+                    if (totalPages <= 7) {
+                      pageNum = i;
+                    } else if (page < 4) {
+                      pageNum = i < 6 ? i : totalPages - 1;
+                    } else if (page > totalPages - 5) {
+                      pageNum = i === 0 ? 0 : totalPages - 7 + i;
+                    } else {
+                      const offsets = [-3, -2, -1, 0, 1, 2, 3];
+                      pageNum = page + offsets[i];
+                    }
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => goToPage(pageNum)}
+                        className={`w-9 h-9 rounded-xl text-sm font-bold transition-all ${
+                          pageNum === page
+                            ? "bg-primary-container text-on-primary-container"
+                            : "text-on-surface-variant hover:bg-surface-container-high hover:text-white"
+                        }`}
+                      >
+                        {pageNum + 1}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <button
+                  id="next-page-btn"
+                  onClick={() => goToPage(page + 1)}
+                  disabled={page >= totalPages - 1 || loading}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-outline-variant/20 bg-surface-container-low text-on-surface-variant text-sm font-bold hover:bg-surface-container-high hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                >
+                  Next
+                  <span className="material-symbols-outlined text-base">chevron_right</span>
+                </button>
+              </div>
+            )}
           </>
         )}
       </div>

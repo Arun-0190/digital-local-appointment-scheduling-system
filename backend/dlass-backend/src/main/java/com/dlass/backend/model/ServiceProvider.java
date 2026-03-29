@@ -7,6 +7,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Document(collection = "providers")
@@ -45,6 +46,9 @@ public class ServiceProvider {
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    /** Feature 4: Portfolio images (filenames stored in uploads/provider/) */
+    private List<String> portfolioImages = new ArrayList<>();
 
     // getters and setters
     public String getId() {
@@ -178,4 +182,9 @@ public class ServiceProvider {
     @JsonProperty("isActive")
     public boolean isActive() { return isActive; }
     public void setActive(boolean active) { this.isActive = active; }
+
+    public List<String> getPortfolioImages() { return portfolioImages; }
+    public void setPortfolioImages(List<String> portfolioImages) {
+        this.portfolioImages = portfolioImages != null ? portfolioImages : new ArrayList<>();
+    }
 }
