@@ -108,6 +108,9 @@ public class SecurityConfig {
                         // Static uploads (portfolio images)
                         .requestMatchers("/uploads/**").permitAll()
 
+                        // Chat
+                        .requestMatchers("/api/chat/**").authenticated()
+
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session ->
