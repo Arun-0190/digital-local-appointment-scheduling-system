@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { getToken } from "../services/authService";
 import {
@@ -7,6 +8,7 @@ import {
 } from "recharts";
 import DynamicHeader from "../components/DynamicHeader";
 import ChatWindow from "../components/ChatWindow";
+import AppointmentDetailModal from "../components/AppointmentDetailModal";
 
 const API = "http://localhost:8080/api";
 const DAYS = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"];
@@ -68,6 +70,17 @@ export default function ProviderDashboard() {
   // Appointments
   const [appointments, setAppointments] = useState([]);
   const [apptDate, setApptDate] = useState(new Date().toISOString().split("T")[0]);
+  const [selectedAppointmentId, setSelectedAppointmentId] = useState(null);
+
+  // History
+  const [history, setHistory] = useState([]);
+  const [historyDays, setHistoryDays] = useState(30);
+
+  // Profile
+  const [profileForm, setProfileForm] = useState({ phone: "", city: "", area: "", pincode: "" });
+  const [profileMsg, setProfileMsg] = useState("");
+
+  const navigate = useNavigate();
 
   // Analytics
   const [bookingsWeek, setBookingsWeek] = useState([]);
@@ -109,6 +122,13 @@ export default function ProviderDashboard() {
         setProviderInfo(dashboardRes.data);
         setUserName(meRes.data.fullName || "Provider");
         setUserId(meRes.data.id);
+
+        setProfileForm({
+          phone: dashboardRes.data.phone || "",
+          city: dashboardRes.data.city || "",
+          area: dashboardRes.data.area || "",
+          pincode: dashboardRes.data.pincode || ""
+        });
       } catch (err) {
         console.error("Dashboard Init Error:", err);
         setError("Could not load dashboard. Make sure you are an approved provider.");
@@ -151,6 +171,17 @@ export default function ProviderDashboard() {
       .then((r) => setAppointments(r.data))
       .catch(() => setAppointments([]));
   }, [providerId, tab, apptDate]);
+
+  // ── History tab ─────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!providerId || tab !== "history") return;
+    axios.get(`${API}/appointments/history`, {
+      headers: authHeaders(),
+      params: { days: historyDays }
+    })
+    .then(r => setHistory(r.data))
+    .catch(() => setHistory([]));
+  }, [providerId, tab, historyDays]);
 
   // ── Analytics tab ─────────────────────────────────────────────────────────
   useEffect(() => {
@@ -253,6 +284,40 @@ export default function ProviderDashboard() {
     }
   }
 
+  // ── Profile Actions ────────────────────────────────────────────────────────
+  async function saveProfile(e) {
+    if (e) e.preventDefault();
+    try {
+      await axios.put(`${API}/providers/profile`, profileForm, { headers: authHeaders() });
+      setProfileMsg("✓ Profile updated successfully!");
+    } catch (e) {
+      setProfileMsg("✕ Failed to update profile: " + (e.response?.data?.message || e.message));
+    }
+    setTimeout(() => setProfileMsg(""), 4000);
+  }
+
+  async function deactivateAccount() {
+    if (!window.confirm("Are you sure you want to pause your account? Customers won't be able to find you until an admin reactivates it.")) return;
+    try {
+      await axios.patch(`${API}/providers/deactivate`, {}, { headers: authHeaders() });
+      alert("Account deactivated. You will now be logged out.");
+      navigate("/login");
+    } catch (e) {
+      alert("Failed to deactivate: " + (e.response?.data?.message || e.message));
+    }
+  }
+
+  async function deleteAccount() {
+    if (!window.confirm("CRITICAL: Are you absolutely sure? This permanently deletes your provider data.")) return;
+    try {
+      await axios.patch(`${API}/providers/delete`, {}, { headers: authHeaders() });
+      alert("Account deleted. You will now be logged out.");
+      navigate("/login");
+    } catch (e) {
+      alert("Failed to delete account: " + (e.response?.data?.message || e.message));
+    }
+  }
+
   // ── Portfolio upload ───────────────────────────────────────────────────────
   async function handleImageUpload(e) {
     const file = e.target.files[0];
@@ -300,10 +365,12 @@ export default function ProviderDashboard() {
 
   const TABS = [
     { key: "appointments", icon: "calendar_month", label: "Appointments" },
+    { key: "history", icon: "history", label: "History" },
     { key: "services", icon: "build", label: "Services" },
     { key: "availability", icon: "schedule", label: "Availability" },
     { key: "analytics", icon: "bar_chart", label: "Analytics" },
     { key: "portfolio", icon: "photo_library", label: "Portfolio" },
+    { key: "profile", icon: "person", label: "Profile" },
   ];
 
   if (loading)
@@ -411,6 +478,7 @@ export default function ProviderDashboard() {
                           <td className="py-4 px-4 rounded-l-2xl border-l-2 border-primary-container">
                             <div className="text-sm font-bold text-on-surface">{a.userName}</div>
                             <div className="text-xs text-on-surface-variant">{a.userEmail}</div>
+                            {a.userPhone && <div className="text-xs text-on-surface-variant font-mono mt-0.5">{a.userPhone}</div>}
                           </td>
                           <td className="py-4 px-4 text-sm font-medium text-primary">{a.serviceName || "Appointment"}</td>
                           <td className="py-4 px-4">
@@ -422,6 +490,13 @@ export default function ProviderDashboard() {
                           </td>
                           <td className="py-4 px-4 rounded-r-2xl">
                             <div className="flex gap-2 items-center">
+                              <button
+                                onClick={() => setSelectedAppointmentId(a.id)}
+                                className="flex items-center gap-1 text-xs font-bold text-primary hover:text-primary-container transition-colors"
+                              >
+                                <span className="material-symbols-outlined text-sm">info</span>
+                                Details
+                              </button>
                               <button
                                 onClick={() => setActiveChat({ id: a.userId, name: a.userName })}
                                 className="flex items-center gap-1 text-xs font-bold text-secondary hover:text-secondary-container transition-colors"
@@ -439,6 +514,83 @@ export default function ProviderDashboard() {
                                 </button>
                               )}
                             </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ════════════════ HISTORY TAB ════════════════════════ */}
+        {tab === "history" && (
+          <div className="space-y-6">
+            <div className="flex flex-wrap items-center gap-4">
+              <div>
+                <label className={labelClass}>Time Range</label>
+                <select
+                  value={historyDays}
+                  onChange={(e) => setHistoryDays(Number(e.target.value))}
+                  className={inputClass}
+                >
+                  <option value={7}>Last 7 Days</option>
+                  <option value={15}>Last 15 Days</option>
+                  <option value={30}>Last 30 Days</option>
+                  <option value={90}>Last 3 Months</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="glass-card rounded-3xl p-6 md:p-8 shadow-2xl">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-headline font-bold tracking-tight text-on-surface">Past Appointments</h2>
+                <span className="text-xs font-label tracking-widest text-on-surface-variant uppercase bg-white/5 px-4 py-2 rounded-full">
+                  {history.length} total
+                </span>
+              </div>
+
+              {history.length === 0 ? (
+                <div className="text-center py-16">
+                  <span className="material-symbols-outlined text-5xl text-on-surface-variant/20 mb-3 block">history</span>
+                  <p className="text-on-surface-variant/50 font-headline font-bold">No history for the selected range</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full border-separate border-spacing-y-3">
+                    <thead>
+                      <tr className="text-left">
+                        {["Customer", "Service", "Date & Time", "Status", "Action"].map((h) => (
+                          <th key={h} className="pb-1 px-4 text-xs font-label uppercase tracking-widest text-on-surface-variant font-medium">{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {history.map((a) => (
+                        <tr key={a.id} className="bg-surface-container-low hover:bg-surface-container-high transition-colors">
+                          <td className="py-4 px-4 rounded-l-2xl border-l-2 border-surface-container-highest">
+                            <div className="text-sm font-bold text-on-surface">{a.userName}</div>
+                            <div className="text-xs text-on-surface-variant">{a.userEmail}</div>
+                            {a.userPhone && <div className="text-xs text-on-surface-variant font-mono mt-0.5">{a.userPhone}</div>}
+                          </td>
+                          <td className="py-4 px-4 text-sm font-medium text-primary">{a.serviceName || "Appointment"}</td>
+                          <td className="py-4 px-4">
+                            <div className="text-sm text-on-surface">{a.date}</div>
+                            <div className="text-xs text-on-surface-variant">{a.startTime} – {a.endTime}</div>
+                          </td>
+                          <td className="py-4 px-4">
+                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ${statusBadge(a.status)}`}>{a.status}</span>
+                          </td>
+                          <td className="py-4 px-4 rounded-r-2xl">
+                            <button
+                              onClick={() => setSelectedAppointmentId(a.id)}
+                              className="flex items-center gap-1 text-xs font-bold text-primary hover:text-primary-container transition-colors"
+                            >
+                              <span className="material-symbols-outlined text-sm">info</span>
+                              Details
+                            </button>
                           </td>
                         </tr>
                       ))}
@@ -814,6 +966,65 @@ export default function ProviderDashboard() {
             )}
           </div>
         )}
+        {/* ════════════════ PROFILE TAB ════════════════════════ */}
+        {tab === "profile" && (
+          <div className="space-y-8">
+            <div className="glass-card rounded-3xl p-6 md:p-8 shadow-2xl">
+              <h2 className="text-xl font-headline font-bold text-on-surface mb-6">Profile Settings</h2>
+              <form onSubmit={saveProfile} className="space-y-4 max-w-2xl">
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className={labelClass}>Phone Number</label>
+                    <input type="tel" value={profileForm.phone} onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })} className={inputClass} placeholder="Enter phone" />
+                  </div>
+                  <div>
+                    <label className={labelClass}>City</label>
+                    <input type="text" value={profileForm.city} onChange={(e) => setProfileForm({ ...profileForm, city: e.target.value })} className={inputClass} placeholder="Enter city" />
+                  </div>
+                  <div>
+                    <label className={labelClass}>Area</label>
+                    <input type="text" value={profileForm.area} onChange={(e) => setProfileForm({ ...profileForm, area: e.target.value })} className={inputClass} placeholder="Enter area" />
+                  </div>
+                  <div>
+                    <label className={labelClass}>Pincode</label>
+                    <input type="text" value={profileForm.pincode} onChange={(e) => setProfileForm({ ...profileForm, pincode: e.target.value })} className={inputClass} placeholder="Enter pincode" />
+                  </div>
+                </div>
+                {profileMsg && <p className={`text-sm font-bold mt-2 ${profileMsg.startsWith("✓") ? "text-green-400" : "text-red-400"}`}>{profileMsg}</p>}
+                <button type="submit" className="w-full mt-4 py-3.5 rounded-xl bg-gradient-to-r from-primary-container to-secondary-container text-white font-headline font-bold text-sm uppercase tracking-wider hover:scale-[1.02] active:scale-95 transition-all">
+                  Save Changes
+                </button>
+              </form>
+            </div>
+
+            <div className="glass-card rounded-3xl p-6 md:p-8 border border-red-500/20 bg-red-500/5 shadow-2xl">
+              <h2 className="text-xl font-headline font-bold text-red-400 mb-2">Danger Zone</h2>
+              <p className="text-sm text-on-surface-variant mb-6">These actions affect your account status. Please proceed with caution.</p>
+              
+              <div className="space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-surface-container-low border border-outline-variant/10">
+                  <div>
+                    <h3 className="font-headline font-bold text-on-surface">Deactivate Account</h3>
+                    <p className="text-xs text-on-surface-variant mt-1">Temporarily hide your profile from customers. Requires Admin approval to reactivate.</p>
+                  </div>
+                  <button onClick={deactivateAccount} className="px-5 py-2.5 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20 font-bold text-sm hover:bg-amber-500/20 transition-all whitespace-nowrap">
+                    Pause Account
+                  </button>
+                </div>
+
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-surface-container-low border border-red-500/10 hover:border-red-500/30 transition-colors">
+                  <div>
+                    <h3 className="font-headline font-bold text-red-400">Delete Account</h3>
+                    <p className="text-xs text-on-surface-variant mt-1">Permanently remove your provider profile. This action cannot be undone.</p>
+                  </div>
+                  <button onClick={deleteAccount} className="px-5 py-2.5 rounded-xl bg-red-500/10 text-red-400 border border-red-500/20 font-bold text-sm hover:bg-red-500/20 transition-all whitespace-nowrap">
+                    Permanently Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       <ChatWindow
@@ -822,6 +1033,15 @@ export default function ProviderDashboard() {
         currentUser={{ id: userId, name: userName }}
         otherUserId={activeChat?.id}
         otherUserName={activeChat?.name}
+      />
+
+      <AppointmentDetailModal
+        isOpen={!!selectedAppointmentId}
+        appointmentId={selectedAppointmentId}
+        onClose={() => setSelectedAppointmentId(null)}
+        currentUserRole="PROVIDER"
+        onCancel={(id) => cancelAppointmentByProvider(id)}
+        onChat={(targetId, targetName) => setActiveChat({ id: targetId, name: targetName })}
       />
     </div>
   );

@@ -1,6 +1,8 @@
 package com.dlass.backend.controller;
 
+import com.dlass.backend.dto.AppointmentDetailDTO;
 import com.dlass.backend.dto.AppointmentRequest;
+import com.dlass.backend.dto.AppointmentResponse;
 import com.dlass.backend.model.Appointment;
 import com.dlass.backend.service.AppointmentService;
 import org.springframework.http.ResponseEntity;
@@ -23,9 +25,7 @@ public class AppointmentController {
     @PostMapping
     public Appointment book(@RequestBody AppointmentRequest request,
                             Authentication authentication) {
-
         String email = authentication.getName();
-
         return service.book(request, email);
     }
 
@@ -43,13 +43,9 @@ public class AppointmentController {
     @DeleteMapping("/{appointmentId}")
     public ResponseEntity<String> cancelAppointment(
             @PathVariable String appointmentId,
-            Authentication authentication
-    ) {
-
+            Authentication authentication) {
         String email = authentication.getName();
-
         service.cancelAppointment(appointmentId, email);
-
         return ResponseEntity.ok("Appointment cancelled successfully");
     }
 
@@ -63,17 +59,47 @@ public class AppointmentController {
     }
 
     @GetMapping("/my")
-    public List<com.dlass.backend.dto.AppointmentResponse> getMyAppointments(Authentication authentication) {
+    public List<AppointmentResponse> getMyAppointments(Authentication authentication) {
         String email = authentication.getName();
         return service.getUserAppointments(email);
     }
 
     @GetMapping("/provider")
-    public List<com.dlass.backend.dto.AppointmentResponse> getProviderAppointments(
+    public List<AppointmentResponse> getProviderAppointments(
             @RequestParam(required = false) LocalDate date,
-            Authentication authentication
-    ) {
+            Authentication authentication) {
         String email = authentication.getName();
         return service.getProviderAppointments(email, date);
     }
-}
+
+    // ── Feature 3: Appointment Detail ─────────────────────────────────────────
+
+    /**
+     * GET /api/appointments/{id}
+     * Returns full appointment detail including user and provider contact info.
+     * Accessible by the owning user or the assigned provider.
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<AppointmentDetailDTO> getAppointmentDetail(
+            @PathVariable String id,
+            Authentication authentication) {
+        AppointmentDetailDTO detail = service.getAppointmentById(id, authentication.getName());
+        return ResponseEntity.ok(detail);
+    }
+
+    // ── Feature 6: Appointment History ────────────────────────────────────────
+
+    /**
+     * GET /api/appointments/history?days=30&serviceId=...&subcategoryId=...
+     * Returns filtered appointment history for the authenticated user or provider.
+     * Default window: last 30 days.
+     */
+    @GetMapping("/history")
+    public List<AppointmentResponse> getHistory(
+            @RequestParam(required = false, defaultValue = "30") int days,
+            @RequestParam(required = false) String serviceId,
+            @RequestParam(required = false) String subcategoryId,
+            Authentication authentication) {
+        return service.getHistory(authentication.getName(), days, serviceId, subcategoryId);
+    }
+}

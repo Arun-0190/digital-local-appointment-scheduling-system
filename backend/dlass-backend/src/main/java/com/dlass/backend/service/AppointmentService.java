@@ -1,6 +1,8 @@
 package com.dlass.backend.service;
 
+import com.dlass.backend.dto.AppointmentDetailDTO;
 import com.dlass.backend.dto.AppointmentRequest;
+import com.dlass.backend.dto.AppointmentResponse;
 import com.dlass.backend.model.Appointment;
 import com.dlass.backend.model.ServiceOffering;
 import com.dlass.backend.model.ServiceProvider;
@@ -318,8 +320,8 @@ public class AppointmentService {
         );
     }
 
-    private com.dlass.backend.dto.AppointmentResponse mapToResponse(Appointment a) {
-        com.dlass.backend.dto.AppointmentResponse res = new com.dlass.backend.dto.AppointmentResponse();
+    private AppointmentResponse mapToResponse(Appointment a) {
+        AppointmentResponse res = new AppointmentResponse();
         res.setId(a.getId());
         res.setServiceName(a.getServiceName());
         res.setDate(a.getDate());
@@ -347,13 +349,16 @@ public class AppointmentService {
         });
 
         return apps.stream().map(a -> {
-            com.dlass.backend.dto.AppointmentResponse dto = mapToResponse(a);
+            AppointmentResponse dto = mapToResponse(a);
             ServiceProvider sp = serviceProviderRepository.findById(a.getProviderId()).orElse(null);
             if (sp != null) {
                 dto.setProviderName(sp.getBusinessName());
                 dto.setProviderUserId(sp.getUserId());
                 User pUser = userRepository.findById(sp.getUserId()).orElse(null);
-                if (pUser != null) dto.setProviderEmail(pUser.getEmail());
+                if (pUser != null) {
+                    dto.setProviderEmail(pUser.getEmail());
+                    dto.setProviderPhone(pUser.getPhone());
+                }
             }
             return dto;
         }).toList();
@@ -385,12 +390,13 @@ public class AppointmentService {
         });
 
         return apps.stream().map(a -> {
-            com.dlass.backend.dto.AppointmentResponse dto = mapToResponse(a);
+            AppointmentResponse dto = mapToResponse(a);
             dto.setProviderUserId(userId);
             User u = userRepository.findById(a.getUserId()).orElse(null);
             if (u != null) {
                 dto.setUserName(u.getFullName());
                 dto.setUserEmail(u.getEmail());
+                dto.setUserPhone(u.getPhone());
             }
             return dto;
         }).toList();
@@ -425,5 +431,117 @@ public class AppointmentService {
                             + "Time: " + appointment.getStartTime()
             );
         }
+    }
+
+    // ── Feature 3: Appointment Detail ────────────────────────────────────────
+
+    /**
+     * Returns full appointment details including user and provider contact info.
+     * Both USER and PROVIDER can access their own appointments by id.
+     */
+    public AppointmentDetailDTO getAppointmentById(String appointmentId, String email) {
+        Appointment a = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new RuntimeException("Appointment not found"));
+
+        User caller = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Security: only the user or their provider may view this appointment
+        boolean isOwner = a.getUserId().equals(caller.getId());
+        boolean isProvider = serviceProviderRepository.findByUserId(caller.getId())
+                .map(sp -> sp.getId().equals(a.getProviderId()))
+                .orElse(false);
+        if (!isOwner && !isProvider) {
+            throw new RuntimeException("Access denied");
+        }
+
+        AppointmentDetailDTO dto = new AppointmentDetailDTO();
+        dto.setAppointmentId(a.getId());
+        dto.setServiceName(a.getServiceName());
+        dto.setDate(a.getDate());
+        dto.setStartTime(a.getStartTime());
+        dto.setEndTime(a.getEndTime());
+        dto.setStatus(a.getStatus());
+        dto.setAmount(a.getAmount());
+
+        // User contact
+        User user = userRepository.findById(a.getUserId()).orElse(null);
+        if (user != null) {
+            dto.setUserName(user.getFullName());
+            dto.setUserEmail(user.getEmail());
+            dto.setUserPhone(user.getPhone());
+        }
+
+        // Provider contact (via the provider's linked user account)
+        ServiceProvider sp = serviceProviderRepository.findById(a.getProviderId()).orElse(null);
+        if (sp != null) {
+            dto.setProviderName(sp.getBusinessName());
+            User providerUser = userRepository.findById(sp.getUserId()).orElse(null);
+            if (providerUser != null) {
+                dto.setProviderEmail(providerUser.getEmail());
+                dto.setProviderPhone(providerUser.getPhone());
+            }
+        }
+
+        return dto;
+    }
+
+    // ── Feature 6: Appointment History ───────────────────────────────────────
+
+    /**
+     * Returns appointment history for the caller (USER or PROVIDER) filtered by
+     * the last {@code days} days (default 30). Optionally filters by serviceId
+     * (category/subcategory filtering happens client-side or via serviceId).
+     */
+    public List<AppointmentResponse> getHistory(
+            String email, int days, String serviceId, String subcategoryId) {
+
+        User caller = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        LocalDate to   = LocalDate.now();
+        LocalDate from = to.minusDays(days);
+
+        List<Appointment> apps;
+
+        // Determine if caller is a provider or a regular user
+        java.util.Optional<ServiceProvider> spOpt = serviceProviderRepository.findByUserId(caller.getId());
+        if (spOpt.isPresent() && "PROVIDER".equals(caller.getRole())) {
+            apps = appointmentRepository
+                    .findByProviderIdAndDateBetween(spOpt.get().getId(), from, to);
+        } else {
+            apps = appointmentRepository
+                    .findByUserIdAndDateBetween(caller.getId(), from, to);
+        }
+
+        // Optional serviceId filter
+        if (serviceId != null && !serviceId.isBlank()) {
+            apps = apps.stream()
+                    .filter(a -> serviceId.equals(a.getServiceId()))
+                    .toList();
+        }
+
+        return apps.stream().map(a -> {
+            AppointmentResponse dto = mapToResponse(a);
+            // Populate provider info for user-view
+            ServiceProvider sp = serviceProviderRepository.findById(a.getProviderId()).orElse(null);
+            if (sp != null) {
+                dto.setProviderName(sp.getBusinessName());
+                dto.setProviderUserId(sp.getUserId());
+                User pUser = userRepository.findById(sp.getUserId()).orElse(null);
+                if (pUser != null) {
+                    dto.setProviderEmail(pUser.getEmail());
+                    dto.setProviderPhone(pUser.getPhone());
+                }
+            }
+            // Populate user info for provider-view
+            User u = userRepository.findById(a.getUserId()).orElse(null);
+            if (u != null) {
+                dto.setUserName(u.getFullName());
+                dto.setUserEmail(u.getEmail());
+                dto.setUserPhone(u.getPhone());
+            }
+            return dto;
+        }).toList();
     }
 }

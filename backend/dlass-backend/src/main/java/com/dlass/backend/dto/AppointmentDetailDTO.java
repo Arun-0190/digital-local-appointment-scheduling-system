@@ -3,9 +3,13 @@ package com.dlass.backend.dto;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-public class AppointmentResponse {
+/**
+ * Rich detail response for GET /api/appointments/{id}.
+ * Returns full user and provider contact info alongside appointment data.
+ */
+public class AppointmentDetailDTO {
 
-    private String id;
+    private String appointmentId;
     private String serviceName;
     private LocalDate date;
     private LocalTime startTime;
@@ -13,21 +17,20 @@ public class AppointmentResponse {
     private String status;
     private double amount;
 
+    // User contact info
     private String userName;
     private String userEmail;
     private String userPhone;
-    private String userId;
 
+    // Provider contact info
     private String providerName;
     private String providerEmail;
     private String providerPhone;
-    private String providerUserId;
 
-    public AppointmentResponse() {
-    }
+    public AppointmentDetailDTO() {}
 
-    public String getId() { return id; }
-    public void setId(String id) { this.id = id; }
+    public String getAppointmentId() { return appointmentId; }
+    public void setAppointmentId(String appointmentId) { this.appointmentId = appointmentId; }
 
     public String getServiceName() { return serviceName; }
     public void setServiceName(String serviceName) { this.serviceName = serviceName; }
@@ -64,10 +67,4 @@ public class AppointmentResponse {
 
     public String getProviderPhone() { return providerPhone; }
     public void setProviderPhone(String providerPhone) { this.providerPhone = providerPhone; }
-
-    public String getUserId() { return userId; }
-    public void setUserId(String userId) { this.userId = userId; }
-
-    public String getProviderUserId() { return providerUserId; }
-    public void setProviderUserId(String providerUserId) { this.providerUserId = providerUserId; }
 }
