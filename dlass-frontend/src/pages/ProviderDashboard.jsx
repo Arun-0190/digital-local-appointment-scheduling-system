@@ -11,6 +11,7 @@ import ChatWindow from "../components/ChatWindow";
 import AppointmentDetailModal from "../components/AppointmentDetailModal";
 
 const API = "http://localhost:8080/api";
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
 const DAYS = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"];
 
 function authHeaders() {
@@ -77,7 +78,7 @@ export default function ProviderDashboard() {
   const [historyDays, setHistoryDays] = useState(30);
 
   // Profile
-  const [profileForm, setProfileForm] = useState({ phone: "", city: "", area: "", pincode: "" });
+  const [profileForm, setProfileForm] = useState({ phone: "", city: "", area: "", pincode: "", profileImageUrl: "" });
   const [profileMsg, setProfileMsg] = useState("");
 
   const navigate = useNavigate();
@@ -127,7 +128,8 @@ export default function ProviderDashboard() {
           phone: dashboardRes.data.phone || "",
           city: dashboardRes.data.city || "",
           area: dashboardRes.data.area || "",
-          pincode: dashboardRes.data.pincode || ""
+          pincode: dashboardRes.data.pincode || "",
+          profileImageUrl: dashboardRes.data.profileImageUrl || ""
         });
       } catch (err) {
         console.error("Dashboard Init Error:", err);
@@ -285,6 +287,26 @@ export default function ProviderDashboard() {
   }
 
   // ── Profile Actions ────────────────────────────────────────────────────────
+  const handleAvatarUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      setProfileMsg("Uploading avatar...");
+      const res = await axios.post(`${API}/providers/upload-avatar`, formData, {
+        headers: { ...authHeaders(), "Content-Type": "multipart/form-data" },
+      });
+      setProfileForm((prev) => ({ ...prev, profileImageUrl: res.data }));
+      setProfileMsg("✓ Avatar updated successfully!");
+    } catch (err) {
+      console.error(err);
+      setProfileMsg("Failed to upload avatar.");
+    }
+  };
+
   async function saveProfile(e) {
     if (e) e.preventDefault();
     try {
@@ -386,14 +408,19 @@ export default function ProviderDashboard() {
       </div>
     );
 
-  const headerMap = {
-    appointments: `Hey ${userName}, here are your appointments`,
-    services: `${userName}, want to add a new service?`,
-    availability: `${userName}, when are you available?`,
-    analytics: `${userName}, here’s your performance`,
-    portfolio: `${userName}, showcase your work`
+  const getHeader = () => {
+    switch(tab) {
+      case "appointments": return { title: "Hey, here are your bookings", sub: "Manage your workspace and track upcoming appointments." };
+      case "history": return { title: "Welcome back, here's your history", sub: "Review your past appointments and activity." };
+      case "services": return { title: "Manage your services", sub: "Add, update, and organize your offerings." };
+      case "availability": return { title: "Set your availability", sub: "Define your working hours and schedule." };
+      case "analytics": return { title: "Track your performance", sub: "Monitor bookings, revenue, and trends." };
+      case "portfolio": return { title: "Showcase your work", sub: "Upload images to attract more customers." };
+      case "profile": return { title: "Manage your profile", sub: "Update your personal and business details." };
+      default: return { title: `Welcome ${userName}`, sub: "Manage your workspace, optimize availability, and track upcoming appointments." };
+    }
   };
-  const headerText = headerMap[tab] || `Welcome ${userName}`;
+  const headerInfo = getHeader();
 
   return (
     <div className="min-h-screen pt-20 pb-16 px-4 md:px-8">
@@ -401,9 +428,11 @@ export default function ProviderDashboard() {
         {/* Header + Tab Nav */}
         <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
-            <DynamicHeader userName={headerText} context="provider-dashboard" />
+             <h1 className="text-4xl md:text-5xl font-headline font-extrabold tracking-tight text-on-surface mb-2">
+                {headerInfo.title}
+             </h1>
             <p className="text-on-surface-variant max-w-xl text-sm">
-              Manage your workspace, optimize availability, and track upcoming appointments.
+              {headerInfo.sub}
             </p>
           </div>
 
@@ -971,6 +1000,31 @@ export default function ProviderDashboard() {
           <div className="space-y-8">
             <div className="glass-card rounded-3xl p-6 md:p-8 shadow-2xl">
               <h2 className="text-xl font-headline font-bold text-on-surface mb-6">Profile Settings</h2>
+              
+              <div className="flex items-center gap-6 mb-8">
+                <div className="relative group">
+                  <div className="w-24 h-24 rounded-full overflow-hidden bg-surface-container-high border-2 border-outline-variant/30 flex items-center justify-center">
+                    {profileForm.profileImageUrl ? (
+                      <img 
+                         src={`${BASE_URL}${profileForm.profileImageUrl.startsWith('/') ? '' : '/'}${profileForm.profileImageUrl}`} 
+                         alt="Avatar" 
+                         className="w-full h-full object-cover" 
+                      />
+                    ) : (
+                      <span className="material-symbols-outlined text-4xl text-on-surface-variant">person</span>
+                    )}
+                  </div>
+                  <label className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                    <span className="material-symbols-outlined text-white">photo_camera</span>
+                    <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
+                  </label>
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-on-surface">Profile Picture</h3>
+                  <p className="text-xs text-on-surface-variant mt-1">Click the image to upload a new avatar.</p>
+                </div>
+              </div>
+
               <form onSubmit={saveProfile} className="space-y-4 max-w-2xl">
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
