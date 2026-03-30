@@ -60,7 +60,9 @@ function App() {
         <Route
           path="/admin"
           element={
-            <AdminDashboard /> // Add AdminRoute wrapper later if needed
+            <ProtectedRoute roles={["ADMIN"]}>
+               <AdminDashboard />
+            </ProtectedRoute>
           }
         />
 

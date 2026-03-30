@@ -26,7 +26,12 @@ public class User {
     private String phone; // Format: +91XXXXXXXXXX
 
     @Field("isActive")
-    private boolean isActive = true; // soft-delete flag
+    private boolean isActive = true; // existing soft-delete flag
+
+    private boolean isDeleted = false;
+    private LocalDateTime deletedAt;
+    private String deletedBy;
+    private String deactivationReason;
 
     private LocalDateTime createdAt;
 
@@ -58,11 +63,23 @@ public class User {
     public String getPhone() { return phone; }
     public void setPhone(String phone) { this.phone = phone; }
 
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-
     @JsonProperty("isActive")
     public boolean isActive() { return isActive; }
-    public void setActive(boolean active) { this.isActive = active; }
+    public void setActive(boolean active) { isActive = active; }
+
+    public boolean isDeleted() { return isDeleted; }
+    public void setDeleted(boolean deleted) { isDeleted = deleted; }
+
+    public LocalDateTime getDeletedAt() { return deletedAt; }
+    public void setDeletedAt(LocalDateTime deletedAt) { this.deletedAt = deletedAt; }
+
+    public String getDeletedBy() { return deletedBy; }
+    public void setDeletedBy(String deletedBy) { this.deletedBy = deletedBy; }
+
+    public String getDeactivationReason() { return deactivationReason; }
+    public void setDeactivationReason(String deactivationReason) { this.deactivationReason = deactivationReason; }
+
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }
 

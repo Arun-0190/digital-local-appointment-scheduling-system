@@ -97,6 +97,8 @@ function AdminDashboard() {
   const [appointmentsLastWeek, setAppointmentsLastWeek] = useState([]);
   const [newUsers, setNewUsers] = useState([]);
   const [newProviders, setNewProviders] = useState([]);
+  const [deletedUsers, setDeletedUsers] = useState([]);
+  const [deletedProviders, setDeletedProviders] = useState([]);
 
   // UI states
   const [loading, setLoading] = useState(true);
@@ -176,6 +178,18 @@ function AdminDashboard() {
         .then((r) => setNewProviders(r.data))
         .catch((err) => setError(err.message))
         .finally(() => setLoading(false));
+
+    } else if (tab === "deactivatedusers") {
+      axios.get(`${API}/admin/users/deleted`, { headers })
+        .then((r) => setDeletedUsers(r.data))
+        .catch((err) => setError(err.message))
+        .finally(() => setLoading(false));
+
+    } else if (tab === "deactivatedproviders") {
+      axios.get(`${API}/admin/providers/deleted`, { headers })
+        .then((r) => setDeletedProviders(r.data))
+        .catch((err) => setError(err.message))
+        .finally(() => setLoading(false));
     }
   }, [tab]);
 
@@ -236,6 +250,26 @@ function AdminDashboard() {
     });
   };
 
+  const handleReactivateUser = async (id) => {
+    try {
+      await axios.put(`${API}/admin/users/${id}/reactivate`, {}, { headers: authHeaders() });
+      setDeletedUsers((prev) => prev.filter((u) => u.id !== id));
+      showToast("User reactivated successfully");
+    } catch (err) {
+      showToast("Failed: " + (err.response?.data?.message || err.message), "error");
+    }
+  };
+
+  const handleReactivateProvider = async (id) => {
+    try {
+      await axios.put(`${API}/admin/providers/${id}/reactivate`, {}, { headers: authHeaders() });
+      setDeletedProviders((prev) => prev.filter((p) => p.id !== id));
+      showToast("Provider reactivated successfully");
+    } catch (err) {
+      showToast("Failed: " + (err.response?.data?.message || err.message), "error");
+    }
+  };
+
   // ── Filtered Lists ────────────────────────────────────────────────────────
   const filteredUsers = users.filter((u) => {
     const q = userSearch.toLowerCase();
@@ -271,6 +305,8 @@ function AdminDashboard() {
     { key: "appointments", icon: "calendar_month", label: "Appointments" },
     { key: "newusers", icon: "person_add", label: "New Users" },
     { key: "newproviders", icon: "storefront", label: "New Providers" },
+    { key: "deactivatedusers", icon: "person_off", label: "Deleted Users" },
+    { key: "deactivatedproviders", icon: "domain_disabled", label: "Deleted Providers" },
   ];
 
   const EmptyState = ({ icon, text }) => (
@@ -565,6 +601,104 @@ function AdminDashboard() {
                             >
                               <span className="material-symbols-outlined text-sm">store_remove</span>
                               Deactivate
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* ════════════ DEACTIVATED USERS TAB ════════════ */}
+            {tab === "deactivatedusers" && (
+              <div className="glass-card rounded-3xl p-6 md:p-8 shadow-2xl space-y-5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <h2 className="text-xl font-headline font-bold text-on-surface">Deactivated Users</h2>
+                  <span className="text-xs font-label tracking-widest text-on-surface-variant uppercase bg-white/5 px-4 py-2 rounded-full">
+                    {deletedUsers.length} Users
+                  </span>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full border-separate border-spacing-y-2">
+                    <thead>
+                      <tr className="text-left">
+                        {["Name", "Email", "Reason", "Action"].map((h) => (
+                          <th key={h} className="pb-2 px-4 text-xs font-label uppercase tracking-widest text-on-surface-variant">
+                            {h}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {deletedUsers.length === 0 ? (
+                        <tr>
+                          <td colSpan={4} className="text-center py-8 text-on-surface-variant/50 text-sm">
+                            No deactivated users.
+                          </td>
+                        </tr>
+                      ) : deletedUsers.map((u) => (
+                        <tr key={u.id} className="bg-surface-container-low hover:bg-surface-container-high transition-colors">
+                          <td className="py-3 px-4 rounded-l-xl text-sm font-bold text-on-surface opacity-60">{u.fullName}</td>
+                          <td className="py-3 px-4 text-sm text-on-surface-variant opacity-60">{u.email}</td>
+                          <td className="py-3 px-4 text-sm text-on-surface-variant opacity-60 italic">{u.deactivationReason || "—"}</td>
+                          <td className="py-3 px-4 rounded-r-xl">
+                            <button
+                              onClick={() => handleReactivateUser(u.id)}
+                              className="flex items-center gap-1 text-xs font-bold text-green-400 hover:text-green-300 transition-colors"
+                            >
+                              <span className="material-symbols-outlined text-sm">person_add</span>
+                              Reactivate
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* ════════════ DEACTIVATED PROVIDERS TAB ════════════ */}
+            {tab === "deactivatedproviders" && (
+              <div className="glass-card rounded-3xl p-6 md:p-8 shadow-2xl space-y-5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <h2 className="text-xl font-headline font-bold text-on-surface">Deactivated Providers</h2>
+                  <span className="text-xs font-label tracking-widest text-on-surface-variant uppercase bg-white/5 px-4 py-2 rounded-full">
+                    {deletedProviders.length} Providers
+                  </span>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full border-separate border-spacing-y-2">
+                    <thead>
+                      <tr className="text-left">
+                        {["Business", "City", "Reason", "Action"].map((h) => (
+                          <th key={h} className="pb-2 px-4 text-xs font-label uppercase tracking-widest text-on-surface-variant">
+                            {h}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {deletedProviders.length === 0 ? (
+                        <tr>
+                          <td colSpan={4} className="text-center py-8 text-on-surface-variant/50 text-sm">
+                            No deactivated providers.
+                          </td>
+                        </tr>
+                      ) : deletedProviders.map((p) => (
+                        <tr key={p.id} className="bg-surface-container-low hover:bg-surface-container-high transition-colors">
+                          <td className="py-3 px-4 rounded-l-xl text-sm font-bold text-on-surface opacity-60">{p.businessName}</td>
+                          <td className="py-3 px-4 text-sm text-on-surface-variant opacity-60">{p.city}</td>
+                          <td className="py-3 px-4 text-sm text-on-surface-variant opacity-60 italic">{p.deactivationReason || "—"}</td>
+                          <td className="py-3 px-4 rounded-r-xl">
+                            <button
+                              onClick={() => handleReactivateProvider(p.id)}
+                              className="flex items-center gap-1 text-xs font-bold text-green-400 hover:text-green-300 transition-colors"
+                            >
+                              <span className="material-symbols-outlined text-sm">domain_verification</span>
+                              Reactivate
                             </button>
                           </td>
                         </tr>

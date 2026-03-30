@@ -17,6 +17,7 @@ public class Review {
 
     private int rating; // 1 to 5
     private String comment;
+    private String reply;
 
     private LocalDateTime createdAt;
 
@@ -28,6 +29,7 @@ public class Review {
     public String getAppointmentId() { return appointmentId; }
     public int getRating() { return rating; }
     public String getComment() { return comment; }
+    public String getReply() { return reply; }
     public LocalDateTime getCreatedAt() { return createdAt; }
 
     public void setProviderId(String providerId) { this.providerId = providerId; }
@@ -35,6 +37,7 @@ public class Review {
     public void setAppointmentId(String appointmentId) { this.appointmentId = appointmentId; }
     public void setRating(int rating) { this.rating = rating; }
     public void setComment(String comment) { this.comment = comment; }
+    public void setReply(String reply) { this.reply = reply; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
 }

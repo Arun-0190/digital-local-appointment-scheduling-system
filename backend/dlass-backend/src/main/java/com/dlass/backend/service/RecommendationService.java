@@ -36,7 +36,22 @@ public class RecommendationService {
         this.availabilityRepository = availabilityRepository;
     }
 
-    public List<String> getRecommendations(String email) {
+    private LocalDate calculateStartDate(String range) {
+        if (range == null) return LocalDate.now().minusDays(6);
+        return switch (range.toLowerCase()) {
+            case "1d" -> LocalDate.now();
+            case "3d" -> LocalDate.now().minusDays(2);
+            case "7d" -> LocalDate.now().minusDays(6);
+            case "15d" -> LocalDate.now().minusDays(14);
+            case "1m" -> LocalDate.now().minusMonths(1);
+            case "3m" -> LocalDate.now().minusMonths(3);
+            case "6m" -> LocalDate.now().minusMonths(6);
+            case "1y" -> LocalDate.now().minusYears(1);
+            default -> LocalDate.now().minusDays(6);
+        };
+    }
+
+    public List<String> getRecommendations(String email, String range) {
         String userId = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"))
                 .getId();
@@ -45,10 +60,18 @@ public class RecommendationService {
                 .getId();
 
         List<Appointment> allAppts = appointmentRepository.findByProviderId(providerId);
+        
+        LocalDate today = LocalDate.now();
+        LocalDate from = calculateStartDate(range);
+        
+        List<Appointment> shortTermAppts = allAppts.stream()
+                .filter(a -> a.getDate() != null && !a.getDate().isBefore(from) && !a.getDate().isAfter(today))
+                .collect(Collectors.toList());
+
         List<String> suggestions = new ArrayList<>();
 
-        // ── Rule 1: Peak Hour Detection ───────────────────────────────────
-        Map<Integer, Long> hourCounts = allAppts.stream()
+        // ── Rule 1: Peak Hour Detection (Short-term) ───────────────────────────────────
+        Map<Integer, Long> hourCounts = shortTermAppts.stream()
                 .filter(a -> a.getStartTime() != null)
                 .collect(Collectors.groupingBy(a -> a.getStartTime().getHour(), Collectors.counting()));
 
@@ -74,7 +97,7 @@ public class RecommendationService {
             }
         }
 
-        // ── Rule 2: Weekend Demand Detection ─────────────────────────────
+        // ── Rule 2: Weekend Demand Detection (Long-term) ─────────────────────────────
         long weekendBookings = allAppts.stream()
                 .filter(a -> a.getDate() != null)
                 .filter(a -> {
@@ -103,23 +126,18 @@ public class RecommendationService {
                 entry.getValue() + " bookings). Consider highlighting it in your profile description.");
         });
 
-        // ── Rule 4: Slot Shortage Detection ──────────────────────────────
-        LocalDate today = LocalDate.now();
-        LocalDate weekStart = today.minusDays(6);
-        long recentBookings = allAppts.stream()
-                .filter(a -> a.getDate() != null)
-                .filter(a -> !a.getDate().isBefore(weekStart) && !a.getDate().isAfter(today))
-                .count();
+        // ── Rule 4: Slot Shortage Detection (Short-term) ──────────────────────────────
+        long recentBookings = shortTermAppts.size();
 
         long availabilitySlots = availabilityRepository.findByProviderId(providerId).size();
 
         if (availabilitySlots > 0 && recentBookings >= availabilitySlots) {
-            suggestions.add("🔔 High demand detected: You had " + recentBookings +
-                " bookings this week with only " + availabilitySlots +
+            suggestions.add("🔔 High demand detected for the selected range: You had " + recentBookings +
+                " bookings with only " + availabilitySlots +
                 " availability window(s). Consider adding more working hours.");
         }
 
-        // ── Rule 5: Cancellation Rate Warning ────────────────────────────
+        // ── Rule 5: Cancellation Rate Warning (Long-term) ────────────────────────────
         long cancelled = allAppts.stream()
                 .filter(a -> "CANCELLED".equals(a.getStatus())).count();
         if (allAppts.size() >= 5 && cancelled > 0) {

@@ -29,6 +29,17 @@ public class AppointmentController {
         return service.book(request, email);
     }
 
+    @PostMapping("/lock")
+    public ResponseEntity<String> lockSlot(@RequestBody AppointmentRequest request, Authentication authentication) {
+        service.lockSlot(request, authentication.getName());
+        return ResponseEntity.ok("Slot locked successfully");
+    }
+
+    @PutMapping("/{appointmentId}/reschedule")
+    public Appointment reschedule(@PathVariable String appointmentId, @RequestBody AppointmentRequest request, Authentication authentication) {
+        return service.reschedule(appointmentId, request, authentication.getName());
+    }
+
     @DeleteMapping("/{appointmentId}")
     public ResponseEntity<String> cancelAppointment(
             @PathVariable String appointmentId,

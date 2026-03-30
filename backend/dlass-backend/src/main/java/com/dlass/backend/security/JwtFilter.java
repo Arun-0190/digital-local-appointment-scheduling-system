@@ -44,7 +44,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
             if (jwtUtil.validateToken(token)) {
 
-                String role = jwtUtil.extractRole(token);
+                String role = jwtUtil.extractRole(token).toUpperCase();
 
                 UsernamePasswordAuthenticationToken authToken =
                         new UsernamePasswordAuthenticationToken(

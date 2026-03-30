@@ -15,9 +15,11 @@ public class AppointmentResponse {
 
     private String userName;
     private String userEmail;
+    private String userId;
 
     private String providerName;
     private String providerEmail;
+    private String providerUserId;
 
     public AppointmentResponse() {
     }
@@ -54,4 +56,10 @@ public class AppointmentResponse {
 
     public String getProviderEmail() { return providerEmail; }
     public void setProviderEmail(String providerEmail) { this.providerEmail = providerEmail; }
+
+    public String getUserId() { return userId; }
+    public void setUserId(String userId) { this.userId = userId; }
+
+    public String getProviderUserId() { return providerUserId; }
+    public void setProviderUserId(String providerUserId) { this.providerUserId = providerUserId; }
 }

@@ -33,6 +33,11 @@ public class Appointment {
     private boolean reminder1hSent = false;
     private boolean reminderStartSent = false;
 
+    private boolean isDeleted = false;
+    private LocalDateTime deletedAt;
+    private String deletedBy;
+    private String deactivationReason;
+
     public Appointment() {}
 
     public String getId() {
@@ -144,4 +149,16 @@ public class Appointment {
     public void setReminderStartSent(boolean reminderStartSent) {
         this.reminderStartSent = reminderStartSent;
     }
+
+    public boolean isDeleted() { return isDeleted; }
+    public void setDeleted(boolean deleted) { isDeleted = deleted; }
+
+    public LocalDateTime getDeletedAt() { return deletedAt; }
+    public void setDeletedAt(LocalDateTime deletedAt) { this.deletedAt = deletedAt; }
+
+    public String getDeletedBy() { return deletedBy; }
+    public void setDeletedBy(String deletedBy) { this.deletedBy = deletedBy; }
+
+    public String getDeactivationReason() { return deactivationReason; }
+    public void setDeactivationReason(String deactivationReason) { this.deactivationReason = deactivationReason; }
 }

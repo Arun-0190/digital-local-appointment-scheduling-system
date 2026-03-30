@@ -78,6 +78,11 @@ public class ServiceProviderController {
             @RequestParam String subCategoryId,
             @RequestParam(required = false) String pincode,
             @RequestParam(required = false) String city,
+            @RequestParam(required = false) Integer minExperience,
+            @RequestParam(required = false) Double minRating,
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(required = false) Double maxPrice,
+            @RequestParam(required = false) Boolean availableToday,
             @RequestParam(required = false, defaultValue = "50") int range,
             @RequestParam(required = false, defaultValue = "0") int page,
             @RequestParam(required = false, defaultValue = "10") int size,
@@ -95,7 +100,7 @@ public class ServiceProviderController {
 
         return service.searchProvidersPageable(
                 categoryId, subCategoryId, pincode, city, range,
-                sortField, sortDir, page, size);
+                sortField, sortDir, minExperience, minRating, minPrice, maxPrice, availableToday, page, size);
     }
 
     @GetMapping("/{providerId}/profile")

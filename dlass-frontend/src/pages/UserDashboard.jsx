@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { getUsername, getToken } from "../services/authService";
+import DynamicHeader from "../components/DynamicHeader";
+import ChatWindow from "../components/ChatWindow";
 
 const API = "http://localhost:8080/api";
 
@@ -11,14 +13,26 @@ function authHeaders() {
 
 function UserDashboard() {
   const navigate = useNavigate();
-  const username = getUsername();
+  const [username, setUsername] = useState(getUsername());
+  const [userId, setUserId] = useState(null);
 
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeChat, setActiveChat] = useState(null);
 
   // Quick search
   const [pincode, setPincode] = useState("");
   const [searchHistory, setSearchHistory] = useState([]);
+
+  useEffect(() => {
+    // Fetch real name
+    axios.get(`${API}/users/me`, { headers: authHeaders() })
+      .then(res => {
+        setUsername(res.data.fullName || getUsername());
+        setUserId(res.data.id);
+      })
+      .catch(() => {});
+  }, []);
 
   const fetchAppointments = async () => {
     try {
@@ -84,13 +98,7 @@ function UserDashboard() {
         {/* Welcome Header */}
         <header className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-end">
           <div className="space-y-3">
-            <h1 className="font-headline text-4xl md:text-5xl font-extrabold tracking-tight text-on-surface">
-              Welcome back,
-              <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">
-                {username}
-              </span>
-            </h1>
+            <DynamicHeader userName={username} context="user-dashboard" />
             <p className="text-on-surface-variant text-base leading-relaxed max-w-md">
               {upcoming.length > 0
                 ? `You have ${upcoming.length} upcoming appointment${upcoming.length > 1 ? "s" : ""} this week.`
@@ -189,13 +197,22 @@ function UserDashboard() {
                     </div>
                     <div className="flex flex-col items-start sm:items-end gap-3 shrink-0">
                       <span className={statusPill(a.status)}>{a.status}</span>
-                      <button
-                        onClick={() => handleCancel(a.id)}
-                        className="text-red-400 hover:text-red-300 text-xs font-bold flex items-center gap-1 transition-colors"
-                      >
-                        <span className="material-symbols-outlined text-sm">cancel</span>
-                        Cancel
-                      </button>
+                      <div className="flex gap-3">
+                        <button
+                          onClick={() => setActiveChat({ id: a.providerUserId, name: a.providerName })}
+                          className="flex items-center gap-1 text-xs font-bold text-secondary hover:text-secondary-container transition-colors"
+                        >
+                          <span className="material-symbols-outlined text-sm">chat</span>
+                          Chat
+                        </button>
+                        <button
+                          onClick={() => handleCancel(a.id)}
+                          className="text-red-400 hover:text-red-300 text-xs font-bold flex items-center gap-1 transition-colors"
+                        >
+                          <span className="material-symbols-outlined text-sm">cancel</span>
+                          Cancel
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -276,6 +293,13 @@ function UserDashboard() {
           </button>
         </section>
       </div>
+      <ChatWindow
+        isOpen={!!activeChat}
+        onClose={() => setActiveChat(null)}
+        currentUser={{ id: userId, name: username }}
+        otherUserId={activeChat?.id}
+        otherUserName={activeChat?.name}
+      />
     </div>
   );
 }

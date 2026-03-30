@@ -42,7 +42,15 @@ public class ServiceProvider {
     private String status; // PENDING, ACTIVE, SUSPENDED
 
     @Field("isActive")
-    private boolean isActive = true; // soft-delete flag
+    private boolean isActive = true; // existing soft-delete flag
+
+    private boolean isDeleted = false;
+    private LocalDateTime deletedAt;
+    private String deletedBy;
+    private String deactivationReason;
+    
+    // Phase 4: Re-application logic
+    private String reapplyReason;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -147,6 +155,9 @@ public class ServiceProvider {
         this.area = area;
     }
 
+    public String getReapplyReason() { return reapplyReason; }
+    public void setReapplyReason(String reapplyReason) { this.reapplyReason = reapplyReason; }
+
     public String getPincode() {
         return pincode;
     }
@@ -180,11 +191,28 @@ public class ServiceProvider {
     }
 
     @JsonProperty("isActive")
-    public boolean isActive() { return isActive; }
-    public void setActive(boolean active) { this.isActive = active; }
+    public boolean isActive() {
+        return isActive;
+    }
+
+    public void setActive(boolean active) {
+        isActive = active;
+    }
+
+    public boolean isDeleted() { return isDeleted; }
+    public void setDeleted(boolean deleted) { isDeleted = deleted; }
+
+    public LocalDateTime getDeletedAt() { return deletedAt; }
+    public void setDeletedAt(LocalDateTime deletedAt) { this.deletedAt = deletedAt; }
+
+    public String getDeletedBy() { return deletedBy; }
+    public void setDeletedBy(String deletedBy) { this.deletedBy = deletedBy; }
+
+    public String getDeactivationReason() { return deactivationReason; }
+    public void setDeactivationReason(String deactivationReason) { this.deactivationReason = deactivationReason; }
 
     public List<String> getPortfolioImages() { return portfolioImages; }
     public void setPortfolioImages(List<String> portfolioImages) {
         this.portfolioImages = portfolioImages != null ? portfolioImages : new ArrayList<>();
     }
-}
+}

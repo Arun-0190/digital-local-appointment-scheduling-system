@@ -9,6 +9,10 @@ import com.dlass.backend.repository.AppointmentRepository;
 import com.dlass.backend.repository.ServiceOfferingRepository;
 import com.dlass.backend.repository.ServiceProviderRepository;
 import com.dlass.backend.repository.UserRepository;
+import com.dlass.backend.model.SlotLock;
+import com.dlass.backend.repository.SlotLockRepository;
+import com.dlass.backend.model.PlatformConfig;
+import com.dlass.backend.repository.PlatformConfigRepository;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 
@@ -24,19 +28,34 @@ public class AppointmentService {
     private final UserRepository userRepository;
     private final ServiceProviderRepository serviceProviderRepository;
     private final ServiceOfferingRepository serviceOfferingRepository;
+    private final SlotLockRepository slotLockRepository;
     private final EmailService emailService;
+    private final PlatformConfigRepository platformConfigRepository;
 
     public AppointmentService(AppointmentRepository appointmentRepository,
                               UserRepository userRepository,
                               ServiceProviderRepository serviceProviderRepository,
                               ServiceOfferingRepository serviceOfferingRepository,
-                              EmailService emailService) {
+                              SlotLockRepository slotLockRepository,
+                              EmailService emailService,
+                              PlatformConfigRepository platformConfigRepository) {
 
         this.appointmentRepository = appointmentRepository;
         this.userRepository = userRepository;
         this.serviceProviderRepository = serviceProviderRepository;
         this.serviceOfferingRepository = serviceOfferingRepository;
+        this.slotLockRepository = slotLockRepository;
         this.emailService = emailService;
+        this.platformConfigRepository = platformConfigRepository;
+    }
+
+    private PlatformConfig getConfig() {
+        return platformConfigRepository.findAll().stream().findFirst().orElseGet(() -> {
+            PlatformConfig config = new PlatformConfig();
+            config.setCancellationMinutes(30);
+            config.setSlotLockMinutes(5);
+            return platformConfigRepository.save(config);
+        });
     }
 
     public Appointment book(AppointmentRequest request, String email) {
@@ -63,6 +82,16 @@ public class AppointmentService {
         if (alreadyBooked) {
             throw new RuntimeException("Slot already booked");
         }
+
+        // Slot Lock Check
+        cleanUpLocks();
+        slotLockRepository.findByProviderIdAndDateAndStartTime(
+                request.getProviderId(), request.getDate(), request.getStartTime()
+        ).ifPresent(lock -> {
+            if (!lock.getUserId().equals(userId)) {
+                throw new RuntimeException("Slot is currently locked by another user");
+            }
+        });
 
         // Fetch service details if serviceId provided
         String serviceName = null;
@@ -120,11 +149,117 @@ public class AppointmentService {
                             + "Time: " + saved.getStartTime()
             );
 
+            // Free lock if any
+            slotLockRepository.deleteByProviderIdAndDateAndStartTime(
+                    request.getProviderId(), request.getDate(), request.getStartTime()
+            );
+
             return saved;
 
         } catch (DuplicateKeyException e) {
             throw new RuntimeException("This slot has already been booked.");
         }
+    }
+
+    private void cleanUpLocks() {
+        slotLockRepository.deleteByExpiresAtBefore(LocalDateTime.now());
+    }
+
+    public void lockSlot(AppointmentRequest request, String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        cleanUpLocks();
+
+        List<Appointment> existing = appointmentRepository.findByProviderIdAndDate(
+                request.getProviderId(), request.getDate()
+        );
+
+        boolean alreadyBooked = existing.stream()
+                .filter(a -> !"CANCELLED".equals(a.getStatus()))
+                .anyMatch(a -> a.getStartTime().isBefore(request.getEndTime()) && a.getEndTime().isAfter(request.getStartTime()));
+
+        if (alreadyBooked) throw new RuntimeException("Slot already booked");
+
+        slotLockRepository.findByProviderIdAndDateAndStartTime(
+                request.getProviderId(), request.getDate(), request.getStartTime()
+        ).ifPresent(lock -> {
+            if (!lock.getUserId().equals(user.getId())) {
+                throw new RuntimeException("Slot is already locked by another user");
+            }
+        });
+
+        // Save new lock
+        SlotLock lock = new SlotLock();
+        lock.setProviderId(request.getProviderId());
+        lock.setDate(request.getDate());
+        lock.setStartTime(request.getStartTime());
+        lock.setLockedAt(LocalDateTime.now());
+        lock.setExpiresAt(LocalDateTime.now().plusMinutes(getConfig().getSlotLockMinutes()));
+        lock.setUserId(user.getId());
+        slotLockRepository.save(lock);
+    }
+
+    public Appointment reschedule(String appointmentId, AppointmentRequest request, String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Appointment appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new RuntimeException("Appointment not found"));
+
+        if (!appointment.getUserId().equals(user.getId())) {
+            throw new RuntimeException("You are not allowed to reschedule this appointment");
+        }
+
+        cleanUpLocks();
+
+        List<Appointment> existing = appointmentRepository.findByProviderIdAndDate(
+                request.getProviderId(), request.getDate()
+        );
+
+        boolean alreadyBooked = existing.stream()
+                .filter(a -> !"CANCELLED".equals(a.getStatus()) && !a.getId().equals(appointmentId))
+                .anyMatch(a -> a.getStartTime().isBefore(request.getEndTime()) && a.getEndTime().isAfter(request.getStartTime()));
+
+        if (alreadyBooked) throw new RuntimeException("Slot already booked");
+
+        slotLockRepository.findByProviderIdAndDateAndStartTime(
+                request.getProviderId(), request.getDate(), request.getStartTime()
+        ).ifPresent(lock -> {
+            if (!lock.getUserId().equals(user.getId())) {
+                throw new RuntimeException("Slot is currently locked by another user");
+            }
+        });
+
+        appointment.setDate(request.getDate());
+        appointment.setStartTime(request.getStartTime());
+        appointment.setEndTime(request.getEndTime());
+        
+        slotLockRepository.deleteByProviderIdAndDateAndStartTime(
+                request.getProviderId(), request.getDate(), request.getStartTime()
+        );
+        
+        Appointment saved = appointmentRepository.save(appointment);
+
+        emailService.sendEmail(
+                user.getEmail(),
+                "Appointment Rescheduled",
+                "Your appointment has been successfully rescheduled to: " + saved.getDate() + " at " + saved.getStartTime()
+        );
+        
+        ServiceProvider provider = serviceProviderRepository.findById(saved.getProviderId()).orElse(null);
+        if (provider != null) {
+            User pUser = userRepository.findById(provider.getUserId()).orElse(null);
+            if (pUser != null) {
+                emailService.sendEmail(
+                    pUser.getEmail(),
+                    "Appointment Rescheduled",
+                    "A customer has rescheduled their appointment to: " + saved.getDate() + " at " + saved.getStartTime()
+                );
+            }
+        }
+
+        return saved;
     }
 
     public void cancelAppointment(String appointmentId, String email) {
@@ -150,8 +285,8 @@ public class AppointmentService {
             throw new RuntimeException("Cannot cancel an appointment that has already passed");
         }
 
-        if (Duration.between(now, appointmentTime).toMinutes() < 30) {
-            throw new RuntimeException("Appointment cannot be cancelled within 30 minutes of start time");
+        if (Duration.between(now, appointmentTime).toMinutes() < getConfig().getCancellationMinutes()) {
+            throw new RuntimeException("Appointment cannot be cancelled within " + getConfig().getCancellationMinutes() + " minutes of start time");
         }
 
         appointment.setStatus("CANCELLED");
@@ -192,6 +327,7 @@ public class AppointmentService {
         res.setEndTime(a.getEndTime());
         res.setStatus(a.getStatus());
         res.setAmount(a.getAmount());
+        res.setUserId(a.getUserId());
         return res;
     }
 
@@ -215,6 +351,7 @@ public class AppointmentService {
             ServiceProvider sp = serviceProviderRepository.findById(a.getProviderId()).orElse(null);
             if (sp != null) {
                 dto.setProviderName(sp.getBusinessName());
+                dto.setProviderUserId(sp.getUserId());
                 User pUser = userRepository.findById(sp.getUserId()).orElse(null);
                 if (pUser != null) dto.setProviderEmail(pUser.getEmail());
             }
@@ -249,6 +386,7 @@ public class AppointmentService {
 
         return apps.stream().map(a -> {
             com.dlass.backend.dto.AppointmentResponse dto = mapToResponse(a);
+            dto.setProviderUserId(userId);
             User u = userRepository.findById(a.getUserId()).orElse(null);
             if (u != null) {
                 dto.setUserName(u.getFullName());
