@@ -62,4 +62,18 @@ public class JwtUtil {
                 .parseClaimsJws(token)
                 .getBody();
     }
+
+    public String extractUsername(String token) {
+        return extractEmail(token);
+    }
+
+    public boolean isTokenExpired(String token) {
+        return extractAllClaims(token).getExpiration().before(new Date());
+    }
+
+    public boolean validateToken(String token, org.springframework.security.core.userdetails.UserDetails userDetails) {
+        String username = extractUsername(token);
+        System.out.println("Validating token for: " + username);
+        return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
+    }
 }

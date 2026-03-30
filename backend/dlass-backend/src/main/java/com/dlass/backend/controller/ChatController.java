@@ -29,7 +29,7 @@ public class ChatController {
 
     @PostMapping
     public ResponseEntity<ChatMessage> sendMessage(@RequestBody ChatMessage message, Authentication authentication) {
-        System.out.println("Chat accessed by: " + SecurityContextHolder.getContext().getAuthentication().getName());
+        System.out.println("Auth object: " + SecurityContextHolder.getContext().getAuthentication());
         User user = userRepository.findByEmailAndIsActiveTrue(authentication.getName())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -49,7 +49,7 @@ public class ChatController {
             @PathVariable String otherUserId,
             Authentication authentication) {
 
-        System.out.println("Chat accessed by: " + SecurityContextHolder.getContext().getAuthentication().getName());
+        System.out.println("Auth object: " + SecurityContextHolder.getContext().getAuthentication());
         
         User user = userRepository.findByEmailAndIsActiveTrue(authentication.getName())
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -62,7 +62,7 @@ public class ChatController {
 
     @PutMapping("/{messageId}/read")
     public ResponseEntity<Void> markAsRead(@PathVariable String messageId, Authentication authentication) {
-        System.out.println("Chat accessed by: " + SecurityContextHolder.getContext().getAuthentication().getName());
+        System.out.println("Auth object: " + SecurityContextHolder.getContext().getAuthentication());
         ChatMessage msg = chatRepository.findById(messageId)
                 .orElseThrow(() -> new RuntimeException("Message not found"));
 
