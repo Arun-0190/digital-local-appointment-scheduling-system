@@ -9,10 +9,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.dlass.backend.dto.PageResponse;
+import com.dlass.backend.dto.ProfileUpdateRequest;
 import com.dlass.backend.dto.ProviderProfileResponse;
 import com.dlass.backend.dto.ProviderSearchResponse;
 import com.dlass.backend.dto.ServiceDTO;
@@ -30,8 +35,19 @@ import com.dlass.backend.repository.ServiceProviderRepository;
 import com.dlass.backend.repository.UserRepository;
 import com.dlass.backend.dto.ProviderApplicationRequest;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+
 @Service
 public class ServiceProviderService {
+
+    private static final long MAX_FILE_SIZE = 5 * 1024 * 1024;
+    private static final Set<String> ALLOWED_TYPES = Set.of(
+            "image/jpeg", "image/png", "image/webp", "image/gif"
+    );
 
     private final ServiceProviderRepository repository;
     private final UserRepository userRepository;
@@ -39,6 +55,9 @@ public class ServiceProviderService {
     private final ReviewRepository reviewRepository;
     private final AppointmentRepository appointmentRepository;
     private final ProviderAvailabilityRepository availabilityRepository;
+
+    @Value("${app.avatar.dir:uploads/avatars}")
+    private String avatarDir;
 
     public ServiceProviderService(ServiceProviderRepository repository,
                                   UserRepository userRepository,
@@ -89,6 +108,7 @@ public class ServiceProviderService {
                 existing.setArea(request.getArea());
                 existing.setPincode(request.getPincode());
                 existing.setReapplyReason(request.getReapplyReason());
+                if (request.getPhone() != null) existing.setPhone(request.getPhone());
                 existing.setUpdatedAt(LocalDateTime.now());
                 return repository.save(existing);
             } else {
@@ -108,6 +128,7 @@ public class ServiceProviderService {
         provider.setArea(request.getArea());
         provider.setPincode(request.getPincode());
         provider.setReapplyReason(request.getReapplyReason());
+        if (request.getPhone() != null) provider.setPhone(request.getPhone());
         provider.setStatus("PENDING");
         provider.setCreatedAt(LocalDateTime.now());
         provider.setUpdatedAt(LocalDateTime.now());
@@ -118,7 +139,14 @@ public class ServiceProviderService {
     }
 
     public List<ServiceProvider> getPendingProviders() {
-        return repository.findByStatusAndIsActiveTrue("PENDING");
+        List<ServiceProvider> providers = repository.findByStatusAndIsActiveTrue("PENDING");
+        for (ServiceProvider p : providers) {
+            userRepository.findById(p.getUserId()).ifPresent(user -> {
+                p.setUserName(user.getFullName());
+                p.setUserEmail(user.getEmail());
+            });
+        }
+        return providers;
     }
 
     /** Returns only active (isActive=true) providers for admin list. */
@@ -480,5 +508,88 @@ public class ServiceProviderService {
         provider.setDeletedBy(null);
         provider.setDeactivationReason(null);
         repository.save(provider);
+    }
+
+    // ── Feature 4: Profile Management ────────────────────────────────────────
+
+    /** Update authenticated provider's own profile fields. */
+    public ServiceProvider updateProviderProfile(String email, ProfileUpdateRequest req) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        ServiceProvider provider = repository.findByUserId(user.getId())
+                .orElseThrow(() -> new RuntimeException("Provider not found"));
+
+        if (req.getPhone() != null && !req.getPhone().isBlank()) {
+            provider.setPhone(req.getPhone());
+            user.setPhone(req.getPhone()); // keep user phone in sync
+            userRepository.save(user);
+        }
+        if (req.getCity() != null && !req.getCity().isBlank()) {
+            provider.setCity(req.getCity());
+        }
+        if (req.getArea() != null && !req.getArea().isBlank()) {
+            provider.setArea(req.getArea());
+        }
+        if (req.getPincode() != null && !req.getPincode().isBlank()) {
+            provider.setPincode(req.getPincode());
+        }
+        provider.setUpdatedAt(LocalDateTime.now());
+        return repository.save(provider);
+    }
+
+    /** Deactivate provider's own account — sets isActive = false. */
+    public void deactivateSelf(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        ServiceProvider provider = repository.findByUserId(user.getId())
+                .orElseThrow(() -> new RuntimeException("Provider not found"));
+        provider.setActive(false);
+        provider.setDeactivationReason("Self-deactivated");
+        repository.save(provider);
+    }
+
+    /** Soft-delete provider's own account. */
+    public void softDeleteSelf(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        ServiceProvider provider = repository.findByUserId(user.getId())
+                .orElseThrow(() -> new RuntimeException("Provider not found"));
+        provider.setActive(false);
+        provider.setDeleted(true);
+        provider.setDeletedAt(LocalDateTime.now());
+        provider.setDeletedBy(email);
+        repository.save(provider);
+    }
+
+    // ── Feature 5: Avatar Upload ──────────────────────────────────────────────
+
+    /** Upload a profile avatar for the provider (stores URL in profileImageUrl). */
+    public ServiceProvider uploadAvatar(String email, MultipartFile file) throws IOException {
+        if (file.getSize() > MAX_FILE_SIZE) {
+            throw new IllegalArgumentException("File size exceeds the 5 MB limit.");
+        }
+        String contentType = file.getContentType();
+        if (contentType == null || !ALLOWED_TYPES.contains(contentType)) {
+            throw new IllegalArgumentException("Only JPEG, PNG, WebP, and GIF images are allowed.");
+        }
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        ServiceProvider provider = repository.findByUserId(user.getId())
+                .orElseThrow(() -> new RuntimeException("Provider not found"));
+
+        String originalFilename = file.getOriginalFilename();
+        String ext = (originalFilename != null && originalFilename.contains("."))
+                ? originalFilename.substring(originalFilename.lastIndexOf("."))
+                : ".jpg";
+        String filename = UUID.randomUUID().toString() + ext;
+
+        Path dir = Paths.get(avatarDir).toAbsolutePath();
+        Files.createDirectories(dir);
+        Files.copy(file.getInputStream(), dir.resolve(filename), StandardCopyOption.REPLACE_EXISTING);
+
+        provider.setProfileImageUrl("/uploads/avatars/" + filename);
+        provider.setUpdatedAt(LocalDateTime.now());
+        return repository.save(provider);
     }
 }

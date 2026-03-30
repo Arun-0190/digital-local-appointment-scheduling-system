@@ -15,6 +15,7 @@ public class ProviderApplicationRequest {
     private String area;
     private String pincode;
     private String reapplyReason;
+    private String phone;
 
     public ProviderApplicationRequest() {}
 
@@ -104,5 +105,13 @@ public class ProviderApplicationRequest {
 
     public void setReapplyReason(String reapplyReason) {
         this.reapplyReason = reapplyReason;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
     }
 }

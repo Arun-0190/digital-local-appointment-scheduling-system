@@ -194,6 +194,12 @@ function AdminDashboard() {
   }, [tab]);
 
   // ── Actions ──────────────────────────────────────────────────────────────
+  const copyToClipboard = (text, type) => {
+    if (!text) return;
+    navigator.clipboard.writeText(text);
+    showToast(`${type} copied to clipboard`);
+  };
+
   const handleApprove = async (id) => {
     try {
       await approveProvider(id);
@@ -398,6 +404,39 @@ function AdminDashboard() {
                           </span>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">
+                          {/* Contact Info Group */}
+                          <div className="flex items-start gap-3 bg-surface-container-low/50 p-3.5 rounded-xl col-span-1 sm:col-span-2 border-l-2 border-secondary">
+                            <span className="material-symbols-outlined text-secondary text-base pt-0.5">contact_mail</span>
+                            <div className="w-full">
+                              <div className="text-xs text-on-surface-variant font-label tracking-widest uppercase mb-1">Applicant Contact</div>
+                              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-1">
+                                <div className="text-sm">
+                                  <span className="text-on-surface-variant text-xs block mb-0.5">Name</span>
+                                  <span className="text-on-surface font-medium">{p.userName || "—"}</span>
+                                </div>
+                                <div className="text-sm truncate">
+                                  <span className="text-on-surface-variant text-xs block mb-0.5">Email</span>
+                                  <span className="text-on-surface font-medium">{p.userEmail || "—"}</span>
+                                </div>
+                                <div className="text-sm">
+                                  <span className="text-on-surface-variant text-xs block mb-0.5">Phone</span>
+                                  <div className="flex items-center gap-2 group">
+                                    <span className="text-on-surface font-medium">{p.phone || "—"}</span>
+                                    {p.phone && (
+                                      <button 
+                                        onClick={() => copyToClipboard(p.phone, "Phone number")}
+                                        className="opacity-0 group-hover:opacity-100 p-1 rounded-md bg-white/5 hover:bg-white/10 text-secondary transition-all"
+                                        title="Copy Phone"
+                                      >
+                                        <span className="material-symbols-outlined text-[14px]">content_copy</span>
+                                      </button>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
                           {[
                             { icon: "star", label: "Experience", value: `${p.experienceYears} Years` },
                             { icon: "location_on", label: "Location", value: `${p.city}, ${p.area} (${p.pincode})` },

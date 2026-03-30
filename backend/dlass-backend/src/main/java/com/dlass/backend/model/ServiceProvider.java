@@ -28,6 +28,8 @@ public class ServiceProvider {
 
     private int experienceYears;
 
+    private String phone;
+
     private List<String> services;
 
     private double rating = 0;
@@ -55,8 +57,16 @@ public class ServiceProvider {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+    private String profileImageUrl;
+
     /** Feature 4: Portfolio images (filenames stored in uploads/provider/) */
     private List<String> portfolioImages = new ArrayList<>();
+
+    @org.springframework.data.annotation.Transient
+    private String userName;
+
+    @org.springframework.data.annotation.Transient
+    private String userEmail;
 
     // getters and setters
     public String getId() {
@@ -215,4 +225,16 @@ public class ServiceProvider {
     public void setPortfolioImages(List<String> portfolioImages) {
         this.portfolioImages = portfolioImages != null ? portfolioImages : new ArrayList<>();
     }
+
+    public String getPhone() { return phone; }
+    public void setPhone(String phone) { this.phone = phone; }
+
+    public String getProfileImageUrl() { return profileImageUrl; }
+    public void setProfileImageUrl(String profileImageUrl) { this.profileImageUrl = profileImageUrl; }
+
+    public String getUserName() { return userName; }
+    public void setUserName(String userName) { this.userName = userName; }
+
+    public String getUserEmail() { return userEmail; }
+    public void setUserEmail(String userEmail) { this.userEmail = userEmail; }
 }

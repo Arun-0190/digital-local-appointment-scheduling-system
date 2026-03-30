@@ -55,5 +55,9 @@ public interface AppointmentRepository extends MongoRepository<Appointment, Stri
     @Query("{ 'providerId': ?0, 'status': ?1, 'date': { $gte: ?2, $lte: ?3 }, $or: [ { 'isDeleted': false }, { 'isDeleted': { $exists: false } } ] }")
     List<Appointment> findByProviderIdAndStatusAndDateBetween(
             String providerId, String status, LocalDate from, LocalDate to);
+
+    /** History: user-scoped, date range */
+    @Query("{ 'userId': ?0, 'date': { $gte: ?1, $lte: ?2 }, $or: [ { 'isDeleted': false }, { 'isDeleted': { $exists: false } } ] }")
+    List<Appointment> findByUserIdAndDateBetween(String userId, LocalDate from, LocalDate to);
 }
 

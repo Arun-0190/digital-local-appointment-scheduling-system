@@ -96,9 +96,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/appointments/**").hasRole("USER")
                         .requestMatchers(HttpMethod.DELETE, "/api/appointments/**").hasRole("USER")
                         .requestMatchers(HttpMethod.GET, "/api/appointments/my").hasRole("USER")
+                        .requestMatchers(HttpMethod.GET, "/api/appointments/history").hasAnyRole("USER", "PROVIDER")
                         .requestMatchers(HttpMethod.GET, "/api/appointments/provider").hasRole("PROVIDER")
                         .requestMatchers(HttpMethod.GET, "/api/appointments/**").hasAnyRole("USER", "PROVIDER")
-                        .requestMatchers(HttpMethod.GET, "/api/appointments/provider").hasRole("PROVIDER")
+                        .requestMatchers(HttpMethod.PUT, "/api/appointments/**").hasAnyRole("USER", "PROVIDER")
                         .requestMatchers(HttpMethod.GET, "/api/provider-availability/calendar/**").permitAll()
 
                         //Reviews
@@ -114,8 +115,20 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/provider/*/portfolio").permitAll()
                         .requestMatchers(HttpMethod.DELETE, "/api/provider/image/**").hasRole("PROVIDER")
 
-                        // Static uploads (portfolio images)
+                        // Static uploads (portfolio + avatars)
                         .requestMatchers("/uploads/**").permitAll()
+
+                        // Feature 4+5: User profile management & avatar
+                        .requestMatchers(HttpMethod.PUT, "/api/users/profile").hasRole("USER")
+                        .requestMatchers(HttpMethod.PATCH, "/api/users/deactivate").hasRole("USER")
+                        .requestMatchers(HttpMethod.PATCH, "/api/users/delete").hasRole("USER")
+                        .requestMatchers(HttpMethod.POST, "/api/users/upload-avatar").hasRole("USER")
+
+                        // Feature 4+5: Provider profile management & avatar
+                        .requestMatchers(HttpMethod.PUT, "/api/providers/profile").hasRole("PROVIDER")
+                        .requestMatchers(HttpMethod.PATCH, "/api/providers/deactivate").hasRole("PROVIDER")
+                        .requestMatchers(HttpMethod.PATCH, "/api/providers/delete").hasRole("PROVIDER")
+                        .requestMatchers(HttpMethod.POST, "/api/providers/upload-avatar").hasRole("PROVIDER")
 
                         // Chat
                         .requestMatchers("/api/chat/**").authenticated()
