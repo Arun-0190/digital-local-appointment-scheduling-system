@@ -109,4 +109,22 @@ public class UserService {
         return new UserResponseDTO(u.getId(), u.getFullName(), u.getEmail(),
                 u.getRole(), u.getPincode(), u.getCreatedAt());
     }
+
+    public List<UserResponseDTO> getDeletedUsers() {
+        return userRepository.findDeletedUsers()
+                .stream()
+                .map(this::toDTO)
+                .toList();
+    }
+
+    public void reactivateUser(String id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        user.setActive(true);
+        user.setDeleted(false);
+        user.setDeletedAt(null);
+        user.setDeletedBy(null);
+        user.setDeactivationReason(null);
+        userRepository.save(user);
+    }
 }

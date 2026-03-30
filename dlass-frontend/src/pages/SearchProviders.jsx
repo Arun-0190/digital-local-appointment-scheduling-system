@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { getCategories, getSubCategories } from "../services/catalogService";
+import { getToken } from "../services/authService";
+import DynamicHeader from "../components/DynamicHeader";
 
 const API_BASE = "http://localhost:8080/api";
 
@@ -38,6 +40,7 @@ function SearchProviders() {
   const location = useLocation();
   const [categories, setCategories] = useState([]);
   const [subCategories, setSubCategories] = useState([]);
+  const [userName, setUserName] = useState("Guest");
 
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedSubCategory, setSelectedSubCategory] = useState("");
@@ -52,6 +55,14 @@ function SearchProviders() {
   const [sort, setSort] = useState("");
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
+
+  // Advanced Filters
+  const [minExperience, setMinExperience] = useState("");
+  const [minRating, setMinRating] = useState("");
+  const [minPrice, setMinPrice] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
+  const [availableToday, setAvailableToday] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const [results, setResults] = useState([]);
   const [hasSearched, setHasSearched] = useState(false);
@@ -71,6 +82,14 @@ function SearchProviders() {
   }, [location.search]);
 
   useEffect(() => {
+    // Attempt to fetch name if logged in
+    const token = getToken();
+    if (token) {
+      axios.get(`${API_BASE}/users/me`, { headers: { Authorization: `Bearer ${token}` } })
+        .then(res => setUserName(res.data.fullName || "User"))
+        .catch(() => {});
+    }
+
     getCategories().then((cats) => {
       setCategories(cats);
       const pending = sessionStorage.getItem("_pendingCategory");
@@ -92,7 +111,7 @@ function SearchProviders() {
   }, [selectedCategory]);
 
   // ── Core search function (with page / sort params) ────────────────────────
-  const performSearch = useCallback(async (catId, subCatId, cityVal, pincodeVal, pageNum, pageSz, sortParam) => {
+  const performSearch = useCallback(async (catId, subCatId, cityVal, pincodeVal, pageNum, pageSz, sortParam, minExp, minRt, minPr, maxPr, avToday) => {
     if (!catId || !subCatId) return;
     setError("");
     setLoading(true);
@@ -108,6 +127,11 @@ function SearchProviders() {
       if (cityVal?.trim()) params.city = cityVal.trim();
       if (pincodeVal?.trim()) params.pincode = pincodeVal.trim();
       if (sortParam) params.sort = sortParam;
+      if (minExp) params.minExperience = minExp;
+      if (minRt) params.minRating = minRt;
+      if (minPr) params.minPrice = minPr;
+      if (maxPr) params.maxPrice = maxPr;
+      if (avToday) params.availableToday = true;
 
       const res = await axios.get(`${API_BASE}/providers/search`, { params });
 
@@ -128,24 +152,24 @@ function SearchProviders() {
   useEffect(() => {
     if (autoSearchPending && selectedSubCategory && selectedCategory && pincode) {
       setAutoSearchPending(false);
-      performSearch(selectedCategory, selectedSubCategory, city, pincode, 0, pageSize, sort);
+      performSearch(selectedCategory, selectedSubCategory, "", pincode, 0, pageSize, sort, minExperience, minRating, minPrice, maxPrice, availableToday);
     }
-  }, [selectedSubCategory, autoSearchPending, selectedCategory, pincode, city, performSearch, pageSize, sort]);
+  }, [autoSearchPending, selectedSubCategory, selectedCategory, pincode, performSearch, pageSize, sort, minExperience, minRating, minPrice, maxPrice, availableToday]);
 
   const handleSearch = async (e) => {
     e.preventDefault();
     if (!selectedCategory || !selectedSubCategory) {
-      setError("Please select a Category and Subcategory before searching.");
+      setError("Category and Subcategory are required");
       return;
     }
     setPage(0);
-    await performSearch(selectedCategory, selectedSubCategory, city, pincode, 0, pageSize, sort);
+    await performSearch(selectedCategory, selectedSubCategory, city, pincode, 0, pageSize, sort, minExperience, minRating, minPrice, maxPrice, availableToday);
   };
 
   // Pagination navigation
   const goToPage = (newPage) => {
     setPage(newPage);
-    performSearch(selectedCategory, selectedSubCategory, city, pincode, newPage, pageSize, sort);
+    performSearch(selectedCategory, selectedSubCategory, city, pincode, newPage, pageSize, sort, minExperience, minRating, minPrice, maxPrice, availableToday);
     window.scrollTo({ top: 300, behavior: "smooth" });
   };
 
@@ -154,7 +178,7 @@ function SearchProviders() {
     setSort(newSort);
     if (hasSearched) {
       setPage(0);
-      performSearch(selectedCategory, selectedSubCategory, city, pincode, 0, pageSize, newSort);
+      performSearch(selectedCategory, selectedSubCategory, city, pincode, 0, pageSize, newSort, minExperience, minRating, minPrice, maxPrice, availableToday);
     }
   };
 
@@ -162,7 +186,7 @@ function SearchProviders() {
     setPageSize(newSize);
     if (hasSearched) {
       setPage(0);
-      performSearch(selectedCategory, selectedSubCategory, city, pincode, 0, newSize, sort);
+      performSearch(selectedCategory, selectedSubCategory, city, pincode, 0, newSize, sort, minExperience, minRating, minPrice, maxPrice, availableToday);
     }
   };
 
@@ -174,10 +198,7 @@ function SearchProviders() {
       <div className="max-w-6xl mx-auto">
         {/* Page Header */}
         <header className="mb-10 pt-8">
-          <h1 className="font-headline text-4xl md:text-5xl font-extrabold tracking-tighter text-white mb-3">
-            Find your{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">expert</span>.
-          </h1>
+          <DynamicHeader userName={userName} context="search" />
           <p className="text-on-surface-variant text-lg max-w-xl">
             Connect with top-tier service providers. Refined scheduling for modern life.
           </p>
@@ -245,6 +266,48 @@ function SearchProviders() {
             </div>
           </div>
 
+          {/* Advanced Filters Toggle */}
+          <div className="mb-6 flex justify-end">
+            <button
+              type="button"
+              onClick={() => setShowAdvanced(!showAdvanced)}
+              className="text-secondary text-sm font-bold flex items-center gap-1 hover:text-white transition-colors"
+            >
+              <span className="material-symbols-outlined text-base">
+                {showAdvanced ? 'expand_less' : 'expand_more'}
+              </span>
+              {showAdvanced ? 'Hide Advanced Filters' : 'Show Advanced Filters'}
+            </button>
+          </div>
+
+          {/* Advanced Filters Section */}
+          {showAdvanced && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 p-4 rounded-2xl bg-surface-container-highest/30 border border-outline-variant/10">
+              <div>
+                <label className="block text-xs font-label text-on-surface-variant uppercase tracking-wider mb-2">Min Rating</label>
+                <input type="number" step="0.5" min="0" max="5" value={minRating} onChange={(e) => setMinRating(e.target.value)} placeholder="e.g. 4.0" className={selectClass} />
+              </div>
+              <div>
+                <label className="block text-xs font-label text-on-surface-variant uppercase tracking-wider mb-2">Min Experience (Yrs)</label>
+                <input type="number" min="0" value={minExperience} onChange={(e) => setMinExperience(e.target.value)} placeholder="e.g. 3" className={selectClass} />
+              </div>
+              <div className="flex items-center pt-6">
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input type="checkbox" checked={availableToday} onChange={(e) => setAvailableToday(e.target.checked)} className="w-5 h-5 rounded border-outline-variant/30 text-secondary focus:ring-secondary/50 focus:ring-offset-surface bg-surface-container" />
+                  <span className="text-sm font-medium text-on-surface">Available Today</span>
+                </label>
+              </div>
+              <div>
+                <label className="block text-xs font-label text-on-surface-variant uppercase tracking-wider mb-2">Min Price (₹)</label>
+                <input type="number" min="0" value={minPrice} onChange={(e) => setMinPrice(e.target.value)} placeholder="0" className={selectClass} />
+              </div>
+              <div>
+                <label className="block text-xs font-label text-on-surface-variant uppercase tracking-wider mb-2">Max Price (₹)</label>
+                <input type="number" min="0" value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)} placeholder="5000" className={selectClass} />
+              </div>
+            </div>
+          )}
+
           <button
             type="submit"
             id="search-btn"
@@ -274,8 +337,25 @@ function SearchProviders() {
           </div>
         )}
 
+        {/* Skeleton while searching */}
+        {loading && hasSearched && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 mt-5">
+            {[1, 2, 3, 4, 5, 6].map(i => (
+              <div key={i} className="glass-card rounded-2xl h-[320px] animate-pulse bg-surface-container-high/50 p-6 flex flex-col">
+                <div className="flex justify-between">
+                  <div className="w-16 h-16 rounded-2xl bg-surface-container-highest" />
+                  <div className="w-16 h-6 rounded-full bg-surface-container-highest" />
+                </div>
+                <div className="w-3/4 h-6 mt-6 rounded bg-surface-container-highest" />
+                <div className="w-1/2 h-4 mt-2 rounded bg-surface-container-highest" />
+                <div className="w-1/3 h-4 mt-4 rounded bg-surface-container-highest" />
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* Results */}
-        {results.length > 0 && (
+        {!loading && results.length > 0 && (
           <>
             {/* Results header + sort/size controls */}
             <div className="flex flex-wrap items-center justify-between gap-3 mb-6">

@@ -18,8 +18,11 @@ function ProtectedRoute({ children, roles }) {
     return <Navigate to="/login" replace />;
   }
 
-  // Logged in but wrong role → redirect to own dashboard
+  // Logged in but wrong role → redirect to appropriate dashboard
   if (roles && !roles.includes(userRole)) {
+    if (userRole === "ADMIN") {
+      return <Navigate to="/admin" replace />;
+    }
     if (userRole === "PROVIDER") {
       return <Navigate to="/provider-dashboard" replace />;
     }

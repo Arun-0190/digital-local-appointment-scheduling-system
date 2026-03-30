@@ -181,6 +181,23 @@ public class AdminController {
         return userService.getAdminUserList();
     }
 
+    @GetMapping("/users/deleted")
+    public List<UserResponseDTO> getDeletedUsers() {
+        return userService.getDeletedUsers();
+    }
+
+    @PutMapping("/users/{id}/reactivate")
+    public ResponseEntity<String> reactivateUser(@PathVariable String id) {
+        userService.reactivateUser(id);
+        return ResponseEntity.ok("User reactivated successfully");
+    }
+
+    @DeleteMapping("/user/{id}")
+    public ResponseEntity<String> deleteUser(@PathVariable String id) {
+        userService.deleteUser(id);
+        return ResponseEntity.ok("User deactivated");
+    }
+
     // ── All Providers (active only) ─────────────────────────────────────────
 
     @GetMapping("/all-providers")
@@ -188,12 +205,15 @@ public class AdminController {
         return serviceProviderService.getAllProviders();
     }
 
-    // ── Phase 2: Soft Delete ─────────────────────────────────────────────────
+    @GetMapping("/providers/deleted")
+    public List<ServiceProvider> getDeletedProviders() {
+        return serviceProviderService.getDeletedProviders();
+    }
 
-    @DeleteMapping("/user/{id}")
-    public ResponseEntity<String> deleteUser(@PathVariable String id) {
-        userService.deleteUser(id);
-        return ResponseEntity.ok("User deactivated");
+    @PutMapping("/providers/{id}/reactivate")
+    public ResponseEntity<String> reactivateProvider(@PathVariable String id) {
+        serviceProviderService.reactivateProvider(id);
+        return ResponseEntity.ok("Provider reactivated successfully");
     }
 
     @DeleteMapping("/provider/{id}")

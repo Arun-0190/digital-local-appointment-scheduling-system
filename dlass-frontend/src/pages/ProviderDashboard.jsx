@@ -5,6 +5,8 @@ import {
   LineChart, Line, BarChart, Bar, XAxis, YAxis,
   CartesianGrid, Tooltip, ResponsiveContainer
 } from "recharts";
+import DynamicHeader from "../components/DynamicHeader";
+import ChatWindow from "../components/ChatWindow";
 
 const API = "http://localhost:8080/api";
 const DAYS = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"];
@@ -32,6 +34,8 @@ export default function ProviderDashboard() {
   const [tab, setTab] = useState("appointments");
   const [providerId, setProviderId] = useState(null);
   const [providerInfo, setProviderInfo] = useState(null);
+  const [userName, setUserName] = useState("Provider");
+  const [userId, setUserId] = useState(null);
 
   // Services
   const [services, setServices] = useState([]);
@@ -56,6 +60,7 @@ export default function ProviderDashboard() {
   const [peakHours, setPeakHours] = useState([]);
   const [recommendations, setRecommendations] = useState([]);
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
+  const [analyticsRange, setAnalyticsRange] = useState("7d");
 
   // Portfolio
   const [portfolioImages, setPortfolioImages] = useState([]);
@@ -66,14 +71,31 @@ export default function ProviderDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  // Chat
+  const [activeChat, setActiveChat] = useState(null);
+
   // ── Init ──────────────────────────────────────────────────────────────────
   useEffect(() => {
     async function init() {
       try {
-        const res = await axios.get(`${API}/provider/dashboard`, { headers: authHeaders() });
-        setProviderId(res.data.providerId);
-        setProviderInfo(res.data);
-      } catch {
+        console.log("Token in use:", getToken());
+        const [dashboardRes, meRes] = await Promise.all([
+          axios.get(`${API}/provider/dashboard`, { headers: authHeaders() }),
+          axios.get(`${API}/users/me`, { headers: authHeaders() })
+        ]);
+        console.log("Dashboard API Response:", dashboardRes.data);
+        console.log("Users Me API Response:", meRes.data);
+        
+        if (!dashboardRes.data || !dashboardRes.data.providerId) {
+          throw new Error("Missing providerId in response data");
+        }
+
+        setProviderId(dashboardRes.data.providerId);
+        setProviderInfo(dashboardRes.data);
+        setUserName(meRes.data.fullName || "Provider");
+        setUserId(meRes.data.id);
+      } catch (err) {
+        console.error("Dashboard Init Error:", err);
         setError("Could not load dashboard. Make sure you are an approved provider.");
       } finally {
         setLoading(false);
@@ -119,22 +141,25 @@ export default function ProviderDashboard() {
   useEffect(() => {
     if (!providerId || tab !== "analytics") return;
     setAnalyticsLoading(true);
+    const params = { range: analyticsRange };
     Promise.all([
-      axios.get(`${API}/provider/dashboard/bookings-week`, { headers: authHeaders() }),
-      axios.get(`${API}/provider/dashboard/revenue-month`, { headers: authHeaders() }),
-      axios.get(`${API}/provider/dashboard/peak-hours`, { headers: authHeaders() }),
-      axios.get(`${API}/provider/dashboard/recommendations`, { headers: authHeaders() }),
+      axios.get(`${API}/provider/dashboard/bookings-week`, { headers: authHeaders(), params }),
+      axios.get(`${API}/provider/dashboard/revenue-month`, { headers: authHeaders(), params }),
+      axios.get(`${API}/provider/dashboard/peak-hours`, { headers: authHeaders(), params }),
+      axios.get(`${API}/provider/dashboard/recommendations`, { headers: authHeaders(), params }),
     ])
       .then(([bw, rm, ph, rec]) => {
-        setBookingsWeek(bw.data);
-        setRevenueMonth(rm.data);
+        setBookingsWeek(bw?.data || []);
+        setRevenueMonth(rm?.data || []);
         // Show top 12 peak hours for readability
-        setPeakHours(ph.data.slice(0, 12).map(h => ({ ...h, label: `${h.hour}:00` })));
-        setRecommendations(rec.data);
+        setPeakHours((ph?.data || []).slice(0, 12).map(h => ({ ...h, label: `${h.hour}:00` })));
+        setRecommendations(rec?.data || []);
       })
-      .catch(() => {})
+      .catch((err) => {
+        console.error("Analytics fetch error:", err);
+      })
       .finally(() => setAnalyticsLoading(false));
-  }, [providerId, tab]);
+  }, [providerId, tab, analyticsRange]);
 
   // ── Portfolio tab ─────────────────────────────────────────────────────────
   useEffect(() => {
@@ -285,9 +310,7 @@ export default function ProviderDashboard() {
         {/* Header + Tab Nav */}
         <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
-            <h1 className="text-4xl md:text-5xl font-headline font-extrabold tracking-tight text-on-surface mb-2">
-              Provider Dashboard
-            </h1>
+            <DynamicHeader userName={userName} context="provider-dashboard" />
             <p className="text-on-surface-variant max-w-xl text-sm">
               Manage your workspace, optimize availability, and track upcoming appointments.
             </p>
@@ -374,15 +397,24 @@ export default function ProviderDashboard() {
                             <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ${statusBadge(a.status)}`}>{a.status}</span>
                           </td>
                           <td className="py-4 px-4 rounded-r-2xl">
-                            {a.status === "BOOKED" && (
+                            <div className="flex gap-2 items-center">
                               <button
-                                onClick={() => cancelAppointmentByProvider(a.id)}
-                                className="flex items-center gap-1 text-xs font-bold text-red-400 hover:text-red-300 transition-colors"
+                                onClick={() => setActiveChat({ id: a.userId, name: a.userName })}
+                                className="flex items-center gap-1 text-xs font-bold text-secondary hover:text-secondary-container transition-colors"
                               >
-                                <span className="material-symbols-outlined text-sm">cancel</span>
-                                Cancel
+                                <span className="material-symbols-outlined text-sm">chat</span>
+                                Chat
                               </button>
-                            )}
+                              {a.status === "BOOKED" && (
+                                <button
+                                  onClick={() => cancelAppointmentByProvider(a.id)}
+                                  className="flex items-center gap-1 text-xs font-bold text-red-400 hover:text-red-300 transition-colors"
+                                >
+                                  <span className="material-symbols-outlined text-sm">cancel</span>
+                                  Cancel
+                                </button>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -540,9 +572,34 @@ export default function ProviderDashboard() {
         {/* ════════════════ ANALYTICS TAB ════════════════════════ */}
         {tab === "analytics" && (
           <div className="space-y-8">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 glass-card rounded-2xl p-4">
+              <h2 className="text-lg font-headline font-bold text-on-surface">Time Range</h2>
+              <div className="flex flex-wrap items-center gap-2">
+                {["1d", "3d", "7d", "1m", "3m", "1y"].map(r => (
+                  <button key={r} onClick={() => setAnalyticsRange(r)} className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase transition-all ${analyticsRange === r ? "bg-primary text-white" : "bg-surface-container-high text-on-surface-variant hover:bg-surface-bright"}`}>
+                    {r}
+                  </button>
+                ))}
+                <select value={analyticsRange} onChange={(e) => setAnalyticsRange(e.target.value)} className="bg-surface-container-highest border border-outline-variant/20 rounded-xl px-3 py-1.5 text-xs text-on-surface focus:outline-none">
+                  <option value="1d">1 Day</option>
+                  <option value="3d">3 Days</option>
+                  <option value="7d">7 Days</option>
+                  <option value="15d">15 Days</option>
+                  <option value="1m">1 Month</option>
+                  <option value="3m">3 Months</option>
+                  <option value="6m">6 Months</option>
+                  <option value="1y">1 Year</option>
+                </select>
+              </div>
+            </div>
+
             {analyticsLoading ? (
-              <div className="flex items-center justify-center py-24">
-                <div className="spinner" />
+              <div className="space-y-6 animate-pulse">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {[1,2,3,4].map(i => <div key={i} className="h-28 bg-surface-container-high rounded-2xl" />)}
+                </div>
+                <div className="h-64 bg-surface-container-high rounded-3xl" />
+                <div className="h-64 bg-surface-container-high rounded-3xl" />
               </div>
             ) : (
               <>
@@ -724,6 +781,14 @@ export default function ProviderDashboard() {
           </div>
         )}
       </div>
+
+      <ChatWindow
+        isOpen={!!activeChat}
+        onClose={() => setActiveChat(null)}
+        currentUser={{ id: userId, name: userName }}
+        otherUserId={activeChat?.id}
+        otherUserName={activeChat?.name}
+      />
     </div>
   );
 }

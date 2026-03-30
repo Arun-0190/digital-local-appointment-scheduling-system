@@ -30,4 +30,15 @@ public class ReviewController {
     public List<Review> getProviderReviews(@PathVariable String providerId) {
         return service.getProviderReviews(providerId);
     }
+
+    @PutMapping("/{reviewId}/reply")
+    public Review replyToReview(
+            @PathVariable String reviewId,
+            @RequestBody Map<String, String> request,
+            Authentication authentication
+    ) {
+        String email = authentication.getName();
+        String replyText = request.get("reply");
+        return service.replyToReview(reviewId, replyText, email);
+    }
 }

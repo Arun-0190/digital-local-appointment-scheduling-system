@@ -30,27 +30,27 @@ public class ProviderDashboardController {
         return dashboardService.getDashboard(authentication.getName());
     }
 
-    /** Feature 1a: Bookings last 7 days grouped by date */
+    /** Feature 1a: Bookings last range grouped by date */
     @GetMapping("/bookings-week")
-    public List<BookingsWeekDTO> getBookingsWeek(Authentication authentication) {
-        return dashboardService.getBookingsPerWeek(authentication.getName());
+    public List<BookingsWeekDTO> getBookingsWeek(Authentication authentication, @RequestParam(required = false, defaultValue = "7d") String range) {
+        return dashboardService.getBookingsPerWeek(authentication.getName(), range);
     }
 
-    /** Feature 1b: Revenue last 12 months grouped by month (COMPLETED only) */
+    /** Feature 1b: Revenue last range grouped by month/date (COMPLETED only) */
     @GetMapping("/revenue-month")
-    public List<RevenueMonthDTO> getRevenueMonth(Authentication authentication) {
-        return dashboardService.getRevenuePerMonth(authentication.getName());
+    public List<RevenueMonthDTO> getRevenueMonth(Authentication authentication, @RequestParam(required = false, defaultValue = "7d") String range) {
+        return dashboardService.getRevenuePerMonth(authentication.getName(), range);
     }
 
     /** Feature 1c: Peak hours — booking count grouped by hour, sorted highest first */
     @GetMapping("/peak-hours")
-    public List<PeakHourDTO> getPeakHours(Authentication authentication) {
-        return dashboardService.getPeakHours(authentication.getName());
+    public List<PeakHourDTO> getPeakHours(Authentication authentication, @RequestParam(required = false, defaultValue = "7d") String range) {
+        return dashboardService.getPeakHours(authentication.getName(), range);
     }
 
     /** Feature 3: AI rule-based recommendations */
     @GetMapping("/recommendations")
-    public List<String> getRecommendations(Authentication authentication) {
-        return recommendationService.getRecommendations(authentication.getName());
+    public List<String> getRecommendations(Authentication authentication, @RequestParam(required = false, defaultValue = "7d") String range) {
+        return recommendationService.getRecommendations(authentication.getName(), range);
     }
 }

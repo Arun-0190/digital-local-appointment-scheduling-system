@@ -8,6 +8,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
@@ -73,8 +74,26 @@ public class ServiceProviderService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        if(repository.findByUserId(user.getId()).isPresent()) {
-             throw new RuntimeException("Provider profile already exists or pending");
+        Optional<ServiceProvider> existingOpt = repository.findByUserId(user.getId());
+        if (existingOpt.isPresent()) {
+            ServiceProvider existing = existingOpt.get();
+            if ("SUSPENDED".equals(existing.getStatus()) || "REJECTED".equals(existing.getStatus())) {
+                existing.setStatus("PENDING");
+                existing.setBusinessName(request.getBusinessName());
+                existing.setDescription(request.getDescription());
+                existing.setCategoryId(request.getCategoryId());
+                existing.setSubCategoryId(request.getSubCategoryId());
+                existing.setServices(request.getServices());
+                existing.setExperienceYears(request.getExperienceYears());
+                existing.setCity(request.getCity());
+                existing.setArea(request.getArea());
+                existing.setPincode(request.getPincode());
+                existing.setReapplyReason(request.getReapplyReason());
+                existing.setUpdatedAt(LocalDateTime.now());
+                return repository.save(existing);
+            } else {
+                throw new RuntimeException("Provider profile already exists or pending");
+            }
         }
 
         ServiceProvider provider = new ServiceProvider();
@@ -88,6 +107,7 @@ public class ServiceProviderService {
         provider.setCity(request.getCity());
         provider.setArea(request.getArea());
         provider.setPincode(request.getPincode());
+        provider.setReapplyReason(request.getReapplyReason());
         provider.setStatus("PENDING");
         provider.setCreatedAt(LocalDateTime.now());
         provider.setUpdatedAt(LocalDateTime.now());
@@ -190,10 +210,37 @@ public class ServiceProviderService {
             String categoryId, String subCategoryId,
             String userPincode, String city, int range,
             String sortField, String sortDir,
+            Integer minExperience, Double minRating,
+            Double minPrice, Double maxPrice, Boolean availableToday,
             int page, int size) {
 
         // Re-use existing search + sort logic
         List<ServiceProvider> sorted = searchProviders(categoryId, subCategoryId, userPincode, city, range);
+
+        // Filters
+        if (minExperience != null && minExperience > 0) {
+            sorted = sorted.stream().filter(p -> p.getExperienceYears() >= minExperience).toList();
+        }
+        if (minRating != null && minRating > 0) {
+            sorted = sorted.stream().filter(p -> p.getRating() >= minRating).toList();
+        }
+        if (availableToday != null && availableToday) {
+            java.time.DayOfWeek today = LocalDate.now().getDayOfWeek();
+            sorted = sorted.stream().filter(p -> {
+                return !availabilityRepository.findByProviderIdAndDayOfWeek(p.getId(), today).isEmpty();
+            }).toList();
+        }
+        if (minPrice != null || maxPrice != null) {
+            sorted = sorted.stream().filter(p -> {
+                List<ServiceOffering> offerings = serviceOfferingRepository.findByProviderId(p.getId());
+                return offerings.stream().filter(ServiceOffering::isActive).anyMatch(offering -> {
+                    boolean ok = true;
+                    if (minPrice != null && offering.getPrice() < minPrice) ok = false;
+                    if (maxPrice != null && offering.getPrice() > maxPrice) ok = false;
+                    return ok;
+                });
+            }).toList();
+        }
 
         // Additional sort override if caller specified one
         if (sortField != null && !sortField.isBlank()) {
@@ -420,4 +467,18 @@ public class ServiceProviderService {
         repository.save(provider);
     }
 
+    public List<ServiceProvider> getDeletedProviders() {
+        return repository.findDeletedProviders();
+    }
+
+    public void reactivateProvider(String id) {
+        ServiceProvider provider = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Provider not found"));
+        provider.setActive(true);
+        provider.setDeleted(false);
+        provider.setDeletedAt(null);
+        provider.setDeletedBy(null);
+        provider.setDeactivationReason(null);
+        repository.save(provider);
+    }
 }

@@ -82,4 +82,22 @@ public class ReviewService {
     public List<Review> getProviderReviews(String providerId) {
         return reviewRepository.findByProviderId(providerId);
     }
+
+    public Review replyToReview(String reviewId, String replyText, String providerEmail) {
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new RuntimeException("Review not found"));
+        
+        User providerUser = userRepository.findByEmail(providerEmail)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+                
+        ServiceProvider provider = providerRepository.findByUserId(providerUser.getId())
+                .orElseThrow(() -> new RuntimeException("Provider profile not found"));
+                
+        if (!review.getProviderId().equals(provider.getId())) {
+            throw new RuntimeException("You can only reply to reviews for your own services");
+        }
+        
+        review.setReply(replyText);
+        return reviewRepository.save(review);
+    }
 }

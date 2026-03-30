@@ -88,27 +88,45 @@ public class ProviderDashboardService {
         return dto;
     }
 
-    // ── Feature 1a: bookings last 7 days ──────────────────────────────────
+    // ── helpers for date ranges ───────────────────────────────────────────
+    private LocalDate calculateStartDate(String range) {
+        if (range == null) return LocalDate.now().minusDays(6);
+        return switch (range.toLowerCase()) {
+            case "1d" -> LocalDate.now();
+            case "3d" -> LocalDate.now().minusDays(2);
+            case "7d" -> LocalDate.now().minusDays(6);
+            case "15d" -> LocalDate.now().minusDays(14);
+            case "1m" -> LocalDate.now().minusMonths(1);
+            case "3m" -> LocalDate.now().minusMonths(3);
+            case "6m" -> LocalDate.now().minusMonths(6);
+            case "1y" -> LocalDate.now().minusYears(1);
+            default -> LocalDate.now().minusDays(6);
+        };
+    }
 
-    public List<BookingsWeekDTO> getBookingsPerWeek(String email) {
+    // ── Feature 1a: bookings by range ──────────────────────────────────
+
+    public List<BookingsWeekDTO> getBookingsPerWeek(String email, String range) {
         String providerId = resolveProviderId(email);
         LocalDate today = LocalDate.now();
-        LocalDate from = today.minusDays(6);   // last 7 days inclusive
+        LocalDate from = calculateStartDate(range);
 
         List<Appointment> appts = appointmentRepository
                 .findByProviderIdAndDateBetween(providerId, from, today);
 
-        // Pre-fill all 7 days with 0
+        // Pre-fill days based on range
         Map<String, Long> dayMap = new LinkedHashMap<>();
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        for (int i = 6; i >= 0; i--) {
-            dayMap.put(today.minusDays(i).format(fmt), 0L);
+        
+        // Loop from start to today to preserve order
+        for (LocalDate d = from; !d.isAfter(today); d = d.plusDays(1)) {
+            dayMap.put(d.format(fmt), 0L);
         }
 
         // Count per day
         for (Appointment a : appts) {
             String key = a.getDate().format(fmt);
-            dayMap.merge(key, 1L, Long::sum);
+            dayMap.merge(key, 1L, (v1, v2) -> v1 + v2);
         }
 
         List<BookingsWeekDTO> result = new ArrayList<>();
@@ -116,26 +134,36 @@ public class ProviderDashboardService {
         return result;
     }
 
-    // ── Feature 1b: revenue last 12 months ────────────────────────────────
+    // ── Feature 1b: revenue by range ────────────────────────────────
 
-    public List<RevenueMonthDTO> getRevenuePerMonth(String email) {
+    public List<RevenueMonthDTO> getRevenuePerMonth(String email, String range) {
         String providerId = resolveProviderId(email);
         LocalDate today = LocalDate.now();
-        LocalDate from = today.minusMonths(11).withDayOfMonth(1);
+        LocalDate from = calculateStartDate(range);
 
         List<Appointment> completed = appointmentRepository
                 .findByProviderIdAndStatusAndDateBetween(providerId, "COMPLETED", from, today);
 
-        // Pre-fill 12 months with 0
         Map<String, Double> monthMap = new LinkedHashMap<>();
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM");
-        for (int i = 11; i >= 0; i--) {
-            monthMap.put(today.minusMonths(i).format(fmt), 0.0);
+        DateTimeFormatter fmt;
+        
+        // Use daily formatting if range is small
+        if (range != null && (range.endsWith("d") || range.equals("1m"))) {
+            fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            for (LocalDate d = from; !d.isAfter(today); d = d.plusDays(1)) {
+                monthMap.put(d.format(fmt), 0.0);
+            }
+        } else {
+            fmt = DateTimeFormatter.ofPattern("yyyy-MM");
+            LocalDate startMonth = from.withDayOfMonth(1);
+            for (LocalDate d = startMonth; !d.isAfter(today); d = d.plusMonths(1)) {
+                monthMap.put(d.format(fmt), 0.0);
+            }
         }
 
         for (Appointment a : completed) {
             String key = a.getDate().format(fmt);
-            monthMap.merge(key, a.getAmount(), Double::sum);
+            monthMap.merge(key, a.getAmount(), (v1, v2) -> v1 + v2);
         }
 
         List<RevenueMonthDTO> result = new ArrayList<>();
@@ -145,10 +173,12 @@ public class ProviderDashboardService {
 
     // ── Feature 1c: peak hours ────────────────────────────────────────────
 
-    public List<PeakHourDTO> getPeakHours(String email) {
+    public List<PeakHourDTO> getPeakHours(String email, String range) {
         String providerId = resolveProviderId(email);
+        LocalDate today = LocalDate.now();
+        LocalDate from = calculateStartDate(range);
 
-        List<Appointment> appts = appointmentRepository.findByProviderId(providerId);
+        List<Appointment> appts = appointmentRepository.findByProviderIdAndDateBetween(providerId, from, today);
 
         // Count per hour
         Map<Integer, Long> hourMap = appts.stream()
