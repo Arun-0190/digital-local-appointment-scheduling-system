@@ -7,6 +7,7 @@ import ChatWindow from "../components/ChatWindow";
 import AppointmentDetailModal from "../components/AppointmentDetailModal";
 
 const API = "http://localhost:8080/api";
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
 
 function authHeaders() {
   return { Authorization: `Bearer ${getToken()}` };
@@ -28,7 +29,7 @@ function UserDashboard() {
   const [historyDays, setHistoryDays] = useState(30);
 
   // Profile tab state
-  const [profileForm, setProfileForm] = useState({ fullName: "", phone: "", pincode: "" });
+  const [profileForm, setProfileForm] = useState({ fullName: "", phone: "", pincode: "", profileImageUrl: "" });
   const [profileMsg, setProfileMsg] = useState("");
 
   // Quick search
@@ -44,7 +45,8 @@ function UserDashboard() {
         setProfileForm({
            fullName: res.data.fullName || "",
            phone: res.data.phone || "",
-           pincode: res.data.pincode || ""
+           pincode: res.data.pincode || "",
+           profileImageUrl: res.data.profileImageUrl || ""
         });
       })
       .catch(() => {});
@@ -59,6 +61,26 @@ function UserDashboard() {
     .then(r => setHistory(r.data))
     .catch(() => setHistory([]));
   }, [tab, historyDays]);
+
+  const handleAvatarUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      setProfileMsg("Uploading avatar...");
+      const res = await axios.post(`${API}/users/upload-avatar`, formData, {
+        headers: { ...authHeaders(), "Content-Type": "multipart/form-data" },
+      });
+      setProfileForm((prev) => ({ ...prev, profileImageUrl: res.data }));
+      setProfileMsg("✓ Avatar updated successfully!");
+    } catch (err) {
+      console.error(err);
+      setProfileMsg("Failed to upload avatar.");
+    }
+  };
 
   async function saveProfile(e) {
     if (e) e.preventDefault();
@@ -152,17 +174,26 @@ function UserDashboard() {
     return "px-4 py-1.5 bg-surface-container-high text-on-surface-variant rounded-full text-xs font-bold border border-outline-variant/20";
   };
 
+  const getHeaderContent = () => {
+    switch (tab) {
+      case "appointments": return "View and manage your upcoming bookings.";
+      case "history": return "Check your past appointments.";
+      case "profile": return "Manage your account details.";
+      default: return "";
+    }
+  };
+
   return (
     <div className="min-h-screen pt-20 pb-16 px-4 md:px-6">
       <div className="max-w-7xl mx-auto pt-8 space-y-10">
         {/* Welcome Header */}
         <header className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-end">
           <div className="space-y-3">
-            <DynamicHeader userName={username} context="user-dashboard" />
+            <h1 className="text-4xl md:text-5xl font-headline font-extrabold tracking-tight text-on-surface mb-2">
+              Hey, ready for your next appointment?
+            </h1>
             <p className="text-on-surface-variant text-base leading-relaxed max-w-md">
-              {upcoming.length > 0
-                ? `You have ${upcoming.length} upcoming appointment${upcoming.length > 1 ? "s" : ""} this week.`
-                : "No upcoming appointments. Book a service now!"}
+              {getHeaderContent()}
             </p>
           </div>
 
@@ -452,6 +483,31 @@ function UserDashboard() {
           <div className="space-y-8">
             <div className="glass-card rounded-3xl p-6 md:p-8 shadow-2xl">
               <h2 className="text-xl font-headline font-bold text-on-surface mb-6">Profile Settings</h2>
+              
+              <div className="flex items-center gap-6 mb-8">
+                <div className="relative group">
+                  <div className="w-24 h-24 rounded-full overflow-hidden bg-surface-container-high border-2 border-outline-variant/30 flex items-center justify-center">
+                    {profileForm.profileImageUrl ? (
+                      <img 
+                         src={`${BASE_URL}${profileForm.profileImageUrl.startsWith('/') ? '' : '/'}${profileForm.profileImageUrl}`} 
+                         alt="Avatar" 
+                         className="w-full h-full object-cover" 
+                      />
+                    ) : (
+                      <span className="material-symbols-outlined text-4xl text-on-surface-variant">person</span>
+                    )}
+                  </div>
+                  <label className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                    <span className="material-symbols-outlined text-white">photo_camera</span>
+                    <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
+                  </label>
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-on-surface">Profile Picture</h3>
+                  <p className="text-xs text-on-surface-variant mt-1">Click the image to upload a new avatar.</p>
+                </div>
+              </div>
+
               <form onSubmit={saveProfile} className="space-y-4 max-w-2xl">
                  <div className="grid grid-cols-1 gap-4">
                   <div>

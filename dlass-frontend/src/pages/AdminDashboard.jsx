@@ -143,6 +143,7 @@ function AdminDashboard() {
         axios.get(`${API}/admin/weekly-stats`, { headers }),
       ])
         .then(([statsRes, weeklyRes]) => {
+          console.log("Admin Stats Response:", statsRes.data);
           setStats(statsRes.data);
           setWeeklyStats(weeklyRes.data);
         })
