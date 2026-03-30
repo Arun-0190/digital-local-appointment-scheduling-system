@@ -16,6 +16,11 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.core.userdetails.User;
+import com.dlass.backend.repository.UserRepository;
+
 import java.util.List;
 
 @Configuration
@@ -23,10 +28,14 @@ import java.util.List;
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    private final JwtFilter jwtFilter;
-
-    public SecurityConfig(JwtFilter jwtFilter) {
-        this.jwtFilter = jwtFilter;
+    @Bean
+    public UserDetailsService userDetailsService(UserRepository userRepository) {
+        return username -> userRepository.findByEmailAndIsActiveTrue(username)
+                .map(u -> User.withUsername(u.getEmail())
+                        .password(u.getPassword() != null ? u.getPassword() : "")
+                        .roles(u.getRole() != null ? u.getRole().toUpperCase() : "USER")
+                        .build())
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
 
     @Bean
@@ -43,7 +52,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtFilter jwtFilter) throws Exception {
 
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
@@ -107,6 +116,9 @@ public class SecurityConfig {
 
                         // Static uploads (portfolio images)
                         .requestMatchers("/uploads/**").permitAll()
+
+                        // Chat
+                        .requestMatchers("/api/chat/**").authenticated()
 
                         .anyRequest().authenticated()
                 )

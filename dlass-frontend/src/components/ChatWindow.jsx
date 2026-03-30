@@ -14,35 +14,38 @@ export default function ChatWindow({ isOpen, onClose, currentUser, otherUserId, 
   const messagesEndRef = useRef(null);
   const containerRef = useRef(null);
 
-  const lastTimeRef = useRef(null);
-
   useEffect(() => {
     if (!isOpen || !otherUserId) return;
 
     let isSubscribed = true;
 
     const fetchMessages = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        console.error("No token found for chat");
+        return;
+      }
+      if (!otherUserId) return;
+
+      console.log("Chat token:", token);
+
       try {
-        const since = lastTimeRef.current;
-        const url = since 
-          ? `${API}/chat/${otherUserId}?since=${encodeURIComponent(since)}`
-          : `${API}/chat/${otherUserId}`;
+        const url = `${API}/chat/${otherUserId}`;
+        const res = await axios.get(url, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
         
-        const res = await axios.get(url, { headers: authHeaders() });
-        
-        if (isSubscribed && res.data && res.data.length > 0) {
+        if (isSubscribed && res.data) {
           setMessages(prev => {
-            const existingIds = new Set(prev.map(m => m.id));
-            const newMsgs = res.data.filter(m => !existingIds.has(m.id));
-            if (newMsgs.length > 0) {
-              lastTimeRef.current = newMsgs[newMsgs.length - 1].createdAt;
-              setTimeout(scrollToBottom, 100);
+            if (JSON.stringify(prev) !== JSON.stringify(res.data)) {
+              setTimeout(scrollToBottom, 50);
+              return res.data;
             }
-            return [...prev, ...newMsgs].sort((a,b) => new Date(a.createdAt) - new Date(b.createdAt));
+            return prev;
           });
         }
       } catch (err) {
-        console.error("Chat fetch error", err);
+        console.error("Chat fetch error:", err);
       }
     };
 
@@ -55,7 +58,6 @@ export default function ChatWindow({ isOpen, onClose, currentUser, otherUserId, 
     return () => {
       isSubscribed = false;
       clearInterval(interval);
-      lastTimeRef.current = null;
     };
   }, [isOpen, otherUserId]);
 
@@ -65,6 +67,11 @@ export default function ChatWindow({ isOpen, onClose, currentUser, otherUserId, 
 
   const handleSend = async (e) => {
     e.preventDefault();
+    const token = localStorage.getItem("token");
+    if (!token) {
+      console.error("No token found for chat");
+      return;
+    }
     if (!newMessage.trim() || !otherUserId) return;
 
     const msgData = {
@@ -75,11 +82,16 @@ export default function ChatWindow({ isOpen, onClose, currentUser, otherUserId, 
 
     try {
       setNewMessage(""); // Optimistic clear
-      const res = await axios.post(`${API}/chat`, msgData, { headers: authHeaders() });
-      setMessages(prev => [...prev, res.data]);
-      setTimeout(scrollToBottom, 100);
+      const tempMsg = { ...msgData, id: Date.now().toString(), createdAt: new Date().toISOString() };
+      setMessages(prev => [...prev, tempMsg]);
+      setTimeout(scrollToBottom, 50);
+      
+      await axios.post(`${API}/chat`, msgData, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
     } catch (err) {
-      console.error("Send error", err);
+      console.error("Send error:", err);
     }
   };
 

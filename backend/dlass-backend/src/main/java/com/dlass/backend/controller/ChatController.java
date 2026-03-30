@@ -5,7 +5,9 @@ import com.dlass.backend.model.User;
 import com.dlass.backend.repository.ChatRepository;
 import com.dlass.backend.repository.UserRepository;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -14,6 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/chat")
 @CrossOrigin(origins = "http://localhost:5173")
+@PreAuthorize("isAuthenticated()")
 public class ChatController {
 
     private final ChatRepository chatRepository;
@@ -26,6 +29,7 @@ public class ChatController {
 
     @PostMapping
     public ResponseEntity<ChatMessage> sendMessage(@RequestBody ChatMessage message, Authentication authentication) {
+        System.out.println("Auth object: " + SecurityContextHolder.getContext().getAuthentication());
         User user = userRepository.findByEmailAndIsActiveTrue(authentication.getName())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -43,26 +47,22 @@ public class ChatController {
     @GetMapping("/{otherUserId}")
     public ResponseEntity<List<ChatMessage>> getChatHistory(
             @PathVariable String otherUserId,
-            @RequestParam(required = false) String since,
             Authentication authentication) {
 
+        System.out.println("Auth object: " + SecurityContextHolder.getContext().getAuthentication());
+        
         User user = userRepository.findByEmailAndIsActiveTrue(authentication.getName())
                 .orElseThrow(() -> new RuntimeException("User not found"));
         String myId = user.getId();
 
-        List<ChatMessage> messages;
-        if (since != null && !since.trim().isEmpty()) {
-            LocalDateTime sinceTime = LocalDateTime.parse(since);
-            messages = chatRepository.findNewMessages(myId, otherUserId, sinceTime);
-        } else {
-            messages = chatRepository.findChatHistory(myId, otherUserId);
-        }
+        List<ChatMessage> messages = chatRepository.findChatHistory(myId, otherUserId);
 
         return ResponseEntity.ok(messages);
     }
 
     @PutMapping("/{messageId}/read")
     public ResponseEntity<Void> markAsRead(@PathVariable String messageId, Authentication authentication) {
+        System.out.println("Auth object: " + SecurityContextHolder.getContext().getAuthentication());
         ChatMessage msg = chatRepository.findById(messageId)
                 .orElseThrow(() -> new RuntimeException("Message not found"));
 

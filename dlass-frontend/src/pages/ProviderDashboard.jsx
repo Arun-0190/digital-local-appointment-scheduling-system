@@ -15,6 +15,21 @@ function authHeaders() {
   return { Authorization: `Bearer ${getToken()}` };
 }
 
+function getRangeLabel(range) {
+  const r = range?.toLowerCase();
+  switch(r) {
+    case "1d": return "Last 1 Day";
+    case "3d": return "Last 3 Days";
+    case "7d": return "Last 7 Days";
+    case "15d": return "Last 15 Days";
+    case "1m": return "Last 1 Month";
+    case "3m": return "Last 3 Months";
+    case "6m": return "Last 6 Months";
+    case "1y": return "Last 1 Year";
+    default: return "Last 7 Days";
+  }
+}
+
 // ── Recharts custom tooltip ──────────────────────────────────────────────────
 function CustomTooltip({ active, payload, label, prefix = "", suffix = "" }) {
   if (active && payload && payload.length) {
@@ -304,13 +319,22 @@ export default function ProviderDashboard() {
       </div>
     );
 
+  const headerMap = {
+    appointments: `Hey ${userName}, here are your appointments`,
+    services: `${userName}, want to add a new service?`,
+    availability: `${userName}, when are you available?`,
+    analytics: `${userName}, here’s your performance`,
+    portfolio: `${userName}, showcase your work`
+  };
+  const headerText = headerMap[tab] || `Welcome ${userName}`;
+
   return (
     <div className="min-h-screen pt-20 pb-16 px-4 md:px-8">
       <div className="max-w-7xl mx-auto pt-8 space-y-10">
         {/* Header + Tab Nav */}
         <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
-            <DynamicHeader userName={userName} context="provider-dashboard" />
+            <DynamicHeader userName={headerText} context="provider-dashboard" />
             <p className="text-on-surface-variant max-w-xl text-sm">
               Manage your workspace, optimize availability, and track upcoming appointments.
             </p>
@@ -623,38 +647,45 @@ export default function ProviderDashboard() {
 
                 {/* Bookings per Week — Line Chart */}
                 <div className="glass-card rounded-3xl p-6 md:p-8">
-                  <h2 className="text-lg font-headline font-bold text-on-surface mb-1">Bookings — Last 7 Days</h2>
+                  <h2 className="text-lg font-headline font-bold text-on-surface mb-1">Bookings — {getRangeLabel(analyticsRange)}</h2>
                   <p className="text-xs text-on-surface-variant mb-6">Daily booking count trend</p>
-                  <ResponsiveContainer width="100%" height={220}>
-                    <LineChart data={bookingsWeek}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                      <XAxis dataKey="date" tick={{ fill: "#9ca3af", fontSize: 11 }} tickFormatter={(d) => d.slice(5)} />
-                      <YAxis tick={{ fill: "#9ca3af", fontSize: 11 }} allowDecimals={false} />
-                      <Tooltip content={<CustomTooltip suffix=" bookings" />} />
-                      <Line type="monotone" dataKey="count" stroke="#5de6ff" strokeWidth={2.5} dot={{ fill: "#5de6ff", r: 4 }} activeDot={{ r: 6 }} />
-                    </LineChart>
-                  </ResponsiveContainer>
+                  {bookingsWeek.length === 0 ? (
+                    <div className="text-center py-10 text-on-surface-variant/40 text-sm">No data available.</div>
+                  ) : (
+                    <ResponsiveContainer width="100%" height={220}>
+                      <LineChart data={bookingsWeek}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                        <XAxis dataKey="date" tick={{ fill: "#9ca3af", fontSize: 11 }} tickFormatter={(d) => d.slice(5)} />
+                        <YAxis tick={{ fill: "#9ca3af", fontSize: 11 }} allowDecimals={false} />
+                        <Tooltip content={<CustomTooltip suffix=" bookings" />} />
+                        <Line type="monotone" dataKey="count" stroke="#5de6ff" strokeWidth={2.5} dot={{ fill: "#5de6ff", r: 4 }} activeDot={{ r: 6 }} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  )}
                 </div>
 
                 {/* Revenue per Month — Bar Chart */}
                 <div className="glass-card rounded-3xl p-6 md:p-8">
-                  <h2 className="text-lg font-headline font-bold text-on-surface mb-1">Revenue — Last 12 Months</h2>
+                  <h2 className="text-lg font-headline font-bold text-on-surface mb-1">Revenue — {getRangeLabel(analyticsRange)}</h2>
                   <p className="text-xs text-on-surface-variant mb-6">Monthly revenue from completed appointments (₹)</p>
-                  <ResponsiveContainer width="100%" height={220}>
-                    <BarChart data={revenueMonth}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                      <XAxis dataKey="month" tick={{ fill: "#9ca3af", fontSize: 11 }} tickFormatter={(m) => m.slice(5)} />
-                      <YAxis tick={{ fill: "#9ca3af", fontSize: 11 }} />
-                      <Tooltip content={<CustomTooltip prefix="₹" />} />
-                      <Bar dataKey="revenue" fill="#7c3aed" radius={[4, 4, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
+                  {revenueMonth.length === 0 ? (
+                    <div className="text-center py-10 text-on-surface-variant/40 text-sm">No data available.</div>
+                  ) : (
+                    <ResponsiveContainer width="100%" height={220}>
+                      <BarChart data={revenueMonth}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                        <XAxis dataKey="month" tick={{ fill: "#9ca3af", fontSize: 11 }} tickFormatter={(m) => m.slice(5)} />
+                        <YAxis tick={{ fill: "#9ca3af", fontSize: 11 }} />
+                        <Tooltip content={<CustomTooltip prefix="₹" />} />
+                        <Bar dataKey="revenue" fill="#7c3aed" radius={[4, 4, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  )}
                 </div>
 
                 {/* Peak Hours — Bar Chart */}
                 <div className="glass-card rounded-3xl p-6 md:p-8">
-                  <h2 className="text-lg font-headline font-bold text-on-surface mb-1">Peak Booking Hours</h2>
-                  <p className="text-xs text-on-surface-variant mb-6">Hours sorted by highest bookings</p>
+                  <h2 className="text-lg font-headline font-bold text-on-surface mb-1">Peak Booking Hours — {getRangeLabel(analyticsRange)}</h2>
                   {peakHours.length === 0 ? (
                     <div className="text-center py-10 text-on-surface-variant/40 text-sm">No booking data yet.</div>
                   ) : (
@@ -677,21 +708,24 @@ export default function ProviderDashboard() {
                       <span className="material-symbols-outlined text-purple-400 text-xl">psychology</span>
                     </div>
                     <div>
-                      <h2 className="text-lg font-headline font-bold text-on-surface">AI Recommendations</h2>
-                      <p className="text-xs text-on-surface-variant">Rule-based intelligent insights</p>
+                      <h2 className="text-lg font-headline font-bold text-on-surface">AI Recommendations — {getRangeLabel(analyticsRange)}</h2>
                     </div>
                   </div>
                   <div className="space-y-3">
-                    {recommendations.map((rec, i) => (
-                      <div
-                        key={i}
-                        className="flex items-start gap-3 p-4 rounded-2xl bg-surface-container-low border border-outline-variant/10 hover:border-primary/20 transition-all"
-                        style={{ animationDelay: `${i * 80}ms` }}
-                      >
-                        <div className="w-2 h-2 rounded-full bg-gradient-to-br from-primary to-secondary mt-2 shrink-0" />
-                        <p className="text-sm text-on-surface leading-relaxed">{rec}</p>
-                      </div>
-                    ))}
+                    {recommendations.length === 0 ? (
+                      <div className="text-center py-4 text-on-surface-variant/40 text-sm">No data available.</div>
+                    ) : (
+                      recommendations.map((rec, i) => (
+                        <div
+                          key={i}
+                          className="flex items-start gap-3 p-4 rounded-2xl bg-surface-container-low border border-outline-variant/10 hover:border-primary/20 transition-all"
+                          style={{ animationDelay: `${i * 80}ms` }}
+                        >
+                          <div className="w-2 h-2 rounded-full bg-gradient-to-br from-primary to-secondary mt-2 shrink-0" />
+                          <p className="text-sm text-on-surface leading-relaxed">{rec}</p>
+                        </div>
+                      ))
+                    )}
                   </div>
                 </div>
               </>
