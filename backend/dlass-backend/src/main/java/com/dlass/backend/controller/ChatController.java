@@ -9,6 +9,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import com.dlass.backend.service.NotificationService;
+import com.dlass.backend.model.NotificationType;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -21,10 +23,12 @@ public class ChatController {
 
     private final ChatRepository chatRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
-    public ChatController(ChatRepository chatRepository, UserRepository userRepository) {
+    public ChatController(ChatRepository chatRepository, UserRepository userRepository, NotificationService notificationService) {
         this.chatRepository = chatRepository;
         this.userRepository = userRepository;
+        this.notificationService = notificationService;
     }
 
     @PostMapping
@@ -41,6 +45,16 @@ public class ChatController {
         message.setTimestamp(LocalDateTime.now());
         message.setRead(false);
         ChatMessage saved = chatRepository.save(message);
+
+        // Add Notification
+        notificationService.createNotification(
+                message.getReceiverId(),
+                "New message from " + user.getFullName() + ": " + message.getMessage(),
+                NotificationType.CHAT,
+                message.getId(),
+                user.getRole().equals("USER") ? "/provider/dashboard" : "/dashboard"
+        );
+
         return ResponseEntity.ok(saved);
     }
 
@@ -56,6 +70,11 @@ public class ChatController {
         String myId = user.getId();
 
         List<ChatMessage> messages = chatRepository.findChatHistory(myId, otherUserId);
+
+        User otherUser = userRepository.findById(otherUserId).orElse(null);
+        if (otherUser != null) {
+            notificationService.markChatNotificationsAsReadForSender(myId, otherUser.getFullName());
+        }
 
         return ResponseEntity.ok(messages);
     }

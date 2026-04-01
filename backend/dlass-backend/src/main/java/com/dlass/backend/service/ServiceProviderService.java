@@ -34,6 +34,8 @@ import com.dlass.backend.repository.ServiceOfferingRepository;
 import com.dlass.backend.repository.ServiceProviderRepository;
 import com.dlass.backend.repository.UserRepository;
 import com.dlass.backend.dto.ProviderApplicationRequest;
+import com.dlass.backend.service.NotificationService;
+import com.dlass.backend.model.NotificationType;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -55,6 +57,7 @@ public class ServiceProviderService {
     private final ReviewRepository reviewRepository;
     private final AppointmentRepository appointmentRepository;
     private final ProviderAvailabilityRepository availabilityRepository;
+    private final NotificationService notificationService;
 
     @Value("${app.avatar.dir:uploads/avatars}")
     private String avatarDir;
@@ -64,13 +67,15 @@ public class ServiceProviderService {
                                   ServiceOfferingRepository serviceOfferingRepository,
                                   ReviewRepository reviewRepository,
                                   AppointmentRepository appointmentRepository,
-                                  ProviderAvailabilityRepository availabilityRepository) {
+                                  ProviderAvailabilityRepository availabilityRepository,
+                                  NotificationService notificationService) {
         this.repository = repository;
         this.userRepository = userRepository;
         this.serviceOfferingRepository = serviceOfferingRepository;
         this.reviewRepository = reviewRepository;
         this.appointmentRepository = appointmentRepository;
         this.availabilityRepository = availabilityRepository;
+        this.notificationService = notificationService;
     }
 
     public ServiceProvider register(ServiceProvider provider, String email) {
@@ -135,7 +140,25 @@ public class ServiceProviderService {
         provider.setRating(0);
         provider.setReviewCount(0);
 
-        return repository.save(provider);
+        ServiceProvider saved = repository.save(provider);
+
+        // Notify all ADMIN users about the new provider application
+        try {
+            List<User> admins = userRepository.findByRoleAndIsActiveTrue("ADMIN");
+            for (User admin : admins) {
+                notificationService.createNotification(
+                        admin.getId(),
+                        "New provider application: " + request.getBusinessName() + " is awaiting approval.",
+                        NotificationType.ADMIN,
+                        saved.getId(),
+                        "/admin"
+                );
+            }
+        } catch (Exception e) {
+            System.out.println("Could not notify admins: " + e.getMessage());
+        }
+
+        return saved;
     }
 
     public List<ServiceProvider> getPendingProviders() {

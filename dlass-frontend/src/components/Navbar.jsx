@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { logout, getToken, getUserRole, getUsername } from "../services/authService";
 import ThemeToggle from "./ui/ThemeToggle";
 import Button from "./ui/Button";
+import NotificationBell from "./NotificationBell";
 
 function Navbar() {
   const navigate = useNavigate();
@@ -69,6 +70,8 @@ function Navbar() {
         {/* Right side auth actions & Theme Toggle */}
         <div className="flex items-center gap-4 md:gap-6">
           <ThemeToggle />
+          
+          {token && <NotificationBell />}
           
           <div className="h-6 w-px bg-glassBorder hidden sm:block"></div>
           
