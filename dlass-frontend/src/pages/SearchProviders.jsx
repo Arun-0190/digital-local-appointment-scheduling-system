@@ -28,7 +28,7 @@ function StarRating({ rating }) {
       {Array.from({ length: 5 }, (_, i) => (
         <span
           key={i}
-          className="material-symbols-outlined text-sm text-secondary"
+          className="material-symbols-outlined text-sm text-indigo-500"
           style={{ fontVariationSettings: i < full ? "'FILL' 1" : "'FILL' 0" }}
         >
           star
@@ -209,8 +209,8 @@ function SearchProviders() {
                     onClick={() => setSelectedCategory(cat.id)}
                     className={`px-4 py-2 rounded-xl border text-sm font-bold transition-all shadow-sm ${
                       selectedCategory === cat.id 
-                        ? "bg-primary/10 border-primary/50 text-primary" 
-                        : "bg-inputBg border-inputBorder text-textSecondary hover:border-primary hover:text-primary"
+                        ? "bg-indigo-600 text-white border-indigo-600 shadow-md shadow-indigo-500/20" 
+                        : "bg-white dark:bg-gray-800 border-inputBorder text-textSecondary hover:border-primary hover:text-primary"
                     }`}
                   >
                     {cat.name}
@@ -221,10 +221,10 @@ function SearchProviders() {
           )}
 
           {fromPincode && pincode && (
-            <div className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-secondary/10 border border-secondary/20 rounded-xl text-secondary text-sm font-bold">
+            <div className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 rounded-xl text-indigo-600 dark:text-indigo-400 text-sm font-bold">
               <span className="material-symbols-outlined text-base">location_on</span>
               Showing providers near pincode <span className="font-mono">{pincode}</span>
-              <button type="button" onClick={() => { setPincode(""); setFromPincode(false); }} className="ml-2 text-xs text-secondary/70 hover:text-secondary transition-colors">
+              <button type="button" onClick={() => { setPincode(""); setFromPincode(false); }} className="ml-2 text-xs opacity-70 hover:opacity-100 transition-opacity">
                 ✕ Clear
               </button>
             </div>
@@ -280,7 +280,7 @@ function SearchProviders() {
               <button
                 type="button"
                 onClick={() => setShowAdvanced(!showAdvanced)}
-                className="text-secondary text-sm font-bold flex items-center gap-1 hover:text-primary transition-colors"
+                className="text-indigo-600 dark:text-indigo-400 text-sm font-bold flex items-center gap-1 hover:text-indigo-800 transition-colors"
               >
                 <span className="material-symbols-outlined text-base">
                   {showAdvanced ? 'expand_less' : 'expand_more'}
@@ -392,49 +392,55 @@ function SearchProviders() {
               {results.map((provider) => (
                 <GlassCard
                   key={provider.id}
-                  hoverEffect
                   onClick={() => navigate(`/provider/${provider.id}`)}
-                  className="!p-1 group hover:shadow-[0_0_30px_rgba(93,230,255,0.15)] flex flex-col"
+                  className="!p-0 group hover:shadow-[0_15px_30px_-5px_rgba(79,70,229,0.15)] flex flex-col border border-transparent hover:border-indigo-500/30 overflow-hidden"
                 >
-                  <div className="bg-black/5 dark:bg-white/5 rounded-xl p-6 h-full flex flex-col">
+                  <div className="bg-white dark:bg-gray-800/80 p-6 h-full flex flex-col transition-colors group-hover:bg-indigo-50/10 dark:group-hover:bg-indigo-900/5">
                     <div className="flex justify-between items-start mb-5">
-                      <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20 group-hover:border-primary/40 transition-colors shrink-0">
-                        <span className="material-symbols-outlined text-3xl text-primary">business_center</span>
+                      <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300">
+                        <span className="material-symbols-outlined text-2xl group-hover:scale-110 transition-transform">business_center</span>
                       </div>
-                      <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-[10px] font-black tracking-widest uppercase border border-primary/20">
-                        {provider.experienceYears}+ yrs
-                      </span>
+                      <div className="flex flex-col items-end gap-2">
+                        <span className="px-3 py-1 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-lg text-[10px] font-bold tracking-wider border border-indigo-200 dark:border-indigo-800 uppercase">
+                          {provider.experienceYears}+ yrs exp
+                        </span>
+                        {pincode && provider.pincode === pincode && (
+                          <span className="flex items-center gap-1 text-[10px] text-accent font-bold uppercase tracking-wider">
+                            <span className="material-symbols-outlined text-[10px]">near_me</span>
+                            Near You
+                          </span>
+                        )}
+                      </div>
                     </div>
 
-                    <h3 className="font-headline text-lg font-bold text-textPrimary mb-1">{provider.businessName}</h3>
-                    <p className="text-textSecondary text-sm mb-4 flex items-center gap-1">
-                      <span className="material-symbols-outlined text-xs text-secondary">location_on</span>
-                      {provider.area ? `${provider.area}, ` : ""}{provider.city}{provider.pincode ? ` – ${provider.pincode}` : ""}
+                    <h3 className="font-headline text-lg font-bold text-textPrimary mb-1 group-hover:text-indigo-600 transition-colors">{provider.businessName}</h3>
+                    <p className="text-textSecondary text-xs mb-4 flex items-center gap-1 opacity-80">
+                      <span className="material-symbols-outlined text-xs">location_on</span>
+                      {provider.area ? `${provider.area}, ` : ""}{provider.city}
                     </p>
 
-                    <StarRating rating={provider.rating} />
-                    <p className="text-xs text-textSecondary/60 mt-1 mb-4">
-                      {provider.reviewCount} review{provider.reviewCount !== 1 ? "s" : ""}
-                    </p>
+                    <div className="mb-4">
+                      <StarRating rating={provider.rating} />
+                      <p className="text-[10px] text-textSecondary/60 mt-1 uppercase tracking-widest font-bold">
+                        {provider.reviewCount} total review{provider.reviewCount !== 1 ? "s" : ""}
+                      </p>
+                    </div>
 
                     {provider.services && provider.services.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5 mb-4">
+                      <div className="flex flex-wrap gap-1.5 mb-6">
                         {provider.services.slice(0, 3).map((svc) => (
-                          <span key={svc} className="px-2 py-0.5 bg-black/5 dark:bg-white/10 text-textSecondary text-[10px] font-label tracking-widest uppercase rounded-full">
+                          <span key={svc} className="px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-textSecondary text-[10px] font-semibold rounded-md border border-gray-200 dark:border-gray-600">
                             {svc}
                           </span>
                         ))}
-                        {provider.services.length > 3 && (
-                          <span className="text-xs text-textSecondary/50">+{provider.services.length - 3} more</span>
-                        )}
                       </div>
                     )}
 
-                    <div className="mt-auto pt-4 flex items-center justify-end border-t border-glassBorder">
-                      <button className="text-secondary font-headline font-bold text-sm hover:underline underline-offset-4 decoration-2 transition-all flex items-center gap-1">
-                        View Profile
+                    <div className="mt-auto pt-4 flex items-center justify-between border-t border-gray-100 dark:border-gray-700">
+                       <span className="text-xs font-bold text-indigo-600/60 dark:text-indigo-400/60 tracking-wider uppercase">View Availability</span>
+                       <div className="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 group-hover:translate-x-0 -translate-x-2 transition-all duration-300 shadow-md shadow-indigo-500/30">
                         <span className="material-symbols-outlined text-sm">arrow_forward</span>
-                      </button>
+                       </div>
                     </div>
                   </div>
                 </GlassCard>

@@ -3,6 +3,9 @@ import axios from "axios";
 import { getToken } from "../services/authService";
 import { getPendingProviders, approveProvider, rejectProvider } from "../services/providerService";
 import { getCategories } from "../services/catalogService";
+import PageWrapper from "../components/ui/PageWrapper";
+import StatCard from "../components/ui/StatCard";
+import Button from "../components/ui/Button";
 
 const API = "http://localhost:8080/api";
 
@@ -299,9 +302,10 @@ function AdminDashboard() {
 
   // ── Helpers ──────────────────────────────────────────────────────────────
   const statusColor = (status) => {
-    if (status === "ACTIVE") return "bg-green-500/10 text-green-300 border-green-500/20";
-    if (status === "PENDING") return "bg-amber-500/10 text-amber-300 border-amber-500/20";
-    return "bg-red-500/10 text-red-300 border-red-500/20";
+    if (status === "ACTIVE") return "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20";
+    if (status === "PENDING") return "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20";
+    if (status === "DEACTIVATED") return "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20";
+    return "bg-gray-100 text-gray-500 border-gray-200";
   };
 
   const TABS = [
@@ -317,14 +321,14 @@ function AdminDashboard() {
   ];
 
   const EmptyState = ({ icon, text }) => (
-    <div className="glass-panel rounded-3xl p-16 text-center">
-      <span className="material-symbols-outlined text-5xl text-on-surface-variant/20 mb-4 block">{icon}</span>
-      <p className="font-headline text-lg font-bold text-on-surface-variant/50">{text}</p>
+    <div className="bg-gray-50 dark:bg-gray-800/20 rounded-3xl p-16 text-center border border-dashed border-gray-200 dark:border-gray-700">
+      <span className="material-symbols-outlined text-5xl text-gray-300 dark:text-gray-600 mb-4 block">{icon}</span>
+      <p className="font-headline text-lg font-bold text-textSecondary opacity-60">{text}</p>
     </div>
   );
 
   return (
-    <div className="min-h-screen pt-20 pb-16 px-4 md:px-8">
+    <PageWrapper className="pt-24 pb-16 px-4 md:px-8">
       {/* Toast */}
       {toast && <Toast message={toast.message} type={toast.type} onClose={hideToast} />}
 
@@ -339,33 +343,32 @@ function AdminDashboard() {
 
       <div className="max-w-6xl mx-auto pt-8 space-y-8">
         {/* Header */}
-        <header>
-          <div className="flex items-center gap-3 mb-2">
-            <span className="w-2 h-8 bg-gradient-to-b from-primary-container to-secondary rounded-full" />
-            <h1 className="text-4xl font-headline font-extrabold tracking-tight text-on-surface">
-              Admin Dashboard
-            </h1>
+        <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-1">
+             <h1 className="text-3xl font-headline font-extrabold tracking-tight text-textPrimary">
+                Admin Control Room
+             </h1>
+            <p className="text-textSecondary text-sm">
+              Manage providers, users, and platform performance.
+            </p>
           </div>
-          <p className="text-on-surface-variant text-sm ml-5">
-            Manage providers, users, and view platform analytics.
-          </p>
         </header>
 
         {/* Tab Nav — scrollable on mobile */}
-        <div className="overflow-x-auto pb-1">
-          <div className="flex gap-2 bg-surface-container-low p-1.5 rounded-2xl border border-outline-variant/10 w-fit min-w-full sm:min-w-0">
+        <div className="overflow-x-auto pb-1 no-scrollbar">
+          <div className="flex gap-2 bg-gray-100 dark:bg-gray-800/50 p-1 rounded-2xl border border-gray-200 dark:border-gray-700 w-fit min-w-full sm:min-w-0 shadow-inner">
             {TABS.map(({ key, icon, label }) => (
               <button
                 key={key}
                 onClick={() => setTab(key)}
-                className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl font-headline font-bold text-xs uppercase tracking-widest transition-all whitespace-nowrap ${
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-headline font-bold text-[10px] uppercase tracking-widest transition-all whitespace-nowrap ${
                   tab === key
-                    ? "bg-primary-container text-on-primary-container shadow-lg"
-                    : "text-on-surface-variant hover:text-white"
+                    ? "bg-white dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 shadow-sm"
+                    : "text-textSecondary hover:text-textPrimary"
                 }`}
               >
                 <span className="material-symbols-outlined text-sm">{icon}</span>
-                <span className="hidden sm:inline">{label}</span>
+                <span>{label}</span>
               </button>
             ))}
           </div>
@@ -395,8 +398,8 @@ function AdminDashboard() {
                       <div key={p.id} className="glass-card rounded-3xl p-6 md:p-8">
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
                           <div>
-                            <h3 className="text-xl font-headline font-bold text-on-surface">{p.businessName}</h3>
-                            <p className="text-on-surface-variant text-sm mt-1">
+                            <h3 className="text-xl font-headline font-bold text-textPrimary">{p.businessName}</h3>
+                            <p className="text-textSecondary text-sm mt-1">
                               {resolveName(p.categoryId)} › {resolveName(p.subCategoryId)}
                             </p>
                           </div>
@@ -406,32 +409,23 @@ function AdminDashboard() {
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">
                           {/* Contact Info Group */}
-                          <div className="flex items-start gap-3 bg-surface-container-low/50 p-3.5 rounded-xl col-span-1 sm:col-span-2 border-l-2 border-secondary">
-                            <span className="material-symbols-outlined text-secondary text-base pt-0.5">contact_mail</span>
+                          <div className="flex items-start gap-3 bg-gray-50 dark:bg-gray-800/40 p-4 rounded-xl col-span-1 sm:col-span-2 border border-gray-100 dark:border-gray-700 border-l-4 border-l-blue-600">
+                            <span className="material-symbols-outlined text-blue-600 text-base pt-0.5">contact_mail</span>
                             <div className="w-full">
-                              <div className="text-xs text-on-surface-variant font-label tracking-widest uppercase mb-1">Applicant Contact</div>
-                              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-1">
+                              <div className="text-[10px] text-textSecondary font-bold tracking-widest uppercase mb-1">Applicant Contact</div>
+                              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-2">
                                 <div className="text-sm">
-                                  <span className="text-on-surface-variant text-xs block mb-0.5">Name</span>
-                                  <span className="text-on-surface font-medium">{p.userName || "—"}</span>
+                                  <span className="text-textSecondary text-[10px] uppercase font-bold block mb-0.5">Name</span>
+                                  <span className="text-textPrimary font-semibold">{p.userName || "—"}</span>
                                 </div>
                                 <div className="text-sm truncate">
-                                  <span className="text-on-surface-variant text-xs block mb-0.5">Email</span>
-                                  <span className="text-on-surface font-medium">{p.userEmail || "—"}</span>
+                                  <span className="text-textSecondary text-[10px] uppercase font-bold block mb-0.5">Email</span>
+                                  <span className="text-textPrimary font-semibold">{p.userEmail || "—"}</span>
                                 </div>
                                 <div className="text-sm">
-                                  <span className="text-on-surface-variant text-xs block mb-0.5">Phone</span>
+                                  <span className="text-textSecondary text-[10px] uppercase font-bold block mb-0.5">Phone</span>
                                   <div className="flex items-center gap-2 group">
-                                    <span className="text-on-surface font-medium">{p.phone || "—"}</span>
-                                    {p.phone && (
-                                      <button 
-                                        onClick={() => copyToClipboard(p.phone, "Phone number")}
-                                        className="opacity-0 group-hover:opacity-100 p-1 rounded-md bg-white/5 hover:bg-white/10 text-secondary transition-all"
-                                        title="Copy Phone"
-                                      >
-                                        <span className="material-symbols-outlined text-[14px]">content_copy</span>
-                                      </button>
-                                    )}
+                                    <span className="text-textPrimary font-semibold">{p.phone || "—"}</span>
                                   </div>
                                 </div>
                               </div>
@@ -439,16 +433,16 @@ function AdminDashboard() {
                           </div>
 
                           {[
-                            { icon: "star", label: "Experience", value: `${p.experienceYears} Years` },
+                            { icon: "verified", label: "Experience", value: `${p.experienceYears} Years` },
                             { icon: "location_on", label: "Location", value: `${p.city}, ${p.area} (${p.pincode})` },
-                            { icon: "build", label: "Services", value: p.services?.join(", ") || "—" },
-                            { icon: "description", label: "Description", value: p.description || "—" },
+                            { icon: "inventory_2", label: "Services", value: p.services?.join(", ") || "—" },
+                            { icon: "text_snippet", label: "Description", value: p.description || "—" },
                           ].map(({ icon, label, value }) => (
-                            <div key={label} className="flex items-start gap-3 bg-surface-container-low/50 p-3.5 rounded-xl">
-                              <span className="material-symbols-outlined text-on-surface-variant text-sm pt-0.5">{icon}</span>
+                            <div key={label} className="flex items-start gap-3 bg-gray-50 dark:bg-gray-800/40 p-3.5 rounded-xl border border-gray-100 dark:border-gray-700">
+                              <span className="material-symbols-outlined text-indigo-500 text-sm pt-0.5">{icon}</span>
                               <div>
-                                <div className="text-xs text-on-surface-variant font-label tracking-widest uppercase mb-0.5">{label}</div>
-                                <div className="text-sm text-on-surface font-medium">{value}</div>
+                                <div className="text-[10px] text-textSecondary font-bold tracking-widest uppercase mb-0.5">{label}</div>
+                                <div className="text-sm text-textPrimary font-medium">{value}</div>
                               </div>
                             </div>
                           ))}
@@ -456,14 +450,14 @@ function AdminDashboard() {
                         <div className="flex gap-3">
                           <button
                             onClick={() => handleApprove(p.id)}
-                            className="flex-1 py-3 rounded-xl bg-green-500/20 text-green-300 border border-green-500/30 font-headline font-bold text-sm hover:bg-green-500/30 transition-all flex items-center justify-center gap-2"
+                            className="flex-1 py-3 rounded-xl bg-emerald-600 text-white font-headline font-bold text-sm uppercase tracking-wider hover:bg-emerald-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20"
                           >
                             <span className="material-symbols-outlined text-sm">check_circle</span>
                             Approve
                           </button>
                           <button
                             onClick={() => handleReject(p.id)}
-                            className="flex-1 py-3 rounded-xl bg-red-500/20 text-red-300 border border-red-500/30 font-headline font-bold text-sm hover:bg-red-500/30 transition-all flex items-center justify-center gap-2"
+                            className="flex-1 py-3 rounded-xl bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800 font-headline font-bold text-sm uppercase tracking-wider hover:bg-rose-100 transition-all flex items-center justify-center gap-2"
                           >
                             <span className="material-symbols-outlined text-sm">cancel</span>
                             Reject
@@ -481,50 +475,21 @@ function AdminDashboard() {
               <div className="space-y-6">
                 {/* Total Stats */}
                 {stats && (
-                  <>
-                    <h2 className="text-lg font-headline font-bold text-on-surface-variant uppercase tracking-widest text-sm">
-                      Platform Overview
-                    </h2>
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                      {[
-                        { icon: "group", label: "Total Users", value: stats.totalUsers, color: "text-blue-300" },
-                        { icon: "store", label: "Total Providers", value: stats.totalProviders, color: "text-violet-300" },
-                        { icon: "verified", label: "Active Providers", value: stats.activeProviders, color: "text-green-300" },
-                        { icon: "block", label: "Inactive Providers", value: stats.inactiveProviders, color: "text-amber-300" },
-                        { icon: "calendar_month", label: "All Appointments", value: stats.totalAppointments, color: "text-secondary" },
-                      ].map((s) => (
-                        <div key={s.label} className="glass-card rounded-2xl p-6 text-center hover:scale-[1.02] transition-transform">
-                          <span className={`material-symbols-outlined text-3xl ${s.color} mb-2 block`}>{s.icon}</span>
-                          <div className={`text-4xl font-headline font-black ${s.color} mb-1`}>{s.value}</div>
-                          <div className="text-xs font-label text-on-surface-variant uppercase tracking-widest">{s.label}</div>
-                        </div>
-                      ))}
-                    </div>
-                  </>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <StatCard title="Total Users" value={stats.totalUsers} icon="group" color="primary" />
+                    <StatCard title="Total Providers" value={stats.totalProviders} icon="store" color="secondary" />
+                    <StatCard title="Active Providers" value={stats.activeProviders} icon="verified" color="success" />
+                    <StatCard title="All Appointments" value={stats.totalAppointments} icon="calendar_month" color="warning" />
+                  </div>
                 )}
 
                 {/* Weekly Stats */}
                 {weeklyStats && (
-                  <>
-                    <h2 className="text-sm font-headline font-bold text-on-surface-variant uppercase tracking-widest mt-4">
-                      Last 7 Days Activity
-                    </h2>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                      {[
-                        { icon: "calendar_month", label: "Appointments", value: weeklyStats.appointmentsLastWeek, color: "text-cyan-300", bg: "from-cyan-500/10 to-blue-500/5" },
-                        { icon: "person_add", label: "New Users", value: weeklyStats.newUsers, color: "text-violet-300", bg: "from-violet-500/10 to-purple-500/5" },
-                        { icon: "storefront", label: "New Providers", value: weeklyStats.newProviders, color: "text-emerald-300", bg: "from-emerald-500/10 to-green-500/5" },
-                      ].map((s) => (
-                        <div key={s.label} className={`glass-card rounded-2xl p-8 bg-gradient-to-br ${s.bg} flex items-center gap-5 hover:scale-[1.02] transition-transform`}>
-                          <span className={`material-symbols-outlined text-4xl ${s.color}`}>{s.icon}</span>
-                          <div>
-                            <div className={`text-5xl font-headline font-black ${s.color}`}>{s.value}</div>
-                            <div className="text-xs font-label text-on-surface-variant uppercase tracking-widest mt-1">{s.label}</div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                    <StatCard title="New Signups" value={weeklyStats.newUsers} icon="person_add" color="primary" trend="up" trendValue="+12%" />
+                    <StatCard title="New Providers" value={weeklyStats.newProviders} icon="storefront" color="secondary" trend="up" trendValue="+5%" />
+                    <StatCard title="Recent Bookings" value={weeklyStats.appointmentsLastWeek} icon="event_repeat" color="success" trend="down" trendValue="-2%" />
+                  </div>
                 )}
               </div>
             )}
@@ -534,10 +499,10 @@ function AdminDashboard() {
               <div className="glass-card rounded-3xl p-6 md:p-8 shadow-2xl space-y-5">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
-                    <h2 className="text-xl font-headline font-bold text-on-surface">Active Users</h2>
-                    <p className="text-xs text-on-surface-variant mt-0.5">Showing only USER role accounts</p>
+                    <h2 className="text-xl font-headline font-bold text-textPrimary">Active Users</h2>
+                    <p className="text-xs text-textSecondary mt-0.5">Showing only USER role accounts</p>
                   </div>
-                  <span className="text-xs font-label tracking-widest text-on-surface-variant uppercase bg-white/5 px-4 py-2 rounded-full">
+                  <span className="text-xs font-label tracking-widest text-textSecondary uppercase bg-white/5 px-4 py-2 rounded-full">
                     {filteredUsers.length} / {users.length}
                   </span>
                 </div>
@@ -551,7 +516,7 @@ function AdminDashboard() {
                     <thead>
                       <tr className="text-left">
                         {["Name", "Email", "Pincode", "Joined", "Action"].map((h) => (
-                          <th key={h} className="pb-2 px-4 text-xs font-label uppercase tracking-widest text-on-surface-variant">
+                          <th key={h} className="pb-2 px-4 text-xs font-label uppercase tracking-widest text-textSecondary">
                             {h}
                           </th>
                         ))}
@@ -565,11 +530,11 @@ function AdminDashboard() {
                           </td>
                         </tr>
                       ) : filteredUsers.map((u) => (
-                        <tr key={u.id} className="bg-surface-container-low hover:bg-surface-container-high transition-colors">
-                          <td className="py-3 px-4 rounded-l-xl text-sm font-bold text-on-surface">{u.fullName}</td>
-                          <td className="py-3 px-4 text-sm text-on-surface-variant">{u.email}</td>
-                          <td className="py-3 px-4 text-sm text-on-surface-variant font-mono">{u.pincode || "—"}</td>
-                          <td className="py-3 px-4 text-xs text-on-surface-variant">
+                        <tr key={u.id} className="bg-gray-50 dark:bg-gray-800/40 hover:bg-gray-100 dark:hover:bg-gray-700/60 transition-colors">
+                          <td className="py-3 px-4 rounded-l-xl text-sm font-bold text-textPrimary">{u.fullName}</td>
+                          <td className="py-3 px-4 text-sm text-textSecondary">{u.email}</td>
+                          <td className="py-3 px-4 text-sm text-textSecondary font-mono">{u.pincode || "—"}</td>
+                          <td className="py-3 px-4 text-xs text-textSecondary">
                             {u.createdAt ? new Date(u.createdAt).toLocaleDateString() : "—"}
                           </td>
                           <td className="py-3 px-4 rounded-r-xl">
@@ -622,10 +587,10 @@ function AdminDashboard() {
                           </td>
                         </tr>
                       ) : filteredProviders.map((p) => (
-                        <tr key={p.id} className="bg-surface-container-low hover:bg-surface-container-high transition-colors">
-                          <td className="py-3 px-4 rounded-l-xl text-sm font-bold text-on-surface">{p.businessName}</td>
-                          <td className="py-3 px-4 text-sm text-on-surface-variant">{p.city}</td>
-                          <td className="py-3 px-4 text-sm text-on-surface-variant font-mono">{p.pincode}</td>
+                        <tr key={p.id} className="bg-gray-50 dark:bg-gray-800/40 hover:bg-gray-100 dark:hover:bg-gray-700/60 transition-colors">
+                          <td className="py-3 px-4 rounded-l-xl text-sm font-bold text-textPrimary">{p.businessName}</td>
+                          <td className="py-3 px-4 text-sm text-textSecondary">{p.city}</td>
+                          <td className="py-3 px-4 text-sm text-textSecondary font-mono">{p.pincode}</td>
                           <td className="py-3 px-4 text-sm text-yellow-300 font-bold">
                             ★ {p.rating?.toFixed(1) || "0.0"}
                           </td>
@@ -686,7 +651,7 @@ function AdminDashboard() {
                           <td className="py-3 px-4 rounded-r-xl">
                             <button
                               onClick={() => handleReactivateUser(u.id)}
-                              className="flex items-center gap-1 text-xs font-bold text-green-400 hover:text-green-300 transition-colors"
+                              className="flex items-center gap-1 text-xs font-bold text-emerald-500 hover:text-emerald-400 transition-colors"
                             >
                               <span className="material-symbols-outlined text-sm">person_add</span>
                               Reactivate
@@ -735,7 +700,7 @@ function AdminDashboard() {
                           <td className="py-3 px-4 rounded-r-xl">
                             <button
                               onClick={() => handleReactivateProvider(p.id)}
-                              className="flex items-center gap-1 text-xs font-bold text-green-400 hover:text-green-300 transition-colors"
+                              className="flex items-center gap-1 text-xs font-bold text-emerald-500 hover:text-emerald-400 transition-colors"
                             >
                               <span className="material-symbols-outlined text-sm">domain_verification</span>
                               Reactivate
@@ -890,7 +855,7 @@ function AdminDashboard() {
           </>
         )}
       </div>
-    </div>
+    </PageWrapper>
   );
 }
 

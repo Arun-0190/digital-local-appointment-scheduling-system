@@ -68,14 +68,13 @@ function Register() {
 
   return (
     <PageWrapper className="justify-center items-center">
-      <div className="absolute top-1/4 right-1/4 w-72 h-72 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-1/4 left-1/4 w-64 h-64 bg-secondary/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-1/4 right-1/4 w-72 h-72 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-1/4 left-1/4 w-64 h-64 bg-blue-400/10 rounded-full blur-3xl pointer-events-none" />
 
       <div className="relative w-full max-w-lg z-10 pt-10 pb-10">
         <GlassCard className="shadow-2xl">
-          {/* Header */}
           <div className="mb-8 text-center flex flex-col items-center">
-            <span className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary/20 mb-4 text-primary">
+            <span className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-indigo-500/10 mb-4 text-indigo-600 dark:text-indigo-400">
               <span className="material-symbols-outlined text-3xl">person_add</span>
             </span>
             <h1 className="text-3xl font-headline font-extrabold tracking-tight text-textPrimary">
@@ -185,7 +184,7 @@ function Register() {
 
           <p className="text-center text-sm text-textSecondary mt-6">
             Already have an account?{" "}
-            <Link to="/login" className="text-secondary font-bold hover:text-primary transition-colors underline-offset-4 hover:underline">
+            <Link to="/login" className="text-indigo-600 dark:text-indigo-400 font-bold hover:underline">
               Sign in
             </Link>
           </p>

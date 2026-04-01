@@ -10,6 +10,8 @@ import DynamicHeader from "../components/DynamicHeader";
 import ChatWindow from "../components/ChatWindow";
 import AppointmentDetailModal from "../components/AppointmentDetailModal";
 import PageWrapper from "../components/ui/PageWrapper";
+import StatCard from "../components/ui/StatCard";
+import Button from "../components/ui/Button";
 
 const API = "http://localhost:8080/api";
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
@@ -97,6 +99,8 @@ export default function ProviderDashboard() {
   const [recommendations, setRecommendations] = useState([]);
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
   const [analyticsRange, setAnalyticsRange] = useState("7d");
+  const [reviews, setReviews] = useState([]);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
 
   // Portfolio
   const [portfolioImages, setPortfolioImages] = useState([]);
@@ -139,6 +143,11 @@ export default function ProviderDashboard() {
           pincode: dashboardRes.data.pincode || "",
           profileImageUrl: dashboardRes.data.profileImageUrl || ""
         });
+
+        // Global fetch for reviews to use in multiple tabs
+        axios.get(`${API}/reviews/provider/${dashboardRes.data.providerId}`)
+          .then(r => setReviews(r.data))
+          .catch(() => {});
       } catch (err) {
         console.error("Dashboard Init Error:", err);
         setError("Could not load dashboard. Make sure you are an approved provider.");
@@ -221,6 +230,18 @@ export default function ProviderDashboard() {
   useEffect(() => {
     if (!providerId || tab !== "portfolio") return;
     axios.get(`${API}/provider/${providerId}/portfolio`).then((r) => setPortfolioImages(r.data)).catch(() => {});
+  }, [providerId, tab]);
+
+  // ── Reviews tab ───────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!providerId || tab !== "reviews") return;
+    // We already fetch reviews globally on init, but we can refresh here if needed
+    setReviewsLoading(true);
+    axios
+      .get(`${API}/reviews/provider/${providerId}`)
+      .then((r) => setReviews(r.data))
+      .catch(() => setReviews([]))
+      .finally(() => setReviewsLoading(false));
   }, [providerId, tab]);
 
   // ── Add Service ───────────────────────────────────────────────────────────
@@ -387,7 +408,7 @@ export default function ProviderDashboard() {
   const statusBadge = (status) => {
     if (status === "BOOKED") return "bg-primary/10 text-primary border-primary/30";
     if (status === "CANCELLED") return "bg-coral/10 text-coral border-coral/20";
-    if (status === "COMPLETED") return "bg-teal-500/10 text-teal-400 border-teal-500/20";
+    if (status === "COMPLETED") return "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20";
     return "bg-black/5 dark:bg-white/5 text-textSecondary border-glassBorder";
   };
 
@@ -397,6 +418,7 @@ export default function ProviderDashboard() {
     { key: "services", icon: "build", label: "Services" },
     { key: "availability", icon: "schedule", label: "Availability" },
     { key: "analytics", icon: "bar_chart", label: "Analytics" },
+    { key: "reviews", icon: "rate_review", label: "Reviews" },
     { key: "portfolio", icon: "photo_library", label: "Portfolio" },
     { key: "profile", icon: "person", label: "Profile" },
   ];
@@ -418,16 +440,29 @@ export default function ProviderDashboard() {
       </PageWrapper>
     );
 
+  const stats = {
+    totalRevenue: revenueMonth.reduce((acc, r) => acc + r.revenue, 0),
+    totalBookings: bookingsWeek.reduce((acc, b) => acc + b.count, 0),
+    avgRating: providerInfo?.rating || 0,
+    totalReviews: reviews.length,
+    upcomingCount: appointments.filter(a => a.status === "BOOKED").length,
+    ratingDistribution: [1, 2, 3, 4, 5].map(star => ({
+      star: `${star} Stars`,
+      count: reviews.filter(r => r.rating === star).length
+    }))
+  };
+
   const getHeader = () => {
     switch(tab) {
-      case "appointments": return { title: "Hey, here are your bookings", sub: "Manage your workspace and track upcoming appointments." };
-      case "history": return { title: "Welcome back, here's your history", sub: "Review your past appointments and activity." };
-      case "services": return { title: "Manage your services", sub: "Add, update, and organize your offerings." };
-      case "availability": return { title: "Set your availability", sub: "Define your working hours and schedule." };
-      case "analytics": return { title: "Track your performance", sub: "Monitor bookings, revenue, and trends." };
-      case "portfolio": return { title: "Showcase your work", sub: "Upload images to attract more customers." };
-      case "profile": return { title: "Manage your profile", sub: "Update your personal and business details." };
-      default: return { title: `Welcome ${userName}`, sub: "Manage your workspace, optimize availability, and track upcoming appointments." };
+      case "appointments": return { title: "Manage your bookings", sub: "Track and manage your upcoming schedule." };
+      case "history": return { title: "Schedule History", sub: "Review your past appointments and performance." };
+      case "services": return { title: "Your Services", sub: "Add or modify the services you offer." };
+      case "availability": return { title: "Working Hours", sub: "Define when customers can book you." };
+      case "analytics": return { title: "Performance Insights", sub: "Deep dive into your earnings and trends." };
+      case "reviews": return { title: "Client Feedback", sub: "What customers are saying about your service." };
+      case "portfolio": return { title: "Your Portfolio", sub: "Showcase your best work to new clients." };
+      case "profile": return { title: "Profile Settings", sub: "Update your business details and location." };
+      default: return { title: "Dashboard", sub: "Overview of your platform activity." };
     }
   };
   const headerInfo = getHeader();
@@ -436,34 +471,42 @@ export default function ProviderDashboard() {
     <PageWrapper className="pt-24 pb-16 px-4 md:px-8">
       <div className={`transition-all duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)] max-w-7xl mx-auto pt-8 space-y-10 ${!!activeChat && isChatMaximized ? 'lg:w-1/2 lg:max-w-none lg:mr-auto lg:pr-6' : 'w-full'}`}>
         {/* Header + Tab Nav */}
-        <header className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-end">
-          <div>
-             <h1 className="text-4xl md:text-5xl font-headline font-extrabold tracking-tight text-textPrimary mb-2">
+        <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-1">
+             <h1 className="text-3xl font-headline font-extrabold tracking-tight text-textPrimary">
                 {headerInfo.title}
              </h1>
-            <p className="text-textSecondary max-w-xl text-sm">
+            <p className="text-textSecondary text-sm">
               {headerInfo.sub}
             </p>
           </div>
 
-          <div className="flex flex-wrap bg-black/5 dark:bg-white/5 p-1.5 rounded-full shadow-inner border border-glassBorder shrink-0 gap-1">
+          <div className="flex flex-wrap bg-gray-100 dark:bg-gray-800/50 p-1 rounded-xl w-fit gap-1 border border-gray-200 dark:border-gray-700">
             {TABS.map(({ key, icon, label }) => (
               <button
                 key={key}
                 id={`tab-${key}`}
                 onClick={() => setTab(key)}
-                className={`flex items-center gap-1.5 px-4 py-2 rounded-full font-headline font-bold text-xs uppercase tracking-widest transition-all ${
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all ${
                   tab === key
-                    ? "bg-primary text-deep-navy shadow-lg"
-                    : "text-textSecondary hover:text-white"
+                    ? "bg-white dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 shadow-sm"
+                    : "text-textSecondary hover:text-textPrimary"
                 }`}
               >
-                <span className="material-symbols-outlined text-sm">{icon}</span>
-                <span className="hidden sm:inline">{label}</span>
+                <span className="material-symbols-outlined text-xl">{icon}</span>
+                <span className="hidden lg:inline">{label}</span>
               </button>
             ))}
           </div>
         </header>
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <StatCard title="Total Revenue" value={`₹${stats.totalRevenue}`} icon="payments" trend="up" trendValue="+8%" />
+          <StatCard title="Total Bookings" value={stats.totalBookings} icon="event" color="secondary" />
+          <StatCard title="Avg Rating" value={stats.avgRating.toFixed(1)} icon="star" color="warning" />
+          <StatCard title="Client Reviews" value={stats.totalReviews} icon="rate_review" color="secondary" />
+        </div>
 
         {/* ════════════════ APPOINTMENTS TAB ════════════════════ */}
         {tab === "appointments" && (
@@ -751,7 +794,7 @@ export default function ProviderDashboard() {
                             <input type="time" value={editAvailForm.endTime} onChange={(e) => setEditAvailForm({ ...editAvailForm, endTime: e.target.value })} className={inputClass} />
                           </div>
                           <div className="flex gap-2">
-                            <button onClick={() => saveAvailEdit(a.id)} className="flex-1 py-2 rounded-xl bg-green-500/20 text-green-300 border border-green-500/30 text-sm font-bold hover:bg-green-500/30 transition-all">Save</button>
+                            <button onClick={() => saveAvailEdit(a.id)} className="flex-1 py-2 rounded-xl bg-indigo-600 text-white font-bold text-sm hover:bg-indigo-700 transition-all shadow-md shadow-indigo-500/20">Save</button>
                             <button onClick={() => setEditingAvailId(null)} className="flex-1 py-2 rounded-xl bg-black/10 dark:bg-white/10 text-textSecondary text-sm font-bold hover:bg-black/15 dark:bg-white/15 transition-all">Cancel</button>
                           </div>
                         </div>
@@ -762,8 +805,8 @@ export default function ProviderDashboard() {
                               <span className="material-symbols-outlined text-primary text-lg">event</span>
                             </div>
                             <div>
-                              <span className="font-headline font-bold text-textPrimary text-sm block">{a.dayOfWeek}</span>
-                              <span className="text-secondary font-mono text-sm font-bold">{a.startTime} – {a.endTime}</span>
+                                <span className="font-headline font-bold text-textPrimary text-sm block">{a.dayOfWeek}</span>
+                                <span className="text-secondary font-bold text-xs tracking-widest uppercase">{a.startTime} – {a.endTime}</span>
                             </div>
                           </div>
                           <div className="flex gap-2">
@@ -892,35 +935,133 @@ export default function ProviderDashboard() {
                   )}
                 </div>
 
-                {/* AI Recommendations */}
+
+
+                {/* Rating Distribution — Bar Chart */}
                 <div className="glass-card rounded-3xl p-6 md:p-8">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center">
-                      <span className="material-symbols-outlined text-purple-400 text-xl">psychology</span>
+                  <h2 className="text-lg font-headline font-bold text-textPrimary mb-1">Rating Distribution</h2>
+                  <p className="text-xs text-textSecondary mb-6">Overview of client satisfaction (1–5 Stars)</p>
+                  {stats.totalReviews === 0 ? (
+                    <div className="text-center py-10 text-textSecondary/40 text-sm italic">No reviews received yet.</div>
+                  ) : (
+                    <ResponsiveContainer width="100%" height={180}>
+                      <BarChart data={stats.ratingDistribution} layout="vertical">
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" horizontal={false} />
+                        <XAxis type="number" hide />
+                        <YAxis dataKey="star" type="category" tick={{ fill: "#9ca3af", fontSize: 11 }} width={50} />
+                        <Tooltip cursor={{ fill: 'transparent' }} content={<CustomTooltip suffix=" reviews" />} />
+                        <Bar dataKey="count" fill="#6366f1" radius={[0, 4, 4, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  )}
+                </div>
+
+                {/* Recent Reviews Preview in Analytics */}
+                <div className="glass-card rounded-3xl p-6 md:p-8">
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
+                        <span className="material-symbols-outlined text-amber-500 text-xl">reviews</span>
+                      </div>
+                      <h2 className="text-lg font-headline font-bold text-textPrimary">Recent Client Feedback</h2>
                     </div>
-                    <div>
-                      <h2 className="text-lg font-headline font-bold text-textPrimary">AI Recommendations — {getRangeLabel(analyticsRange)}</h2>
-                    </div>
+                    <button onClick={() => setTab("reviews")} className="text-xs font-bold text-primary hover:underline">View All</button>
                   </div>
-                  <div className="space-y-3">
-                    {recommendations.length === 0 ? (
-                      <div className="text-center py-4 text-textSecondary/40 text-sm">No data available.</div>
-                    ) : (
-                      recommendations.map((rec, i) => (
-                        <div
-                          key={i}
-                          className="flex items-start gap-3 p-4 rounded-2xl bg-black/5 dark:bg-white/5 border border-glassBorder hover:border-primary/20 transition-all"
-                          style={{ animationDelay: `${i * 80}ms` }}
-                        >
-                          <div className="w-2 h-2 rounded-full bg-gradient-to-br from-primary to-secondary mt-2 shrink-0" />
-                          <p className="text-sm text-textPrimary leading-relaxed">{rec}</p>
+                  
+                  {reviews.length === 0 ? (
+                    <p className="text-center py-6 text-textSecondary/40 text-sm italic">No feedback received in the last 30 days.</p>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {reviews.slice(0, 3).map((rev) => (
+                        <div key={rev.id} className="p-4 rounded-2xl bg-black/5 dark:bg-white/5 border border-glassBorder flex flex-col h-full hover:border-primary/20 transition-all">
+                          <div className="flex items-center gap-0.5 mb-2">
+                            {[1,2,3,4,5].map(s => (
+                              <span key={s} className={`material-symbols-outlined text-[12px] ${rev.rating >= s ? 'text-amber-500' : 'text-gray-300 dark:text-gray-700'}`} style={{ fontVariationSettings: rev.rating >= s ? "'FILL' 1" : "'FILL' 0" }}>star</span>
+                            ))}
+                          </div>
+                          <p className="text-xs text-textPrimary line-clamp-3 italic flex-1 mb-3">"{rev.comment || 'Perfect service!'}"</p>
+                          <div className="flex items-center justify-between border-t border-glassBorder pt-2 mt-auto">
+                            <span className="text-[10px] font-bold text-textSecondary uppercase tracking-tighter truncate max-w-[80px]">{rev.userName || 'Client'}</span>
+                            <span className="text-[9px] text-textSecondary opacity-50">{new Date(rev.createdAt).toLocaleDateString()}</span>
+                          </div>
                         </div>
-                      ))
-                    )}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </>
             )}
+          </div>
+        )}
+        {/* ════════════════ REVIEWS TAB ═════════════════════════ */}
+        {tab === "reviews" && (
+          <div className="space-y-6">
+            <div className="glass-card rounded-3xl p-6 md:p-8 shadow-2xl">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-headline font-bold tracking-tight text-textPrimary">Client Feedback</h2>
+                <span className="text-xs font-label tracking-widest text-textSecondary uppercase bg-white/5 px-4 py-2 rounded-full">
+                  {reviews.length} total reviews
+                </span>
+              </div>
+
+              {reviewsLoading ? (
+                <div className="flex flex-col items-center justify-center py-20">
+                  <div className="w-10 h-10 border-4 border-primary/30 border-t-primary rounded-full animate-spin mb-4" />
+                  <p className="text-textSecondary/60 font-label tracking-widest uppercase text-xs font-bold">Loading reviews...</p>
+                </div>
+              ) : reviews.length === 0 ? (
+                <div className="text-center py-16">
+                  <span className="material-symbols-outlined text-6xl text-textSecondary/20 mb-3 block">rate_review</span>
+                  <p className="text-textSecondary font-headline font-bold text-lg">No reviews yet.</p>
+                  <p className="text-sm text-textSecondary/60 mt-1">Feedback from completed appointments will appear here.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {reviews.map((rev) => (
+                    <div key={rev.id} className="glass-card !bg-white/5 dark:!bg-black/5 hover:!bg-white/10 dark:hover:!bg-black/10 rounded-2xl p-6 border border-glassBorder transition-all group">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-0.5">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <span
+                              key={star}
+                              className={`material-symbols-outlined text-sm ${rev.rating >= star ? 'text-amber-500' : 'text-gray-300 dark:text-gray-700'}`}
+                              style={{ fontVariationSettings: rev.rating >= star ? "'FILL' 1" : "'FILL' 0" }}
+                            >
+                              star
+                            </span>
+                          ))}
+                        </div>
+                        <span className="text-[10px] text-textSecondary uppercase tracking-widest font-bold bg-black/5 dark:bg-white/5 px-2 py-1 rounded">
+                          {rev.createdAt ? new Date(rev.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : "Recently"}
+                        </span>
+                      </div>
+                      
+                      <div className="space-y-4">
+                        {rev.comment ? (
+                          <p className="text-textPrimary text-sm leading-relaxed italic group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                            "{rev.comment}"
+                          </p>
+                        ) : (
+                          <p className="text-textSecondary/50 italic text-sm">No comment provided.</p>
+                        )}
+                        
+                        <div className="pt-4 border-t border-glassBorder flex items-center justify-between">
+                           <div className="flex items-center gap-2">
+                             <div className="w-8 h-8 rounded-full bg-indigo-500/10 flex items-center justify-center">
+                               <span className="material-symbols-outlined text-indigo-500 text-sm">person</span>
+                             </div>
+                             <span className="text-xs font-bold text-textPrimary">{rev.userName || "Customer"}</span>
+                           </div>
+                           {rev.appointmentId && (
+                             <span className="text-[10px] text-textSecondary font-mono opacity-50">Appt #{rev.appointmentId}</span>
+                           )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         )}
 

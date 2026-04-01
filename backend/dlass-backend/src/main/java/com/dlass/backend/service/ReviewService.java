@@ -28,26 +28,43 @@ public class ReviewService {
 
     public Review addReview(String email, Review review) {
 
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Rule 1: Only regular users can review
+        if (!"USER".equals(user.getRole())) {
+            throw new RuntimeException("Only regular users can provide reviews");
+        }
+
         Appointment appointment = appointmentRepository
                 .findById(review.getAppointmentId())
                 .orElseThrow(() -> new RuntimeException("Appointment not found"));
 
-        //Rule 1: Only booking user can review
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
+        // Rule 2: Appointment must belong to the user
         if (!appointment.getUserId().equals(user.getId())) {
-            throw new RuntimeException("You can only review your own appointment");
+            throw new RuntimeException("You can only review your own appointments");
         }
 
-        //Rule 2: Appointment must be completed
+        // Rule 3: Appointment must be completed
         if (!"COMPLETED".equals(appointment.getStatus())) {
-            throw new RuntimeException("You can only review after appointment is completed");
+            throw new RuntimeException("You can only review after the appointment is completed");
         }
 
-        //Rule 3: Only one review per appointment
-        if (reviewRepository.existsByAppointmentId(review.getAppointmentId())) {
-            throw new RuntimeException("Review already submitted for this appointment");
+        // Rule 4: Only one review per appointment
+        if (reviewRepository.existsByAppointmentId(appointment.getId())) {
+            throw new RuntimeException("You have already reviewed this appointment");
+        }
+
+        // Rule 5: Review window (24 hours after completion)
+        LocalDateTime completionTime = LocalDateTime.of(appointment.getDate(), appointment.getEndTime());
+        LocalDateTime now = LocalDateTime.now();
+
+        if (now.isAfter(completionTime.plusHours(24))) {
+            throw new RuntimeException("The review window for this appointment has expired (24 hours)");
+        }
+        
+        if (now.isBefore(completionTime)) {
+            throw new RuntimeException("You cannot review an appointment before its scheduled completion time");
         }
 
         ServiceProvider provider = providerRepository

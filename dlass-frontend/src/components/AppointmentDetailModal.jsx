@@ -47,10 +47,10 @@ export default function AppointmentDetailModal({
   };
 
   const statusBadge = (st) => {
-    if (st === "BOOKED") return "bg-primary/10 text-primary border-primary/30";
-    if (st === "COMPLETED") return "bg-teal-500/10 text-teal-400 border-teal-500/30";
-    if (st === "CANCELLED") return "bg-coral/10 text-coral border-coral/30";
-    return "bg-black/10 dark:bg-white/10 text-textSecondary border-glassBorder";
+    if (st === "BOOKED") return "bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800";
+    if (st === "COMPLETED") return "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800";
+    if (st === "CANCELLED") return "bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-800";
+    return "bg-gray-100 text-gray-500 border-gray-200";
   };
 
   const copyToClipboard = (text) => {
@@ -66,7 +66,7 @@ export default function AppointmentDetailModal({
       <div className="bg-glassBg backdrop-blur-xl border border-glassBorder rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
         <header className="px-6 py-4 flex justify-between items-center border-b border-glassBorder bg-transparent">
           <h2 className="font-headline font-bold text-lg text-textPrimary flex items-center gap-2">
-            <span className="material-symbols-outlined text-primary">event_note</span>
+            <span className="material-symbols-outlined text-indigo-600 dark:text-indigo-400">content_paste_search</span>
             Appointment Details
           </h2>
           <button
@@ -97,7 +97,7 @@ export default function AppointmentDetailModal({
                   <h3 className="text-2xl font-headline font-black text-textPrimary">
                     {detail.serviceName || "Service"}
                   </h3>
-                  <p className="text-secondary font-label uppercase tracking-widest text-xs mt-1 font-medium">
+                  <p className="text-blue-600 dark:text-blue-400 font-bold uppercase tracking-widest text-[10px] mt-2 px-3 py-1 bg-blue-50 dark:bg-blue-900/30 border border-blue-100 dark:border-blue-800 rounded-md w-fit">
                     {detail.date} • {detail.startTime} - {detail.endTime}
                   </p>
                 </div>
@@ -116,10 +116,10 @@ export default function AppointmentDetailModal({
               {/* Contact Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* User Side */}
-                <div className="bg-black/5 dark:bg-white/5 border border-glassBorder p-4 rounded-2xl border-l-4 border-l-primary">
-                  <span className="text-[10px] font-label font-bold uppercase tracking-widest text-textSecondary flex items-center gap-1 mb-2">
-                    <span className="material-symbols-outlined text-[14px]">person</span>
-                    Customer Detail
+                <div className="bg-white dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 p-5 rounded-2xl border-l-4 border-l-indigo-600 shadow-sm">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-textSecondary flex items-center gap-1 mb-3">
+                    <span className="material-symbols-outlined text-[14px] text-indigo-600">person</span>
+                    Customer Info
                   </span>
                   <div className="space-y-1.5">
                     <p className="font-bold text-sm text-textPrimary">{detail.userName}</p>
@@ -137,10 +137,10 @@ export default function AppointmentDetailModal({
                 </div>
 
                 {/* Provider Side */}
-                <div className="bg-black/5 dark:bg-white/5 border border-glassBorder p-4 rounded-2xl border-l-4 border-l-secondary">
-                  <span className="text-[10px] font-label font-bold uppercase tracking-widest text-textSecondary flex items-center gap-1 mb-2">
-                    <span className="material-symbols-outlined text-[14px]">store</span>
-                    Provider Detail
+                <div className="bg-white dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 p-5 rounded-2xl border-l-4 border-l-blue-600 shadow-sm">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-textSecondary flex items-center gap-1 mb-3">
+                    <span className="material-symbols-outlined text-[14px] text-blue-600">store</span>
+                    Provider Info
                   </span>
                   <div className="space-y-1.5">
                     <p className="font-bold text-sm text-textPrimary">{detail.providerName}</p>
@@ -172,31 +172,30 @@ export default function AppointmentDetailModal({
         {!loading && !error && detail && (
           <div className="px-6 py-4 bg-transparent border-t border-glassBorder flex items-center justify-end gap-3">
              <button
+                key="chat"
                 onClick={() => {
-                  const targetId = currentUserRole === "PROVIDER" ? undefined : detail.providerId; // Needs dynamic resolution depending on what's available
-                  // Let's defer to caller for chat:
                   onChat?.(
                     currentUserRole === "PROVIDER" ? "UNKNOWN_USER_ID" : "UNKNOWN_PROVIDER_ID", 
                     currentUserRole === "PROVIDER" ? detail.userName : detail.providerName
                   ); 
-                  // Wait, we don't have the exact opposite userId here directly except by mapping.
                   onClose();
                 }}
-                className="px-4 py-2 flex items-center gap-2 rounded-xl border border-secondary/30 bg-secondary/10 text-secondary text-sm font-bold hover:bg-secondary/20 transition-all"
+                className="px-5 py-2.5 flex items-center gap-2 rounded-xl border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs font-bold hover:bg-blue-100 transition-all shadow-sm"
               >
                 <span className="material-symbols-outlined text-[18px]">chat</span>
                 Message
             </button>
             {detail.status === "BOOKED" && onCancel && (
               <button
+                key="cancel"
                 onClick={() => {
                     onCancel(appointmentId);
                     onClose();
                 }}
-                className="px-4 py-2 flex items-center gap-2 rounded-xl bg-coral/10 text-coral font-bold text-sm hover:bg-coral/20 transition-all"
+                className="px-5 py-2.5 flex items-center gap-2 rounded-xl bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 border border-rose-100 dark:border-rose-800 font-bold text-xs hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-all shadow-sm"
               >
                 <span className="material-symbols-outlined text-[18px]">cancel</span>
-                Cancel
+                Cancel Booking
               </button>
             )}
           </div>

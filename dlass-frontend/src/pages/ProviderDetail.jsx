@@ -5,6 +5,7 @@ import { getToken } from "../services/authService";
 import PageWrapper from "../components/ui/PageWrapper";
 import GlassCard from "../components/ui/GlassCard";
 import Button from "../components/ui/Button";
+import ReviewModal from "../components/ReviewModal";
 
 const API = "http://localhost:8080/api";
 
@@ -25,6 +26,7 @@ export default function ProviderDetail() {
 
   const [profile, setProfile] = useState(null);
   const [services, setServices] = useState([]);
+  const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -41,12 +43,14 @@ export default function ProviderDetail() {
   useEffect(() => {
     async function load() {
       try {
-        const [profRes, svcRes] = await Promise.all([
+        const [profRes, svcRes, revRes] = await Promise.all([
           axios.get(`${API}/providers/${id}/profile`),
           axios.get(`${API}/providers/${id}/services`),
+          axios.get(`${API}/reviews/provider/${id}`)
         ]);
         setProfile(profRes.data.provider);
         setServices(svcRes.data);
+        setReviews(revRes.data);
       } catch (e) {
         setError("Failed to load provider details.");
       } finally {
@@ -55,6 +59,8 @@ export default function ProviderDetail() {
     }
     load();
   }, [id]);
+
+
 
   const fetchSlots = () => {
     if (!selectedService || !bookDate) { setSlots([]); return; }
@@ -130,10 +136,10 @@ export default function ProviderDetail() {
 
         <section className="mb-10">
           <GlassCard className="!p-6 md:!p-8 flex flex-col md:flex-row gap-6 md:gap-8 items-start md:items-center relative overflow-hidden group">
-            <div className="absolute inset-0 bg-primary/5 opacity-50" />
+            <div className="absolute inset-0 bg-indigo-600/5 dark:bg-indigo-400/5 group-hover:bg-indigo-600/10 transition-colors" />
 
-            <div className="relative w-24 h-24 md:w-32 md:h-32 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0 border border-primary/20 shadow-xl">
-              <span className="material-symbols-outlined text-4xl text-primary">business_center</span>
+            <div className="relative w-20 h-20 md:w-28 md:h-28 rounded-2xl bg-indigo-600/10 flex items-center justify-center shrink-0 border border-indigo-500/20 shadow-lg">
+              <span className="material-symbols-outlined text-4xl text-indigo-600 dark:text-indigo-400">business_center</span>
             </div>
 
             <div className="relative flex-1 space-y-3">
@@ -142,15 +148,15 @@ export default function ProviderDetail() {
                   <h1 className="text-3xl md:text-4xl font-headline font-extrabold tracking-tight text-textPrimary">
                     {profile?.businessName}
                   </h1>
-                  <p className="text-secondary font-headline font-bold flex items-center gap-1 mt-1 text-sm bg-secondary/10 px-3 py-1 rounded-full w-fit">
-                    <span className="material-symbols-outlined text-sm">verified</span>
+                  <p className="text-blue-600 dark:text-blue-400 font-headline font-bold flex items-center gap-1 mt-1 text-xs uppercase tracking-widest bg-blue-50 dark:bg-blue-900/30 px-3 py-1.5 rounded-lg w-fit border border-blue-200 dark:border-blue-800">
+                    <span className="material-symbols-outlined text-xs">verified</span>
                     {profile?.experienceYears} Year{profile?.experienceYears !== 1 ? "s" : ""} Experience
                   </p>
                 </div>
                 <div className="flex flex-col items-start sm:items-end gap-2">
-                  <div className="flex items-center gap-2 bg-black/5 dark:bg-white/5 px-4 py-2 rounded-xl border border-glassBorder shadow-sm">
+                  <div className="flex items-center gap-2 bg-white dark:bg-gray-800/50 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
                     <span
-                      className="material-symbols-outlined text-secondary text-base"
+                      className="material-symbols-outlined text-amber-500 text-base"
                       style={{ fontVariationSettings: "'FILL' 1" }}
                     >
                       star
@@ -158,8 +164,8 @@ export default function ProviderDetail() {
                     <span className="text-textPrimary font-bold text-xl leading-none">{profile?.rating?.toFixed(1) || "0.0"}</span>
                     <span className="text-textSecondary text-xs">({profile?.reviewCount || 0} reviews)</span>
                   </div>
-                  <div className="text-textSecondary text-sm flex items-center gap-1">
-                    <span className="material-symbols-outlined text-sm text-primary">location_on</span>
+                  <div className="text-textSecondary text-xs flex items-center gap-1 opacity-70">
+                    <span className="material-symbols-outlined text-sm text-indigo-600">location_on</span>
                     {profile?.area}, {profile?.city} — {profile?.pincode}
                   </div>
                 </div>
@@ -198,12 +204,12 @@ export default function ProviderDetail() {
                       onClick={() => { setSelectedService(svc); setBookSuccess(""); setBookError(""); }}
                       className={`!p-5 cursor-pointer transition-all duration-300 ${
                         isSelected
-                          ? "border-secondary ring-1 ring-secondary/30 relative shadow-[0_0_20px_rgba(34,211,238,0.15)] bg-secondary/5 scale-[1.02]"
-                          : "border-glassBorder"
+                          ? "border-indigo-600 ring-2 ring-indigo-500/20 relative shadow-xl bg-indigo-50/10 scale-[1.02]"
+                          : "border-gray-200 dark:border-gray-700 hover:border-indigo-400"
                       }`}
                     >
                       {isSelected && (
-                        <div className="absolute top-4 right-4 text-secondary">
+                        <div className="absolute top-4 right-4 text-indigo-600">
                           <span className="material-symbols-outlined">check_circle</span>
                         </div>
                       )}
@@ -213,11 +219,11 @@ export default function ProviderDetail() {
                         </h3>
                       </div>
                       <div className="flex items-center justify-between mt-4">
-                         <span className="text-textSecondary flex items-center gap-1 text-sm bg-black/5 dark:bg-white/5 px-2 py-1 rounded-md">
+                         <span className="text-textSecondary flex items-center gap-1 text-xs bg-gray-100 dark:bg-gray-800/80 px-2 py-1 rounded-md border border-gray-200 dark:border-gray-700">
                           <span className="material-symbols-outlined text-xs">schedule</span>
                           {svc.durationMinutes} min
                         </span>
-                        <span className="text-primary font-bold font-headline text-lg">₹{svc.price}</span>
+                        <span className="text-indigo-600 dark:text-indigo-400 font-bold font-headline text-lg">₹{svc.price}</span>
                       </div>
                     </GlassCard>
                   );
@@ -233,7 +239,7 @@ export default function ProviderDetail() {
                   Schedule Appointment
                 </h2>
                 {selectedService && (
-                  <span className="text-xs font-label tracking-widest text-secondary uppercase bg-secondary/10 px-4 py-2 rounded-full font-bold">
+                  <span className="text-[10px] font-bold tracking-widest text-indigo-600 dark:text-indigo-400 uppercase bg-indigo-50 dark:bg-indigo-900/30 px-3 py-1.5 rounded-lg border border-indigo-200 dark:border-indigo-800">
                     {selectedService.name} Selected
                   </span>
                 )}
@@ -290,8 +296,8 @@ export default function ProviderDetail() {
                               onClick={() => setSelectedSlot(slot)}
                               className={`py-3 px-2 rounded-xl text-sm font-bold transition-all duration-300 ${
                                 isSelected
-                                  ? "bg-secondary text-deep-navy shadow-lg scale-105"
-                                  : "bg-inputBg text-textPrimary hover:bg-glassBorder hover:border-primary/50 border border-inputBorder"
+                                  ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/20 scale-105"
+                                  : "bg-white dark:bg-gray-800 text-textSecondary hover:text-indigo-600 hover:border-indigo-400 border border-gray-200 dark:border-gray-700"
                               }`}
                             >
                               {fmt(slot.startTime)}
@@ -337,6 +343,53 @@ export default function ProviderDetail() {
             </GlassCard>
           </div>
         </div>
+        
+        {/* REVIEWS SECTION */}
+        <section className="mt-10 mb-20 animate-fade-in">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4 border-b border-glassBorder pb-6">
+            <h2 className="text-2xl font-headline font-bold tracking-tight text-textPrimary flex items-center gap-3">
+              Client Reviews
+            </h2>
+          </div>
+          
+          {reviews.length === 0 ? (
+             <GlassCard className="!p-8 text-center shadow-none border-dashed bg-transparent">
+               <span className="material-symbols-outlined text-4xl text-textSecondary/30 mb-2 block">
+                 rate_review
+               </span>
+               <p className="text-textSecondary/60 text-sm">No reviews yet. Be the first to review this provider!</p>
+             </GlassCard>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {reviews.map(rev => (
+                <GlassCard key={rev.id} className="!p-6 group relative overflow-hidden flex flex-col h-full hover:border-indigo-500/30 transition-all">
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 blur-3xl rounded-full -mr-8 -mt-8 pointer-events-none" />
+                  <div className="relative z-10 flex flex-col h-full">
+                    <div className="flex items-center gap-0.5 mb-4 px-2 py-0.5 bg-indigo-50 dark:bg-indigo-900/20 w-fit rounded-lg">
+                      {[1,2,3,4,5].map(star => (
+                         <span key={star} className={`material-symbols-outlined text-sm ${rev.rating >= star ? 'text-amber-500' : 'text-gray-300 dark:text-gray-700'}`} style={{ fontVariationSettings: rev.rating >= star ? "'FILL' 1" : "'FILL' 0" }}>star</span>
+                      ))}
+                    </div>
+                    {rev.comment ? (
+                      <p className="text-textPrimary text-base mb-6 leading-relaxed flex-1 italic group-hover:text-indigo-950 dark:group-hover:text-indigo-100 transition-colors">"{rev.comment}"</p>
+                    ) : (
+                      <p className="text-textSecondary/50 italic text-sm mb-6 flex-1">Excellent service!</p>
+                    )}
+                    <div className="text-[10px] text-textSecondary uppercase tracking-widest font-bold flex justify-between items-center border-t border-gray-100 dark:border-gray-700 pt-4">
+                       <span className="flex items-center gap-1 px-2 py-1 bg-gray-50 dark:bg-gray-800 rounded-md">
+                         <span className="material-symbols-outlined text-[10px]">event</span>
+                         {new Date(rev.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
+                       </span>
+                    </div>
+                  </div>
+                </GlassCard>
+              ))}
+            </div>
+          )}
+        </section>
+
+
+
       </div>
     </PageWrapper>
   );
