@@ -23,6 +23,7 @@ public class Review {
 
     public Review() {}
 
+    public void setId(String id) { this.id = id; }
     public String getId() { return id; }
     public String getProviderId() { return providerId; }
     public String getUserId() { return userId; }

@@ -9,6 +9,8 @@ public interface ReviewRepository extends MongoRepository<Review, String> {
 
     List<Review> findByProviderId(String providerId);
 
+    void deleteByProviderId(String providerId);
+    long countByProviderId(String providerId);
     boolean existsByAppointmentId(String appointmentId);
 
     boolean existsByProviderIdAndUserId(String providerId, String userId);

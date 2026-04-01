@@ -80,7 +80,7 @@ public class ProviderDashboardService {
 
         dto.setTotalRevenue(revenue);
 
-        dto.setAverageRating(provider.getRating());
+        dto.setRating(provider.getRating());
         dto.setReviewCount(provider.getReviewCount());
         dto.setCategoryId(provider.getCategoryId());
         dto.setSubCategoryId(provider.getSubCategoryId());
