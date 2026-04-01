@@ -47,10 +47,10 @@ export default function AppointmentDetailModal({
   };
 
   const statusBadge = (st) => {
-    if (st === "BOOKED") return "bg-primary-container/20 text-primary border-primary/30";
-    if (st === "COMPLETED") return "bg-green-500/10 text-green-400 border-green-500/30";
-    if (st === "CANCELLED") return "bg-red-500/10 text-red-400 border-red-500/30";
-    return "bg-surface-container-high text-on-surface-variant border-outline-variant/30";
+    if (st === "BOOKED") return "bg-primary/10 text-primary border-primary/30";
+    if (st === "COMPLETED") return "bg-teal-500/10 text-teal-400 border-teal-500/30";
+    if (st === "CANCELLED") return "bg-coral/10 text-coral border-coral/30";
+    return "bg-black/10 dark:bg-white/10 text-textSecondary border-glassBorder";
   };
 
   const copyToClipboard = (text) => {
@@ -63,15 +63,15 @@ export default function AppointmentDetailModal({
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300"
       onClick={handleOutsideClick}
     >
-      <div className="bg-surface border border-outline-variant/20 rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
-        <header className="px-6 py-4 flex justify-between items-center border-b border-outline-variant/10 bg-surface-container-lowest">
-          <h2 className="font-headline font-bold text-lg text-on-surface flex items-center gap-2">
+      <div className="bg-glassBg backdrop-blur-xl border border-glassBorder rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+        <header className="px-6 py-4 flex justify-between items-center border-b border-glassBorder bg-transparent">
+          <h2 className="font-headline font-bold text-lg text-textPrimary flex items-center gap-2">
             <span className="material-symbols-outlined text-primary">event_note</span>
             Appointment Details
           </h2>
           <button
             onClick={onClose}
-            className="p-1 rounded-full text-on-surface-variant hover:bg-surface-container-high transition-colors"
+            className="p-1 rounded-full text-textSecondary hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
           >
             <span className="material-symbols-outlined text-[20px]">close</span>
           </button>
@@ -80,36 +80,33 @@ export default function AppointmentDetailModal({
         <div className="p-6">
           {loading ? (
             <div className="space-y-4 animate-pulse">
-              <div className="h-8 bg-surface-container-highest rounded-xl w-1/3 mb-6" />
-              <div className="grid grid-cols-2 gap-4">
-                <div className="h-24 bg-surface-container-high rounded-2xl" />
-                <div className="h-24 bg-surface-container-high rounded-2xl" />
-              </div>
-              <div className="h-24 bg-surface-container-high rounded-2xl w-full" />
+               <div className="flex justify-center mb-6">
+                 <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
+               </div>
             </div>
           ) : error ? (
             <div className="py-10 text-center space-y-3">
-              <span className="material-symbols-outlined text-4xl text-red-400">error</span>
-              <p className="text-sm font-headline text-red-300">{error}</p>
+              <span className="material-symbols-outlined text-4xl text-coral">error</span>
+              <p className="text-sm font-headline text-coral/80">{error}</p>
             </div>
           ) : detail ? (
             <div className="space-y-6">
               {/* Header Info */}
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
-                  <h3 className="text-2xl font-headline font-black text-on-surface">
+                  <h3 className="text-2xl font-headline font-black text-textPrimary">
                     {detail.serviceName || "Service"}
                   </h3>
-                  <p className="text-secondary font-label uppercase tracking-widest text-xs mt-1 font-bold">
+                  <p className="text-secondary font-label uppercase tracking-widest text-xs mt-1 font-medium">
                     {detail.date} • {detail.startTime} - {detail.endTime}
                   </p>
                 </div>
                 <div className="text-right">
-                  <span className={`inline-block px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full border ${statusBadge(detail.status)}`}>
+                  <span className={`inline-flex px-3 py-1 items-center text-xs font-bold uppercase tracking-wider rounded-full border ${statusBadge(detail.status)}`}>
                     {detail.status}
                   </span>
                   {detail.amount > 0 && (
-                    <div className="mt-2 text-lg font-bold text-on-surface">
+                    <div className="mt-2 text-lg font-bold text-textPrimary">
                       ₹{detail.amount}
                     </div>
                   )}
@@ -119,16 +116,16 @@ export default function AppointmentDetailModal({
               {/* Contact Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* User Side */}
-                <div className="bg-surface-container-low p-4 rounded-2xl border-l-2 border-primary-container">
-                  <span className="text-[10px] font-label font-bold uppercase tracking-widest text-on-surface-variant flex items-center gap-1 mb-2">
+                <div className="bg-black/5 dark:bg-white/5 border border-glassBorder p-4 rounded-2xl border-l-4 border-l-primary">
+                  <span className="text-[10px] font-label font-bold uppercase tracking-widest text-textSecondary flex items-center gap-1 mb-2">
                     <span className="material-symbols-outlined text-[14px]">person</span>
                     Customer Detail
                   </span>
                   <div className="space-y-1.5">
-                    <p className="font-bold text-sm text-on-surface">{detail.userName}</p>
-                    <p className="text-xs text-on-surface-variant">{detail.userEmail || "—"}</p>
+                    <p className="font-bold text-sm text-textPrimary">{detail.userName}</p>
+                    <p className="text-xs text-textSecondary">{detail.userEmail || "—"}</p>
                     <div className="flex items-center gap-2 group">
-                      <p className="text-xs text-on-surface-variant">{detail.userPhone || "—"}</p>
+                      <p className="text-xs text-textSecondary">{detail.userPhone || "—"}</p>
                       {detail.userPhone && (
                         <>
                            <button onClick={() => copyToClipboard(detail.userPhone)} className="opacity-0 group-hover:opacity-100 text-secondary hover:text-white transition-opacity text-[16px] material-symbols-outlined shrink-0" title="Copy">content_copy</button>
@@ -140,16 +137,16 @@ export default function AppointmentDetailModal({
                 </div>
 
                 {/* Provider Side */}
-                <div className="bg-surface-container-low p-4 rounded-2xl border-l-2 border-secondary-container">
-                  <span className="text-[10px] font-label font-bold uppercase tracking-widest text-on-surface-variant flex items-center gap-1 mb-2">
+                <div className="bg-black/5 dark:bg-white/5 border border-glassBorder p-4 rounded-2xl border-l-4 border-l-secondary">
+                  <span className="text-[10px] font-label font-bold uppercase tracking-widest text-textSecondary flex items-center gap-1 mb-2">
                     <span className="material-symbols-outlined text-[14px]">store</span>
                     Provider Detail
                   </span>
                   <div className="space-y-1.5">
-                    <p className="font-bold text-sm text-on-surface">{detail.providerName}</p>
-                    <p className="text-xs text-on-surface-variant">{detail.providerEmail || "—"}</p>
+                    <p className="font-bold text-sm text-textPrimary">{detail.providerName}</p>
+                    <p className="text-xs text-textSecondary">{detail.providerEmail || "—"}</p>
                     <div className="flex items-center gap-2 group">
-                      <p className="text-xs text-on-surface-variant">{detail.providerPhone || "—"}</p>
+                      <p className="text-xs text-textSecondary">{detail.providerPhone || "—"}</p>
                       {detail.providerPhone && (
                         <>
                            <button onClick={() => copyToClipboard(detail.providerPhone)} className="opacity-0 group-hover:opacity-100 text-secondary hover:text-white transition-opacity text-[16px] material-symbols-outlined shrink-0" title="Copy">content_copy</button>
@@ -163,7 +160,7 @@ export default function AppointmentDetailModal({
 
               {/* Notes (if ever populated) */}
               {detail.notes && (
-                <div className="bg-surface-container-lowest p-4 rounded-2xl border border-outline-variant/10 text-sm text-on-surface-variant leading-relaxed italic">
+                <div className="bg-transparent p-4 rounded-2xl border border-glassBorder text-sm text-textSecondary leading-relaxed italic">
                   "{detail.notes}"
                 </div>
               )}
@@ -173,7 +170,7 @@ export default function AppointmentDetailModal({
 
         {/* Footer Actions */}
         {!loading && !error && detail && (
-          <div className="px-6 py-4 bg-surface-container-lowest border-t border-outline-variant/10 flex items-center justify-end gap-3">
+          <div className="px-6 py-4 bg-transparent border-t border-glassBorder flex items-center justify-end gap-3">
              <button
                 onClick={() => {
                   const targetId = currentUserRole === "PROVIDER" ? undefined : detail.providerId; // Needs dynamic resolution depending on what's available
@@ -196,7 +193,7 @@ export default function AppointmentDetailModal({
                     onCancel(appointmentId);
                     onClose();
                 }}
-                className="px-4 py-2 flex items-center gap-2 rounded-xl bg-red-500/10 text-red-400 font-bold text-sm hover:bg-red-500/20 transition-all"
+                className="px-4 py-2 flex items-center gap-2 rounded-xl bg-coral/10 text-coral font-bold text-sm hover:bg-coral/20 transition-all"
               >
                 <span className="material-symbols-outlined text-[18px]">cancel</span>
                 Cancel

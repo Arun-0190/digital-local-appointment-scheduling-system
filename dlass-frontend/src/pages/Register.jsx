@@ -1,6 +1,10 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { register } from "../services/authService";
+import PageWrapper from "../components/ui/PageWrapper";
+import GlassCard from "../components/ui/GlassCard";
+import Input from "../components/ui/Input";
+import Button from "../components/ui/Button";
 
 function Register() {
   const navigate = useNavigate();
@@ -62,96 +66,96 @@ function Register() {
     }
   };
 
-  const inputClass =
-    "w-full pl-10 pr-4 py-3 bg-surface-container-highest/50 border border-outline-variant/30 rounded-xl text-on-surface placeholder:text-on-surface-variant/40 focus:outline-none focus:ring-2 focus:ring-secondary/40 focus:bg-surface-bright transition-all text-sm";
-  const labelClass =
-    "block text-xs font-label font-bold text-on-surface-variant uppercase tracking-widest mb-2";
-
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 pt-20 pb-10">
-      <div className="absolute top-1/4 right-1/4 w-72 h-72 bg-violet-600/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-1/4 left-1/4 w-64 h-64 bg-cyan-400/10 rounded-full blur-3xl pointer-events-none" />
+    <PageWrapper className="justify-center items-center">
+      <div className="absolute top-1/4 right-1/4 w-72 h-72 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-1/4 left-1/4 w-64 h-64 bg-secondary/10 rounded-full blur-3xl pointer-events-none" />
 
-      <div className="relative w-full max-w-md">
-        <div className="glass-card rounded-3xl p-8 md:p-10 shadow-2xl">
+      <div className="relative w-full max-w-lg z-10 pt-10 pb-10">
+        <GlassCard className="shadow-2xl">
           {/* Header */}
-          <div className="mb-8 text-center">
-            <span className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-secondary-container/20 mb-4">
-              <span className="material-symbols-outlined text-3xl text-secondary">person_add</span>
+          <div className="mb-8 text-center flex flex-col items-center">
+            <span className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary/20 mb-4 text-primary">
+              <span className="material-symbols-outlined text-3xl">person_add</span>
             </span>
-            <h1 className="text-3xl font-headline font-extrabold tracking-tight text-on-surface">
+            <h1 className="text-3xl font-headline font-extrabold tracking-tight text-textPrimary">
               Create Account
             </h1>
-            <p className="text-on-surface-variant text-sm mt-1">
+            <p className="text-textSecondary text-sm mt-1">
               Join DLASS — find or offer local services
             </p>
           </div>
 
           {/* Alerts */}
           {error && (
-            <div className="mb-5 flex items-center gap-3 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-300 text-sm">
+            <div className="mb-5 flex items-center gap-3 px-4 py-3 rounded-xl bg-coral/10 border border-coral/20 text-coral text-sm">
               <span className="material-symbols-outlined text-base shrink-0">error</span>
               {error}
             </div>
           )}
           {success && (
-            <div className="mb-5 flex items-center gap-3 px-4 py-3 rounded-xl bg-green-500/10 border border-green-500/20 text-green-300 text-sm">
+            <div className="mb-5 flex items-center gap-3 px-4 py-3 rounded-xl bg-primary/10 border border-primary/20 text-primary text-sm">
               <span className="material-symbols-outlined text-base shrink-0">check_circle</span>
               {success}
             </div>
           )}
 
           <form onSubmit={handleSubmit} noValidate className="space-y-4">
-            {/* Full Name */}
-            <div>
-              <label htmlFor="fullName" className={labelClass}>Full Name</label>
-              <div className="relative">
-                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">badge</span>
-                <input id="fullName" type="text" name="fullName" placeholder="John Doe"
-                  value={form.fullName} onChange={handleChange} disabled={loading}
-                  className={inputClass} />
-              </div>
-            </div>
+            <Input
+              label="FULL NAME"
+              id="fullName"
+              type="text"
+              name="fullName"
+              placeholder="John Doe"
+              value={form.fullName}
+              onChange={handleChange}
+              disabled={loading}
+              icon="badge"
+            />
 
-            {/* Email */}
-            <div>
-              <label htmlFor="reg-email" className={labelClass}>Email</label>
-              <div className="relative">
-                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">mail</span>
-                <input id="reg-email" type="email" name="email" placeholder="you@example.com"
-                  value={form.email} onChange={handleChange} disabled={loading} autoComplete="email"
-                  className={inputClass} />
-              </div>
-            </div>
+            <Input
+              label="EMAIL"
+              id="reg-email"
+              type="email"
+              name="email"
+              placeholder="you@example.com"
+              value={form.email}
+              onChange={handleChange}
+              disabled={loading}
+              autoComplete="email"
+              icon="mail"
+            />
 
-            {/* Password */}
-            <div>
-              <label htmlFor="reg-password" className={labelClass}>Password</label>
-              <div className="relative">
-                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">key</span>
-                <input id="reg-password" type="password" name="password" placeholder="Min. 6 characters"
-                  value={form.password} onChange={handleChange} disabled={loading} autoComplete="new-password"
-                  className={inputClass} />
-              </div>
-            </div>
+            <Input
+              label="PASSWORD"
+              id="reg-password"
+              type="password"
+              name="password"
+              placeholder="Min. 6 characters"
+              value={form.password}
+              onChange={handleChange}
+              disabled={loading}
+              autoComplete="new-password"
+              icon="key"
+            />
 
-            {/* Pincode */}
-            <div>
-              <label htmlFor="pincode" className={labelClass}>Pincode</label>
-              <div className="relative">
-                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">location_on</span>
-                <input id="pincode" type="text" name="pincode" placeholder="6-digit pincode"
-                  value={form.pincode} onChange={handleChange} maxLength={6} disabled={loading}
-                  className={inputClass} />
-              </div>
-            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input
+                label="PINCODE"
+                id="pincode"
+                type="text"
+                name="pincode"
+                placeholder="6-digit pincode"
+                value={form.pincode}
+                onChange={handleChange}
+                maxLength={6}
+                disabled={loading}
+                icon="location_on"
+              />
 
-            {/* Phone */}
-            <div>
-              <label htmlFor="phone" className={labelClass}>Phone Number</label>
-              <div className="relative">
-                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">phone</span>
-                <input
+              <div>
+                <Input
+                  label="PHONE NUMBER"
                   id="phone"
                   type="tel"
                   name="phone"
@@ -164,38 +168,30 @@ function Register() {
                   }}
                   maxLength={13}
                   disabled={loading}
-                  className={inputClass}
+                  icon="phone"
                 />
+                <p className="text-[10px] text-textSecondary uppercase tracking-wider mt-1 ml-1">Format: +91 and 10 digits</p>
               </div>
-              <p className="text-xs text-on-surface-variant/60 mt-1 ml-1">Format: +91 followed by 10 digits</p>
             </div>
 
-            {/* Submit */}
-            <button
+            <Button
               type="submit"
-              disabled={loading}
-              className="w-full py-3.5 rounded-xl bg-gradient-to-r from-primary-container to-secondary-container text-white font-headline font-bold text-sm uppercase tracking-wider shadow-lg hover:scale-[1.02] active:scale-95 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none mt-2"
+              isLoading={loading}
+              className="w-full mt-4"
             >
-              {loading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Creating account…
-                </span>
-              ) : (
-                "Create Account"
-              )}
-            </button>
+              Create Account
+            </Button>
           </form>
 
-          <p className="text-center text-sm text-on-surface-variant mt-6">
+          <p className="text-center text-sm text-textSecondary mt-6">
             Already have an account?{" "}
-            <Link to="/login" className="text-secondary font-bold hover:underline underline-offset-4">
+            <Link to="/login" className="text-secondary font-bold hover:text-primary transition-colors underline-offset-4 hover:underline">
               Sign in
             </Link>
           </p>
-        </div>
+        </GlassCard>
       </div>
-    </div>
+    </PageWrapper>
   );
 }
 

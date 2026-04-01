@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "on-secondary": "#00363e",
+            "secondary-fixed-dim": "#2fd9f4",
+            "on-error": "#690005",
+            "secondary-fixed": "#a2eeff",
+            "inverse-surface": "#dae2fd",
+            "surface-container-high": "#222a3d",
+            "inverse-primary": "#006b5f",
+            "tertiary": "#ffb2b9",
+            "on-primary-fixed": "#00201c",
+            "primary-container": "#14b8a6",
+            "surface": "#0b1326",
+            "on-secondary-fixed": "#001f25",
+            "error": "#ffb4ab",
+            "primary": "#4fdbc8",
+            "on-surface": "#dae2fd",
+            "on-primary-container": "#00423b",
+            "on-surface-variant": "#bbcac6",
+            "secondary": "#5de6ff",
+            "on-tertiary-container": "#770827",
+            "primary-fixed": "#71f8e4",
+            "error-container": "#93000a",
+            "on-secondary-container": "#00515d",
+            "on-primary": "#003731",
+            "surface-container-low": "#131b2e",
+            "surface-bright": "#31394d",
+            "primary-fixed-dim": "#4fdbc8",
+            "on-background": "#dae2fd",
+            "surface-container-lowest": "#060e20",
+            "on-tertiary": "#67001f",
+            "tertiary-fixed": "#ffdadc",
+            "surface-container": "#171f33",
+            "surface-dim": "#0b1326",
+            "outline-variant": "#3c4947",
+            "tertiary-fixed-dim": "#ffb2b9",
+            "surface-variant": "#2d3449",
+            "on-secondary-fixed-variant": "#004e5a",
+            "on-error-container": "#ffdad6",
+            "on-primary-fixed-variant": "#005048",
+            "on-tertiary-fixed-variant": "#891933",
+            "on-tertiary-fixed": "#400010",
+            "outline": "#859490",
+            "tertiary-container": "#ff7a8c",
+            "inverse-on-surface": "#283044",
+            "secondary-container": "#00cbe6",
+            "surface-container-highest": "#2d3449",
+            "background": "#0b1326",
+            "surface-tint": "#4fdbc8"
+          },
+          fontFamily: {
+            "headline": ["Manrope"],
+            "body": ["Inter"],
+            "label": ["Inter"]
+          },
+          borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+        },
+      },
+    }
+  </script>
+<style>
+    body {
+      background-color: #0b1326;
+      font-family: 'Inter', sans-serif;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .glass-panel {
+      background: rgba(23, 31, 51, 0.4);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-top: 1px solid rgba(113, 248, 228, 0.15);
+      border-left: 1px solid rgba(113, 248, 228, 0.15);
+    }
+    .chat-scroll::-webkit-scrollbar {
+      width: 4px;
+    }
+    .chat-scroll::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .chat-scroll::-webkit-scrollbar-thumb {
+      background: rgba(79, 219, 200, 0.2);
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body class="text-on-surface overflow-hidden">
+<!-- TopAppBar -->
+<nav class="fixed top-0 w-full z-50 bg-slate-900/40 backdrop-blur-xl shadow-[0_20px_40px_-10px_rgba(20,184,166,0.08)]">
+<div class="flex justify-between items-center w-full px-8 py-4 max-w-full">
+<div class="flex items-center gap-8">
+<span class="text-2xl font-black tracking-tighter bg-gradient-to-br from-teal-400 to-cyan-400 bg-clip-text text-transparent font-headline">DLASS</span>
+<div class="hidden md:flex items-center gap-6">
+<a class="text-slate-400 hover:text-teal-200 transition-colors font-body text-sm" href="#">Dashboard</a>
+<a class="text-teal-400 border-b-2 border-teal-400 pb-1 font-body text-sm" href="#">Chat</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 hover:bg-teal-400/10 rounded-full transition-all text-teal-400">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<div class="w-10 h-10 rounded-full overflow-hidden border border-primary/20">
+<img alt="User Profile" data-alt="Close-up portrait of a professional man in a modern office setting with soft cinematic lighting and warm tones" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAVVTyIm43LHovt0rDuefA05HeIpJenoScZCiu7PwyD14PdfnuJ5DEYeD5fVrtMjh4hNYGojiI_EzSx1FEAB64_ozxUJ81n4GMXbx4Y2L9s7ga5qntsxzNz2Chm5Ly4GGTxHCfftAgj_-QllpR9OnLow9xSEp5iZm5teWJP8ElcHsH2EEgRuzG8kbK7RN_LVmfN5eUyBrUx6OxLrFE7Zfpf_Ez64HdgAL1B8pWHSeZoZLvsptp5zzmbuNkW8axcz9oL2HLGNDuAgq0"/>
+</div>
+</div>
+</div>
+</nav>
+<!-- Main Content Layout -->
+<main class="flex h-screen pt-20 pb-24 overflow-hidden">
+<!-- Sidebar: Conversations -->
+<aside class="w-80 flex-shrink-0 bg-surface-container-low hidden md:flex flex-col">
+<div class="p-6">
+<h2 class="font-headline headline-md font-bold text-primary mb-6">Messages</h2>
+<div class="space-y-4">
+<!-- Active Convo -->
+<div class="p-4 rounded-xl bg-surface-container-highest transition-all duration-200 cursor-pointer border-l-2 border-secondary shadow-[2px_0_15px_-3px_rgba(93,230,255,0.2)]">
+<div class="flex items-center gap-4">
+<div class="relative">
+<img class="w-12 h-12 rounded-full object-cover" data-alt="Portrait of a friendly female consultant with a kind expression in a high-tech modern environment" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBkB7Fa31c0d4gXNbX84a-rGmQE8wEpjDgX6LeFsD-qvzU1WNI6houV0uKIZVQ5ccqJgFAx6y4rv-4xNbCfNo8eOLdBOOD5S-pDmj98CY6osEo2JIN_Y_ysvU5-omeb8g0SYlWEhCK-Mae1aM2lwFCyHjle773bteLH8rd-5osaNNdfW1mCyHCTciG9U_f5eOnTUQrH3i3KakVF_VBZDP8xpnSaENXagxqTD0Gl5dnvYxt5vsrxAxsTs0lpCB0SVSnjbEQxpS6ygGU"/>
+<div class="absolute bottom-0 right-0 w-3 h-3 bg-secondary rounded-full border-2 border-surface-container-highest"></div>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-baseline">
+<span class="font-body font-bold text-sm truncate">Elena Vance</span>
+<span class="text-[10px] text-on-surface-variant">2m ago</span>
+</div>
+<p class="text-xs text-on-surface-variant truncate">The scheduling logic is finalized...</p>
+</div>
+</div>
+</div>
+<!-- Other Convos -->
+<div class="p-4 rounded-xl hover:bg-surface-container transition-all duration-200 cursor-pointer group">
+<div class="flex items-center gap-4">
+<img class="w-12 h-12 rounded-full object-cover opacity-80 group-hover:opacity-100" data-alt="Portrait of a tech entrepreneur with glasses looking thoughtfully at a screen with blue ambient lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCtfHdBDxRY8ay4ZNYwhi9NAu0KJGJ009ytLAJzhkarfiHqihbthnF-k7yUNtryEc-md4hLNzShN_AVu6928ZBkv7maHirxz0GSlMR-WE4FyeCbqwUSx7OMb7w0TWa3VSE06FuOo8-mUz0zrtNqnFKsElUgqClPKgCK8-yyBlXBZ-7_mIC-o14e7u_Is1KT1OUu8VyqEWv55RCPk5wrDnSTF0uHBChMEk2_aJ14Q9bs-1hYKPgcZghJBXYF-vOuYLXTZptHZMMKG0w"/>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-baseline">
+<span class="font-body font-medium text-sm text-on-surface-variant group-hover:text-on-surface">Marcus Thorne</span>
+<span class="text-[10px] text-on-surface-variant">1h ago</span>
+</div>
+<p class="text-xs text-on-surface-variant truncate">I've reviewed the API documentation</p>
+</div>
+</div>
+</div>
+<div class="p-4 rounded-xl hover:bg-surface-container transition-all duration-200 cursor-pointer group">
+<div class="flex items-center gap-4">
+<img class="w-12 h-12 rounded-full object-cover opacity-80 group-hover:opacity-100" data-alt="Corporate headshot of a smiling female executive in a professional setting with soft daylight" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBYa21EqN6hJ10Dv1wfOXldAk2MC9HTk55arEujhgFm_5Ujt-7UJ05Z2UVK5O4nDAkUZVW4J6RHK9yRZ-yEEH4LtvIKaj4Log0_hxDEKz2I16XhEhKDQnPDx2v8AWJOU2ly2PozPXcTuqadu7ZYsq58rJP79zb3vZvpWKUDQu925YOCRJrAEZMIZuG68tgafWTq5Z0vRmtdSM7PEYkxe3MGTQ8jYh9d3Zv_mYZRSj3Vt1YCsWeEp9dd0B19XYK3JRQLzzSNZH2kFF8"/>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-baseline">
+<span class="font-body font-medium text-sm text-on-surface-variant group-hover:text-on-surface">Dr. Sarah Chen</span>
+<span class="text-[10px] text-on-surface-variant">Yesterday</span>
+</div>
+<p class="text-xs text-on-surface-variant truncate">Thank you for the update on the...</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Chat Window -->
+<section class="flex-1 flex flex-col relative bg-surface">
+<!-- Chat Header -->
+<header class="px-8 py-6 flex items-center justify-between bg-surface-container-low/50 backdrop-blur-md">
+<div class="flex items-center gap-4">
+<div class="md:hidden p-2 text-primary">
+<span class="material-symbols-outlined">arrow_back</span>
+</div>
+<div class="w-10 h-10 rounded-full border-2 border-secondary/30 p-0.5">
+<img class="w-full h-full rounded-full object-cover" data-alt="Portrait of a female professional advisor with soft focus background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBmzvhXHs4msaLYsTm01199F_zl5BR_lEMYca6Y7I_BXuRE_XgvIvQ4L_sW0Kbc03aeVqQ3uDPreCiYMDIwauG2sOrS9WpZCvCI5wzpRjOd979qNlxnj4gl5fQbGYkgCP9Q2YeitoDUXxqSaFRYqmgsUayau-hCXY0Y0RgtBtORQcJpBZzj-wga9qWpfBgTDIUuNS_7gAZaEkyNlHL7waHlzKLG4lAc0pMg0q4_e_5NO1O-cJI1Pkp4-Q4U1wvxgfo-NnNTP841v5Y"/>
+</div>
+<div>
+<h3 class="font-headline font-bold text-lg text-on-surface leading-tight">Elena Vance</h3>
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-secondary"></div>
+<span class="text-[10px] uppercase tracking-widest text-secondary font-bold">Online</span>
+</div>
+</div>
+</div>
+<div class="flex gap-4">
+<button class="w-10 h-10 rounded-full flex items-center justify-center hover:bg-surface-container transition-all">
+<span class="material-symbols-outlined text-outline">search</span>
+</button>
+<button class="w-10 h-10 rounded-full flex items-center justify-center hover:bg-surface-container transition-all">
+<span class="material-symbols-outlined text-outline">more_vert</span>
+</button>
+</div>
+</header>
+<!-- Messages Area -->
+<div class="flex-1 overflow-y-auto px-8 py-8 space-y-8 chat-scroll">
+<!-- Date Separator -->
+<div class="flex items-center gap-4 py-4">
+<div class="flex-1 h-[1px] bg-outline-variant/20"></div>
+<span class="text-[10px] uppercase tracking-widest text-outline font-semibold">Today, June 24</span>
+<div class="flex-1 h-[1px] bg-outline-variant/20"></div>
+</div>
+<!-- Provider Message -->
+<div class="flex gap-4 max-w-[80%]">
+<img class="w-8 h-8 rounded-full flex-shrink-0" data-alt="Profile icon of a female advisor" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDUFCoKKbLCkTnV9Q5Lz8A_DaRr2gfevTmb49VSSy-9yc4CFhxBVOTlJQLuDiQ781s3AqnE3hUM-uYEqr3D2YsysIb8Z6juoQVy2VpoAO91Iua7Tr2a_AhZ8LYLw0hV1Z8_FwxlqISRtKd0If3h01n5Ll-qqfT8xbyTBrI1DjYMzLowReW5CDNNzGUGLJzQ-0nCBvlzMyhGHuV31Am905a2eEme0vbCb6gKtIRTrD5BVJTrU6V7SXHeYMLBv7J7PFkinIUNH-KVNf8"/>
+<div class="glass-panel p-5 rounded-2xl rounded-tl-none shadow-xl">
+<p class="text-on-surface text-sm leading-relaxed">
+              Good morning! I've analyzed the latest performance data for the AI scheduling agent. We're seeing a 14% improvement in response latency. Would you like to review the dashboard?
+            </p>
+<span class="block mt-2 text-[10px] text-on-surface-variant font-medium">10:24 AM</span>
+</div>
+</div>
+<!-- User Message -->
+<div class="flex flex-row-reverse gap-4 max-w-[80%] ml-auto">
+<div class="bg-gradient-to-br from-primary-container to-secondary-container p-5 rounded-2xl rounded-tr-none shadow-[0_10px_30px_-5px_rgba(20,184,166,0.3)] border border-primary/20">
+<p class="text-on-primary-container text-sm leading-relaxed font-medium">
+              That's impressive, Elena. Let's look at the metrics. Can we also check the throughput for the Asia-Pacific region specifically?
+            </p>
+<span class="block mt-2 text-[10px] text-on-primary-container/70 text-right font-medium">10:26 AM</span>
+</div>
+</div>
+<!-- Provider Message with Intelligence Pulse -->
+<div class="flex gap-4 max-w-[80%]">
+<img class="w-8 h-8 rounded-full flex-shrink-0" data-alt="Profile icon of a female advisor" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDzck9MA15FlR_Yj2fQRWTnWf-yMRi1iQIUDfjhakKa8n7XwNzmqJ_nWdCcL-LLG-EYRXPPqb371OyLykDDTqWt36VRb5ITjddUP5nl7bAy7UOo_X_W8ETIj2G1OG7qrxKu6AUGxRUk1SdeLpdvisXiTH3chkR-VFvZpU3wlYQUsexqb29FPLqkrgrrj4RKxhUi3nAM3MQLAbw8AtdJPg6zDrsz6YeGXIIlG6p6ONI2ncsz7Dtoqu70mXKx4N_gvPyKARSSB0b5iko"/>
+<div class="glass-panel p-5 rounded-2xl rounded-tl-none shadow-xl space-y-4">
+<p class="text-on-surface text-sm leading-relaxed">
+              Retrieving region-specific telemetry now. One moment...
+            </p>
+<div class="flex items-center gap-3 text-secondary bg-secondary/10 px-3 py-2 rounded-lg w-fit">
+<div class="relative w-3 h-3">
+<div class="absolute inset-0 bg-secondary rounded-full animate-pulse"></div>
+<div class="absolute inset-[-4px] border border-secondary/30 rounded-full animate-ping"></div>
+</div>
+<span class="text-[10px] font-bold tracking-tighter uppercase">Intelligence Active</span>
+</div>
+<span class="block text-[10px] text-on-surface-variant font-medium">10:27 AM</span>
+</div>
+</div>
+</div>
+<!-- Input Area -->
+<div class="p-8 bg-surface/80 backdrop-blur-xl">
+<div class="max-w-4xl mx-auto relative group">
+<div class="absolute -inset-1 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-xl blur opacity-25 group-focus-within:opacity-100 transition-opacity"></div>
+<div class="relative flex items-center bg-surface-container-lowest rounded-xl p-2 pl-6 shadow-inner">
+<input class="flex-1 bg-transparent border-none focus:ring-0 text-on-surface placeholder-outline font-body py-4" placeholder="Type your intelligence query..." type="text"/>
+<div class="flex items-center gap-2 pr-2">
+<button class="p-3 text-outline hover:text-primary transition-colors">
+<span class="material-symbols-outlined">attach_file</span>
+</button>
+<button class="p-3 text-outline hover:text-primary transition-colors">
+<span class="material-symbols-outlined">sentiment_satisfied</span>
+</button>
+<button class="bg-tertiary-container hover:bg-tertiary text-on-tertiary-container font-bold px-6 py-3 rounded-lg flex items-center gap-2 transition-all active:scale-95 shadow-[0_0_15px_-5px_rgba(255,122,140,0.5)]">
+<span class="text-sm">Send</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">send</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="fixed bottom-0 w-full bg-slate-950 z-50">
+<div class="flex flex-col md:flex-row justify-between items-center gap-6 w-full py-6 px-8">
+<div class="flex items-center gap-4">
+<span class="font-headline font-bold text-teal-400">DLASS Intelligence</span>
+<span class="text-slate-500 font-inter text-xs tracking-wide">© 2024 DLASS Intelligence. All rights reserved.</span>
+</div>
+<div class="flex gap-8">
+<a class="text-slate-500 hover:text-teal-300 transition-colors font-inter text-xs tracking-wide" href="#">Privacy Policy</a>
+<a class="text-slate-500 hover:text-teal-300 transition-colors font-inter text-xs tracking-wide" href="#">Terms of Service</a>
+<a class="text-slate-500 hover:text-teal-300 transition-colors font-inter text-xs tracking-wide" href="#">Help Center</a>
+</div>
+</div>
+</footer>
+</body></html>

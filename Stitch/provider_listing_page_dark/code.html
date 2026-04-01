@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "on-secondary": "#00363e",
+            "secondary-fixed-dim": "#2fd9f4",
+            "on-error": "#690005",
+            "secondary-fixed": "#a2eeff",
+            "inverse-surface": "#dae2fd",
+            "surface-container-high": "#222a3d",
+            "inverse-primary": "#006b5f",
+            "tertiary": "#ffb2b9",
+            "on-primary-fixed": "#00201c",
+            "primary-container": "#14b8a6",
+            "surface": "#0b1326",
+            "on-secondary-fixed": "#001f25",
+            "error": "#ffb4ab",
+            "primary": "#4fdbc8",
+            "on-surface": "#dae2fd",
+            "on-primary-container": "#00423b",
+            "on-surface-variant": "#bbcac6",
+            "secondary": "#5de6ff",
+            "on-tertiary-container": "#770827",
+            "primary-fixed": "#71f8e4",
+            "error-container": "#93000a",
+            "on-secondary-container": "#00515d",
+            "on-primary": "#003731",
+            "surface-container-low": "#131b2e",
+            "surface-bright": "#31394d",
+            "primary-fixed-dim": "#4fdbc8",
+            "on-background": "#dae2fd",
+            "surface-container-lowest": "#060e20",
+            "on-tertiary": "#67001f",
+            "tertiary-fixed": "#ffdadc",
+            "surface-container": "#171f33",
+            "surface-dim": "#0b1326",
+            "outline-variant": "#3c4947",
+            "tertiary-fixed-dim": "#ffb2b9",
+            "surface-variant": "#2d3449",
+            "on-secondary-fixed-variant": "#004e5a",
+            "on-error-container": "#ffdad6",
+            "on-primary-fixed-variant": "#005048",
+            "on-tertiary-fixed-variant": "#891933",
+            "on-tertiary-fixed": "#400010",
+            "outline": "#859490",
+            "tertiary-container": "#ff7a8c",
+            "inverse-on-surface": "#283044",
+            "secondary-container": "#00cbe6",
+            "surface-container-highest": "#2d3449",
+            "background": "#0b1326",
+            "surface-tint": "#4fdbc8"
+          },
+          fontFamily: {
+            "headline": ["Manrope"],
+            "body": ["Inter"],
+            "label": ["Inter"]
+          },
+          borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .glass-card {
+      background: rgba(45, 52, 73, 0.4);
+      backdrop-filter: blur(24px);
+      border-top: 1px solid rgba(113, 248, 228, 0.2);
+      border-left: 1px solid rgba(113, 248, 228, 0.2);
+    }
+    .luminous-glow {
+      box-shadow: 0 20px 40px -10px rgba(20, 184, 166, 0.08);
+    }
+    body {
+      background-color: #0b1326;
+      color: #dae2fd;
+      font-family: 'Inter', sans-serif;
+    }
+  </style>
+</head>
+<body class="selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 bg-slate-900/40 backdrop-blur-xl shadow-[0_20px_40px_-10px_rgba(20,184,166,0.08)]">
+<div class="flex justify-between items-center w-full px-8 py-4 max-w-full">
+<div class="text-2xl font-black tracking-tighter bg-gradient-to-br from-teal-400 to-cyan-400 bg-clip-text text-transparent font-headline">
+        DLASS
+      </div>
+<div class="hidden md:flex items-center gap-8">
+<a class="text-slate-400 hover:text-teal-200 transition-colors font-label" href="#">Dashboard</a>
+<a class="text-slate-400 hover:text-teal-200 transition-colors font-label" href="#">Chat</a>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative group">
+<span class="material-symbols-outlined text-slate-400 p-2 hover:bg-teal-400/10 rounded-full transition-all cursor-pointer">notifications</span>
+<div class="absolute top-2 right-2 w-2 h-2 bg-tertiary-container rounded-full"></div>
+</div>
+<img alt="User Profile" class="w-10 h-10 rounded-full border border-primary/20 object-cover" data-alt="Close-up portrait of a professional male user in high-end office lighting with soft teal rim light" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDUtLyURdh3ADGz1KakxW2lfgqevVYgwhEXtgDw3DDWBRsHy3K1AJCWGUfRrZ7kYBJTJFlsYCehi862StGsx2eKakX2Bt6Ko4cS_6ScqURF7gxmEp7QJ_e3uJuIcojZ6mkLtXI1RvXpyq6oU0x--HIUCSD-ri4Dq8gmnvq0-z-cCsZvLh5v3Z9yQ4DTYOwiktj82wEu9ktwqTH6XsRR03LsfVmK9HZ9DObZ-2ks7z7Xlys1u8RCGtiT_lwyiqQ6DiKuyQFEYNNM42c"/>
+</div>
+</div>
+</nav>
+<main class="pt-28 pb-20 px-8 max-w-7xl mx-auto">
+<header class="mb-16">
+<p class="text-primary-fixed body-sm font-label tracking-widest uppercase mb-2">Available Intelligence</p>
+<h1 class="text-5xl font-extrabold tracking-tight font-headline text-on-surface">Explore Experts</h1>
+</header>
+<div class="flex flex-col lg:flex-row gap-12">
+<!-- Sidebar Filters -->
+<aside class="w-full lg:w-72 space-y-10">
+<section>
+<h3 class="font-headline text-lg font-bold mb-6 text-primary">Categories</h3>
+<div class="space-y-4">
+<label class="flex items-center gap-3 cursor-pointer group">
+<input checked="" class="w-5 h-5 rounded border-outline-variant bg-surface-container-lowest text-primary focus:ring-primary focus:ring-offset-surface" type="checkbox"/>
+<span class="font-body text-on-surface-variant group-hover:text-primary transition-colors">Strategic Planning</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer group">
+<input class="w-5 h-5 rounded border-outline-variant bg-surface-container-lowest text-primary focus:ring-primary focus:ring-offset-surface" type="checkbox"/>
+<span class="font-body text-on-surface-variant group-hover:text-primary transition-colors">Data Analysis</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer group">
+<input class="w-5 h-5 rounded border-outline-variant bg-surface-container-lowest text-primary focus:ring-primary focus:ring-offset-surface" type="checkbox"/>
+<span class="font-body text-on-surface-variant group-hover:text-primary transition-colors">Brand Architecture</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer group">
+<input class="w-5 h-5 rounded border-outline-variant bg-surface-container-lowest text-primary focus:ring-primary focus:ring-offset-surface" type="checkbox"/>
+<span class="font-body text-on-surface-variant group-hover:text-primary transition-colors">System Logistics</span>
+</label>
+</div>
+</section>
+<section>
+<h3 class="font-headline text-lg font-bold mb-6 text-primary">Rating</h3>
+<div class="space-y-4">
+<div class="flex items-center justify-between">
+<span class="font-body text-on-surface-variant">4.5 &amp; Above</span>
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<div class="h-1.5 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full w-[80%] bg-gradient-to-r from-primary to-secondary"></div>
+</div>
+</div>
+</section>
+<section>
+<h3 class="font-headline text-lg font-bold mb-6 text-primary">Budget Range</h3>
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-surface-container-lowest p-4 rounded-lg border border-outline-variant/20">
+<span class="text-xs text-on-surface-variant block mb-1">Min</span>
+<span class="text-on-surface font-headline font-bold">$50</span>
+</div>
+<div class="bg-surface-container-lowest p-4 rounded-lg border border-outline-variant/20">
+<span class="text-xs text-on-surface-variant block mb-1">Max</span>
+<span class="text-on-surface font-headline font-bold">$500</span>
+</div>
+</div>
+</section>
+</aside>
+<!-- Provider Grid -->
+<div class="flex-1">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<!-- Card 1 -->
+<div class="glass-card p-6 rounded-lg group hover:scale-[1.02] transition-transform duration-300">
+<div class="relative mb-6 overflow-hidden rounded-lg aspect-[4/3]">
+<img alt="Provider" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" data-alt="Professional woman in a minimalist studio setting with soft teal backlighting and a high-tech clean aesthetic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDicImws-ByVMvDXNFVE3eTRMCNMcqkq4t3At5WpvmzaSKQlGzMlhmAcEqOdvqmfNqCB1qaP5RWEKooE6Hro_8V_bjlR5hkBGWoNNFw31pCJsDWMERDgYT_jr043af8g8g4GwEY9TL3cymaIQyfy4kRgKKuDMTq8-ckI2QMkV3L-Izij_ZI9ODHnO1LoRcInp0MzoY8PyebjOu8UuxBdEyBf4hWFFvutaSNNGNDpsacOtvu2QYeFp1LCxhN8ZNnrAihBkzab54HSm0"/>
+<div class="absolute top-4 right-4 bg-surface-dim/80 backdrop-blur px-3 py-1 rounded-full flex items-center gap-1">
+<span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="text-xs font-bold text-on-surface">4.9</span>
+</div>
+</div>
+<div class="space-y-4">
+<div>
+<span class="text-xs font-label text-primary tracking-widest uppercase">Senior Strategist</span>
+<h4 class="text-2xl font-headline font-bold text-on-surface mt-1">Elena Vance</h4>
+</div>
+<p class="text-on-surface-variant text-sm line-clamp-2 leading-relaxed">
+                Specializing in global market expansion and high-fidelity logistics optimization for deep-tech startups.
+              </p>
+<div class="pt-4">
+<button class="w-full py-4 rounded-xl font-bold bg-gradient-to-r from-primary to-secondary text-on-primary hover:shadow-[0_0_20px_rgba(79,219,200,0.4)] transition-all">
+                  View Profile
+                </button>
+</div>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="glass-card p-6 rounded-lg group hover:scale-[1.02] transition-transform duration-300">
+<div class="relative mb-6 overflow-hidden rounded-lg aspect-[4/3]">
+<img alt="Provider" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" data-alt="Expert male consultant in a modern architectural office at night with subtle cyan glow from displays" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAUmVq3qRMirpKmx15LItA0ixLasEVoeqpLK1a9K-ds4H5sI3qXPjXjHz-l4LaYIrx2YtaUY3blfmpL53LPKXSW2jJapnfsp1vm1dYT5PrmhpyoQvW_W6OFd4nBapqnTbSZPTt8Svq8gpltZ6pWgiTBgUjDAgDJgDNjDuWsPkZFtAxIBPKQxfbgQsHYSVvEXN7C62KofApL8RxT3Hh2pmeFeVpzP0Bxq1NlV74AiNewfGhjM3fV3323a4eyo66dnVHRF2_MjUw0GpU"/>
+<div class="absolute top-4 right-4 bg-surface-dim/80 backdrop-blur px-3 py-1 rounded-full flex items-center gap-1">
+<span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="text-xs font-bold text-on-surface">4.8</span>
+</div>
+</div>
+<div class="space-y-4">
+<div>
+<span class="text-xs font-label text-primary tracking-widest uppercase">Data Architect</span>
+<h4 class="text-2xl font-headline font-bold text-on-surface mt-1">Marcus Thorne</h4>
+</div>
+<p class="text-on-surface-variant text-sm line-clamp-2 leading-relaxed">
+                Engineering complex data pipelines and visual intelligence dashboards for enterprise-level decision making.
+              </p>
+<div class="pt-4">
+<button class="w-full py-4 rounded-xl font-bold bg-gradient-to-r from-primary to-secondary text-on-primary hover:shadow-[0_0_20px_rgba(79,219,200,0.4)] transition-all">
+                  View Profile
+                </button>
+</div>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="glass-card p-6 rounded-lg group hover:scale-[1.02] transition-transform duration-300">
+<div class="relative mb-6 overflow-hidden rounded-lg aspect-[4/3]">
+<img alt="Provider" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" data-alt="Tech leader portrait with vibrant soft-focus background of blue and teal lights, editorial lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBpnxviOEjA2lwBkMAh-lFoQy162YdR8T7WB-5qfj81S4LODmGJlRnEhzgco912BK7tJ5hkSJf3q0HOt1MTAQtanMzJLB6bFsPvmVLAe8Bp85kbkPpjOEPu10vHKdCCesf63rRqVDV6S_NhBUzvcTD6FrSN4YYafDNxAmcDJnkotem-HVKplzTJvJoI5_Oomy5QsnrzSi7qEyfN4yVTVU8iqQazY-oOajQciNwmiRiJMkEt5Gf7gl9EqsunWWVCzOEEDQap5zUzwQs"/>
+<div class="absolute top-4 right-4 bg-surface-dim/80 backdrop-blur px-3 py-1 rounded-full flex items-center gap-1">
+<span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="text-xs font-bold text-on-surface">5.0</span>
+</div>
+</div>
+<div class="space-y-4">
+<div>
+<span class="text-xs font-label text-primary tracking-widest uppercase">Brand Identity</span>
+<h4 class="text-2xl font-headline font-bold text-on-surface mt-1">Sasha Koul</h4>
+</div>
+<p class="text-on-surface-variant text-sm line-clamp-2 leading-relaxed">
+                Creating immersive brand experiences that resonate across digital and physical dimensions.
+              </p>
+<div class="pt-4">
+<button class="w-full py-4 rounded-xl font-bold bg-gradient-to-r from-primary to-secondary text-on-primary hover:shadow-[0_0_20px_rgba(79,219,200,0.4)] transition-all">
+                  View Profile
+                </button>
+</div>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="glass-card p-6 rounded-lg group hover:scale-[1.02] transition-transform duration-300">
+<div class="relative mb-6 overflow-hidden rounded-lg aspect-[4/3]">
+<img alt="Provider" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" data-alt="Young professional executive sitting in a modern glass lounge with cinematic depth of field and soft teal lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC4jLAeQg_aRxklAg3qoXEmM1U8kxXhc1J5-G-IDy1Z-00LDeQ-4FxdvJ81ciS4K0MsUVe0fhxXhkw2Y6SlBgEfHkTZ6w3-G9f-oxVxFq-3jQ1_l0DGP5C7fS03d4v0yf6dMRC067d4sq_Hft9eJmkXOTbbG0WwIhuqR5V3VjEoiEAaej4XRWr2ezhIP6BcKDdU8-Urq0mX-HBZ3PzZ_YfNQXGTBNvo-kkAfsh1p_CyzedfbG0ycqJ122Z8HPPgM2DjM5Jf-PRfUsI"/>
+<div class="absolute top-4 right-4 bg-surface-dim/80 backdrop-blur px-3 py-1 rounded-full flex items-center gap-1">
+<span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="text-xs font-bold text-on-surface">4.7</span>
+</div>
+</div>
+<div class="space-y-4">
+<div>
+<span class="text-xs font-label text-primary tracking-widest uppercase">UX Consultant</span>
+<h4 class="text-2xl font-headline font-bold text-on-surface mt-1">Julian Reed</h4>
+</div>
+<p class="text-on-surface-variant text-sm line-clamp-2 leading-relaxed">
+                Auditing and refining user flows to maximize engagement and reduce friction in SaaS ecosystems.
+              </p>
+<div class="pt-4">
+<button class="w-full py-4 rounded-xl font-bold bg-gradient-to-r from-primary to-secondary text-on-primary hover:shadow-[0_0_20px_rgba(79,219,200,0.4)] transition-all">
+                  View Profile
+                </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-slate-950 w-full py-12 px-8">
+<div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+<div class="font-manrope font-bold text-teal-400">
+        DLASS Intelligence
+      </div>
+<div class="flex gap-8">
+<a class="text-slate-500 hover:text-teal-300 transition-colors font-inter text-sm tracking-wide" href="#">Privacy Policy</a>
+<a class="text-slate-500 hover:text-teal-300 transition-colors font-inter text-sm tracking-wide" href="#">Terms of Service</a>
+<a class="text-slate-500 hover:text-teal-300 transition-colors font-inter text-sm tracking-wide" href="#">Help Center</a>
+</div>
+<div class="text-slate-500 font-inter text-sm tracking-wide">
+        © 2024 DLASS Intelligence. All rights reserved.
+      </div>
+</div>
+</footer>
+</body></html>

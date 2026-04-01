@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>DLASS - Provider Profile</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&amp;family=Inter:wght@300;400;500;600&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-secondary": "#00363e",
+              "secondary-fixed-dim": "#2fd9f4",
+              "on-error": "#690005",
+              "secondary-fixed": "#a2eeff",
+              "inverse-surface": "#dae2fd",
+              "surface-container-high": "#222a3d",
+              "inverse-primary": "#006b5f",
+              "tertiary": "#ffb2b9",
+              "on-primary-fixed": "#00201c",
+              "primary-container": "#14b8a6",
+              "surface": "#0b1326",
+              "on-secondary-fixed": "#001f25",
+              "error": "#ffb4ab",
+              "primary": "#4fdbc8",
+              "on-surface": "#dae2fd",
+              "on-primary-container": "#00423b",
+              "on-surface-variant": "#bbcac6",
+              "secondary": "#5de6ff",
+              "on-tertiary-container": "#770827",
+              "primary-fixed": "#71f8e4",
+              "error-container": "#93000a",
+              "on-secondary-container": "#00515d",
+              "on-primary": "#003731",
+              "surface-container-low": "#131b2e",
+              "surface-bright": "#31394d",
+              "primary-fixed-dim": "#4fdbc8",
+              "on-background": "#dae2fd",
+              "surface-container-lowest": "#060e20",
+              "on-tertiary": "#67001f",
+              "tertiary-fixed": "#ffdadc",
+              "surface-container": "#171f33",
+              "surface-dim": "#0b1326",
+              "outline-variant": "#3c4947",
+              "tertiary-fixed-dim": "#ffb2b9",
+              "surface-variant": "#2d3449",
+              "on-secondary-fixed-variant": "#004e5a",
+              "on-error-container": "#ffdad6",
+              "on-primary-fixed-variant": "#005048",
+              "on-tertiary-fixed-variant": "#891933",
+              "on-tertiary-fixed": "#400010",
+              "outline": "#859490",
+              "tertiary-container": "#ff7a8c",
+              "inverse-on-surface": "#283044",
+              "secondary-container": "#00cbe6",
+              "surface-container-highest": "#2d3449",
+              "background": "#0b1326",
+              "surface-tint": "#4fdbc8"
+            },
+            fontFamily: {
+              "headline": ["Manrope"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .glass-card {
+            background: rgba(23, 31, 51, 0.4);
+            backdrop-filter: blur(24px);
+            border-top: 1px solid rgba(113, 248, 228, 0.2);
+            border-left: 1px solid rgba(113, 248, 228, 0.2);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .luminous-shadow {
+            box-shadow: 0 20px 40px -10px rgba(79, 219, 200, 0.08);
+        }
+        .pulse-secondary {
+            animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); opacity: 0.5; }
+            50% { transform: scale(1); opacity: 0.3; }
+            100% { transform: scale(0.95); opacity: 0.5; }
+        }
+    </style>
+</head>
+<body class="bg-surface-dim text-on-surface font-body selection:bg-primary/30 min-h-screen">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 bg-slate-900/40 backdrop-blur-xl shadow-[0_20px_40px_-10px_rgba(20,184,166,0.08)]">
+<div class="flex justify-between items-center w-full px-8 py-4 max-w-full">
+<div class="flex items-center gap-8">
+<span class="text-2xl font-black tracking-tighter bg-gradient-to-br from-teal-400 to-cyan-400 bg-clip-text text-transparent font-headline">DLASS</span>
+<div class="hidden md:flex gap-6">
+<a class="text-slate-400 hover:text-teal-200 transition-colors font-label tracking-wide" href="#">Dashboard</a>
+<a class="text-slate-400 hover:text-teal-200 transition-colors font-label tracking-wide" href="#">Chat</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 hover:bg-teal-400/10 rounded-full transition-all text-slate-400">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<div class="h-10 w-10 rounded-full overflow-hidden bg-surface-container">
+<img alt="User Profile" data-alt="minimalist close-up portrait of a professional man with clean lighting and deep blue background shadows" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC3MaB0KZCyc46LpN942VTgXIoE_ajVPGP30NJ5FxJ1q9aa07t3H-32lbcdnTeSVGUyrjlUz7S3QkXPxavUWGKJPJcW8xEIkBSz2ZKLeE-6zi2_fI53ewl-EqjlzQnYBmPuYJtphXyi7K-SJsEvr6S18vFGOFYRc-wZrYKK4JCmaDSybpz_zWWA1xE_RwG10JDkAENYBk0DDvI0SO1hAMmkmhVPcvcptGzjruf7jkguprPlBcHKgrMXSHTZSQyuYsZyQt_bOi1XMi4"/>
+</div>
+</div>
+</div>
+</nav>
+<main class="pt-24 pb-20 px-8 max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10">
+<!-- Left Column: Provider Bio & Reviews -->
+<div class="lg:col-span-8 space-y-10">
+<!-- Hero Provider Section -->
+<section class="glass-card p-10 rounded-lg relative overflow-hidden">
+<div class="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-[100px] rounded-full -mr-20 -mt-20"></div>
+<div class="flex flex-col md:flex-row gap-8 items-start relative z-10">
+<div class="relative">
+<div class="w-32 h-32 md:w-48 md:h-48 rounded-lg overflow-hidden luminous-shadow">
+<img alt="Provider Image" data-alt="professional woman executive portrait with soft cyan backlighting and a confident expression against a dark textured background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAimjyQ7M6WnSEXj-B7Iv9CFER3CCcEWDOrw-0yupSOZHJtxS76Vr1VNqRMHwlpSPcPEN53XZn-EKvE9hPmyVakfQvB95EFFdt_z5jOsOwiHjc2rpNbeD93rfTzRUJkpiKiS625Yvj2K0UKHZ-34r32M03KxdweNpzL9b5oaN4_qDNXivLLJkbHgy3yGFHuryzuq_7xROzvQLEyeJGB9b9Hmeb_opyLYGbrLh2a2soebtrF0FVLrRoA60vUfRIeLpBKyHxb09O26yM"/>
+</div>
+<div class="absolute -bottom-2 -right-2 w-6 h-6 bg-secondary rounded-full flex items-center justify-center border-4 border-surface-dim">
+<div class="w-2 h-2 bg-on-secondary rounded-full pulse-secondary"></div>
+</div>
+</div>
+<div class="flex-1 space-y-4">
+<div class="flex flex-wrap items-center gap-3">
+<span class="font-label text-xs uppercase tracking-widest text-primary-fixed">Certified Senior Consultant</span>
+<div class="flex items-center gap-1 text-secondary-fixed">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-bold">4.9</span>
+<span class="text-on-surface-variant font-normal text-sm ml-1">(128 reviews)</span>
+</div>
+</div>
+<h1 class="text-4xl md:text-5xl font-extrabold tracking-tight font-headline text-on-surface">Dr. Elena Vance</h1>
+<p class="text-lg text-on-surface-variant leading-relaxed max-w-2xl font-body">
+                            Specializing in deep-learning diagnostics and architectural intelligence systems. With over 12 years of experience, Elena helps organizations navigate complex digital transformations using DLASS proprietary frameworks.
+                        </p>
+<div class="flex flex-wrap gap-4 pt-4">
+<div class="bg-surface-container-low px-4 py-2 rounded-full flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="language">language</span>
+<span class="text-sm font-medium">English, German</span>
+</div>
+<div class="bg-surface-container-low px-4 py-2 rounded-full flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="verified_user">verified_user</span>
+<span class="text-sm font-medium">Verified Specialist</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Experience Bento Grid -->
+<section class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="glass-card p-8 rounded-lg space-y-4">
+<span class="material-symbols-outlined text-primary text-3xl" data-icon="psychology">psychology</span>
+<h3 class="text-xl font-bold font-headline">Core Expertise</h3>
+<ul class="space-y-2 text-on-surface-variant font-body">
+<li class="flex items-center gap-2">
+<div class="w-1.5 h-1.5 bg-primary rounded-full"></div>
+                            Neural Network Architecture
+                        </li>
+<li class="flex items-center gap-2">
+<div class="w-1.5 h-1.5 bg-primary rounded-full"></div>
+                            Predictive Maintenance Logic
+                        </li>
+<li class="flex items-center gap-2">
+<div class="w-1.5 h-1.5 bg-primary rounded-full"></div>
+                            Edge Intelligence Integration
+                        </li>
+</ul>
+</div>
+<div class="glass-card p-8 rounded-lg space-y-4 bg-gradient-to-br from-surface-container to-surface-container-low">
+<span class="material-symbols-outlined text-secondary text-3xl" data-icon="history_edu">history_edu</span>
+<h3 class="text-xl font-bold font-headline">Education</h3>
+<div class="space-y-4">
+<div>
+<p class="text-sm font-bold text-on-surface">PhD, Artificial Intelligence</p>
+<p class="text-xs text-on-surface-variant">Stanford University • 2018</p>
+</div>
+<div>
+<p class="text-sm font-bold text-on-surface">MSc, Computational Logic</p>
+<p class="text-xs text-on-surface-variant">TU Munich • 2014</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Reviews Section -->
+<section class="space-y-8">
+<div class="flex items-end justify-between px-2">
+<h2 class="text-2xl font-bold font-headline">Client Testimony</h2>
+<a class="text-sm text-primary hover:text-secondary-fixed transition-colors" href="#">View all reviews</a>
+</div>
+<div class="space-y-6">
+<div class="glass-card p-8 rounded-lg relative">
+<div class="absolute top-8 right-8 text-surface-container-highest">
+<span class="material-symbols-outlined text-6xl" style="font-variation-settings: 'opsz' 48;">format_quote</span>
+</div>
+<div class="flex items-center gap-4 mb-4">
+<div class="w-12 h-12 rounded-full overflow-hidden bg-surface-variant">
+<img alt="Client 1" data-alt="portrait of a middle-aged tech founder with short hair and glasses, warm lighting on face, dark neutral background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBKhRSPzZTnRmegVLGQz_fIGJdik-bc9ZDGqjmraMdmVgStLlpzT1dP5fZrmvWxSEOIBf7mumk1lDY9IEB1g7B0znX5RA9LgBELQkGv9MlSRW0Z3lQJm7CuVcB7acO0diDn-6tZ-Q94j-2xHHO12Q_PkiPXbTtEiodiFQuFuouieYzri9pz7jNYZdqLoleei9IJt01q1yqIYN-Mk7Uh7nI44m5OR0Fikinbjd59fFwJjI7eQvU-sEruD6D6K80v6Vb4g-MH9U4fsOQ"/>
+</div>
+<div>
+<h4 class="font-bold text-on-surface">Marcus Thorne</h4>
+<p class="text-xs text-on-surface-variant">CEO, Nexus Dynamics</p>
+</div>
+</div>
+<p class="text-on-surface-variant font-body italic">"Elena's approach to our backend diagnostic overhaul was nothing short of brilliant. She didn't just fix problems; she built a system that predicts them. Highly recommended for complex DLASS integrations."</p>
+</div>
+<div class="glass-card p-8 rounded-lg relative">
+<div class="flex items-center gap-4 mb-4">
+<div class="w-12 h-12 rounded-full overflow-hidden bg-surface-variant">
+<img alt="Client 2" data-alt="headshot of a female software engineer smiling, colorful bokeh city lights in background at night" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBc1_AYyYyFyfs3xIc6uy36nvqjntBNSHjX4b45dWqZ2IrEt9aj_cC6jk9peLt997tJuxHkB4WGyzgR06i1NdZYcOmgkW6qzDV0Za6L6aI7iolXDkVueEYNLB_vFQ9t5gApj3VTIkUg3YumiPkCMhjvhBuIw_iyqJ7tBlNbWK0CFYo5dB1xywr5EVuCklNyglsrVLTXy1vQWZlJ9KbQWHDLrqM_TteQCy3aIRldVrky_KjPT16EmHVCIxm5kS6oHO8VCcxwV-J9IlI"/>
+</div>
+<div>
+<h4 class="font-bold text-on-surface">Sarah Jenkins</h4>
+<p class="text-xs text-on-surface-variant">CTO, CloudScale</p>
+</div>
+</div>
+<p class="text-on-surface-variant font-body italic">"Incredible insight. We reduced our latency by 40% within three weeks of implementing her suggested logic gates."</p>
+</div>
+</div>
+</section>
+</div>
+<!-- Right Column: Booking Widget -->
+<aside class="lg:col-span-4 lg:sticky lg:top-28 h-fit">
+<div class="glass-card p-8 rounded-lg border-2 border-primary/20 space-y-8 bg-surface-container-lowest/60">
+<div class="space-y-2">
+<h3 class="text-xl font-bold font-headline">Book Intelligence Session</h3>
+<p class="text-sm text-on-surface-variant">Select your preferred window for a 60-min deep dive.</p>
+</div>
+<!-- Date Picker Mockup -->
+<div class="space-y-4">
+<div class="flex items-center justify-between font-label text-sm font-medium text-primary">
+<span>December 2024</span>
+<div class="flex gap-2">
+<button class="p-1 hover:bg-primary/10 rounded-full transition-all"><span class="material-symbols-outlined">chevron_left</span></button>
+<button class="p-1 hover:bg-primary/10 rounded-full transition-all"><span class="material-symbols-outlined">chevron_right</span></button>
+</div>
+</div>
+<div class="grid grid-cols-7 text-center text-xs text-on-surface-variant mb-2">
+<span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span>
+</div>
+<div class="grid grid-cols-7 gap-2">
+<div class="h-8 flex items-center justify-center text-xs opacity-20">28</div>
+<div class="h-8 flex items-center justify-center text-xs opacity-20">29</div>
+<div class="h-8 flex items-center justify-center text-xs opacity-20">30</div>
+<button class="h-8 flex items-center justify-center text-xs rounded-full hover:bg-primary/20 transition-all">1</button>
+<button class="h-8 flex items-center justify-center text-xs rounded-full hover:bg-primary/20 transition-all">2</button>
+<button class="h-8 flex items-center justify-center text-xs rounded-full bg-primary text-on-primary font-bold">3</button>
+<button class="h-8 flex items-center justify-center text-xs rounded-full hover:bg-primary/20 transition-all">4</button>
+</div>
+</div>
+<!-- Time Slots -->
+<div class="space-y-4">
+<p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Available Slots</p>
+<div class="grid grid-cols-2 gap-3">
+<button class="py-3 px-4 rounded-full border border-primary/40 bg-primary/5 text-primary text-sm font-medium hover:bg-primary hover:text-on-primary transition-all">09:00 AM</button>
+<button class="py-3 px-4 rounded-full border border-primary/40 bg-primary/5 text-primary text-sm font-medium hover:bg-primary hover:text-on-primary transition-all">11:30 AM</button>
+<button class="py-3 px-4 rounded-full bg-tertiary-container text-on-tertiary-container text-sm font-bold shadow-[0_0_15px_rgba(251,113,133,0.4)]">02:00 PM</button>
+<button class="py-3 px-4 rounded-full border border-primary/40 bg-primary/5 text-primary text-sm font-medium hover:bg-primary hover:text-on-primary transition-all">04:30 PM</button>
+</div>
+</div>
+<!-- Pricing -->
+<div class="p-6 bg-surface-container-high rounded-lg space-y-2">
+<div class="flex justify-between items-center">
+<span class="text-on-surface-variant text-sm">Consultation Rate</span>
+<span class="text-lg font-bold text-primary">$250/hr</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-on-surface-variant text-sm">Service Fee</span>
+<span class="text-sm font-medium">$12.50</span>
+</div>
+</div>
+<!-- CTA Button -->
+<button class="w-full py-4 bg-gradient-to-r from-primary to-secondary rounded-xl text-on-primary font-bold tracking-tight text-lg luminous-shadow hover:scale-105 active:scale-95 transition-all">
+                    Confirm Booking
+                </button>
+<p class="text-[10px] text-center text-on-surface-variant">Cancellation policy: Free cancellation up to 24h before session start.</p>
+</div>
+</aside>
+</main>
+<!-- Footer -->
+<footer class="bg-slate-950 w-full py-12 px-8 mt-20">
+<div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+<div class="flex flex-col items-center md:items-start gap-2">
+<span class="font-manrope font-bold text-teal-400 text-xl tracking-tight">DLASS Intelligence</span>
+<p class="font-inter text-sm tracking-wide text-slate-500">© 2024 DLASS Intelligence. All rights reserved.</p>
+</div>
+<div class="flex gap-8">
+<a class="text-slate-500 hover:text-teal-300 transition-colors font-inter text-sm tracking-wide" href="#">Privacy Policy</a>
+<a class="text-slate-500 hover:text-teal-300 transition-colors font-inter text-sm tracking-wide" href="#">Terms of Service</a>
+<a class="text-slate-500 hover:text-teal-300 transition-colors font-inter text-sm tracking-wide" href="#">Help Center</a>
+</div>
+</div>
+</footer>
+</body></html>

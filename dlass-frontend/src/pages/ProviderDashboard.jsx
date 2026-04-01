@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { getToken } from "../services/authService";
 import {
@@ -9,6 +9,7 @@ import {
 import DynamicHeader from "../components/DynamicHeader";
 import ChatWindow from "../components/ChatWindow";
 import AppointmentDetailModal from "../components/AppointmentDetailModal";
+import PageWrapper from "../components/ui/PageWrapper";
 
 const API = "http://localhost:8080/api";
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
@@ -37,8 +38,8 @@ function getRangeLabel(range) {
 function CustomTooltip({ active, payload, label, prefix = "", suffix = "" }) {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-surface-container-highest border border-outline-variant/30 rounded-xl px-4 py-2 text-sm shadow-xl">
-        <p className="text-on-surface-variant text-xs mb-1">{label}</p>
+      <div className="bg-inputBg backdrop-blur-xl border border-glassBorder rounded-xl px-4 py-2 text-sm shadow-xl">
+        <p className="text-textSecondary text-xs mb-1">{label}</p>
         <p className="font-bold text-primary">
           {prefix}{payload[0].value}{suffix}
         </p>
@@ -49,6 +50,13 @@ function CustomTooltip({ active, payload, label, prefix = "", suffix = "" }) {
 }
 
 export default function ProviderDashboard() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    setIsChatMaximized(false);
+  }, [location.pathname]);
+
   const [tab, setTab] = useState("appointments");
   const [providerId, setProviderId] = useState(null);
   const [providerInfo, setProviderInfo] = useState(null);
@@ -81,7 +89,6 @@ export default function ProviderDashboard() {
   const [profileForm, setProfileForm] = useState({ phone: "", city: "", area: "", pincode: "", profileImageUrl: "" });
   const [profileMsg, setProfileMsg] = useState("");
 
-  const navigate = useNavigate();
 
   // Analytics
   const [bookingsWeek, setBookingsWeek] = useState([]);
@@ -102,6 +109,7 @@ export default function ProviderDashboard() {
 
   // Chat
   const [activeChat, setActiveChat] = useState(null);
+  const [isChatMaximized, setIsChatMaximized] = useState(false);
 
   // ── Init ──────────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -374,15 +382,13 @@ export default function ProviderDashboard() {
   }
 
   // ── Style helpers ─────────────────────────────────────────────────────────
-  const inputClass =
-    "w-full px-4 py-3 bg-surface-container-highest/50 border border-outline-variant/20 rounded-xl text-on-surface placeholder:text-on-surface-variant/40 focus:outline-none focus:ring-2 focus:ring-secondary/40 transition-all text-sm";
-  const labelClass =
-    "block text-xs font-label font-bold text-on-surface-variant uppercase tracking-widest mb-1.5";
+  const inputClass = "w-full px-4 py-3 bg-inputBg border border-inputBorder rounded-xl text-textPrimary placeholder:text-textSecondary/40 focus:outline-none focus:ring-1 focus:ring-primary transition-all text-sm";
+  const labelClass = "block text-xs font-label font-bold text-textSecondary uppercase tracking-widest mb-1.5 flex items-center gap-1";
   const statusBadge = (status) => {
-    if (status === "BOOKED") return "bg-secondary-container/20 text-secondary";
-    if (status === "CANCELLED") return "bg-red-500/10 text-red-300";
-    if (status === "COMPLETED") return "bg-green-500/10 text-green-300";
-    return "bg-primary-container/20 text-primary";
+    if (status === "BOOKED") return "bg-primary/10 text-primary border-primary/30";
+    if (status === "CANCELLED") return "bg-coral/10 text-coral border-coral/20";
+    if (status === "COMPLETED") return "bg-teal-500/10 text-teal-400 border-teal-500/20";
+    return "bg-black/5 dark:bg-white/5 text-textSecondary border-glassBorder";
   };
 
   const TABS = [
@@ -397,15 +403,19 @@ export default function ProviderDashboard() {
 
   if (loading)
     return (
-      <div className="min-h-screen flex items-center justify-center pt-16">
-        <div className="spinner" />
-      </div>
+      <PageWrapper className="min-h-screen flex flex-col items-center justify-center pt-16">
+        <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin mb-4" />
+        <p className="text-textSecondary/60 font-label tracking-widest uppercase text-xs font-bold">Loading Dashboard...</p>
+      </PageWrapper>
     );
   if (error)
     return (
-      <div className="min-h-screen flex items-center justify-center pt-16">
-        <p className="text-red-400 text-center max-w-sm">{error}</p>
-      </div>
+      <PageWrapper className="min-h-screen flex items-center justify-center pt-16">
+        <div className="bg-coral/10 border border-coral/20 rounded-2xl p-6 text-center max-w-sm">
+          <span className="material-symbols-outlined text-coral text-4xl mb-3 block">error</span>
+          <p className="text-coral font-bold">{error}</p>
+        </div>
+      </PageWrapper>
     );
 
   const getHeader = () => {
@@ -423,20 +433,20 @@ export default function ProviderDashboard() {
   const headerInfo = getHeader();
 
   return (
-    <div className="min-h-screen pt-20 pb-16 px-4 md:px-8">
-      <div className="max-w-7xl mx-auto pt-8 space-y-10">
+    <PageWrapper className="pt-24 pb-16 px-4 md:px-8">
+      <div className={`transition-all duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)] max-w-7xl mx-auto pt-8 space-y-10 ${!!activeChat && isChatMaximized ? 'lg:w-1/2 lg:max-w-none lg:mr-auto lg:pr-6' : 'w-full'}`}>
         {/* Header + Tab Nav */}
-        <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <header className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-end">
           <div>
-             <h1 className="text-4xl md:text-5xl font-headline font-extrabold tracking-tight text-on-surface mb-2">
+             <h1 className="text-4xl md:text-5xl font-headline font-extrabold tracking-tight text-textPrimary mb-2">
                 {headerInfo.title}
              </h1>
-            <p className="text-on-surface-variant max-w-xl text-sm">
+            <p className="text-textSecondary max-w-xl text-sm">
               {headerInfo.sub}
             </p>
           </div>
 
-          <div className="flex flex-wrap bg-surface-container-low p-1.5 rounded-full shadow-inner border border-outline-variant/10 shrink-0 gap-1">
+          <div className="flex flex-wrap bg-black/5 dark:bg-white/5 p-1.5 rounded-full shadow-inner border border-glassBorder shrink-0 gap-1">
             {TABS.map(({ key, icon, label }) => (
               <button
                 key={key}
@@ -444,8 +454,8 @@ export default function ProviderDashboard() {
                 onClick={() => setTab(key)}
                 className={`flex items-center gap-1.5 px-4 py-2 rounded-full font-headline font-bold text-xs uppercase tracking-widest transition-all ${
                   tab === key
-                    ? "bg-primary-container text-on-primary-container shadow-lg"
-                    : "text-on-surface-variant hover:text-white"
+                    ? "bg-primary text-deep-navy shadow-lg"
+                    : "text-textSecondary hover:text-white"
                 }`}
               >
                 <span className="material-symbols-outlined text-sm">{icon}</span>
@@ -471,7 +481,7 @@ export default function ProviderDashboard() {
               {apptDate && (
                 <button
                   onClick={() => setApptDate("")}
-                  className="mt-5 px-4 py-2.5 rounded-xl border border-outline-variant/30 bg-surface-container-high text-on-surface-variant text-sm hover:bg-surface-bright transition-colors"
+                  className="mt-5 px-4 py-2.5 rounded-xl border border-glassBorder bg-black/10 dark:bg-white/10 text-textSecondary text-sm hover:bg-black/15 dark:bg-white/15 transition-colors"
                 >
                   Clear Filter
                 </button>
@@ -480,16 +490,16 @@ export default function ProviderDashboard() {
 
             <div className="glass-card rounded-3xl p-6 md:p-8 shadow-2xl">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-headline font-bold tracking-tight text-on-surface">Bookings</h2>
-                <span className="text-xs font-label tracking-widest text-on-surface-variant uppercase bg-white/5 px-4 py-2 rounded-full">
+                <h2 className="text-xl font-headline font-bold tracking-tight text-textPrimary">Bookings</h2>
+                <span className="text-xs font-label tracking-widest text-textSecondary uppercase bg-white/5 px-4 py-2 rounded-full">
                   {appointments.length} total
                 </span>
               </div>
 
               {appointments.length === 0 ? (
                 <div className="text-center py-16">
-                  <span className="material-symbols-outlined text-5xl text-on-surface-variant/20 mb-3 block">event_busy</span>
-                  <p className="text-on-surface-variant/50 font-headline font-bold">No bookings for the selected view</p>
+                  <span className="material-symbols-outlined text-5xl text-textSecondary/20 mb-3 block">event_busy</span>
+                  <p className="text-textSecondary/50 font-headline font-bold">No bookings for the selected view</p>
                 </div>
               ) : (
                 <div className="overflow-x-auto">
@@ -497,25 +507,25 @@ export default function ProviderDashboard() {
                     <thead>
                       <tr className="text-left">
                         {["Customer", "Service", "Date & Time", "Status", "Action"].map((h) => (
-                          <th key={h} className="pb-1 px-4 text-xs font-label uppercase tracking-widest text-on-surface-variant font-medium">{h}</th>
+                          <th key={h} className="pb-1 px-4 text-xs font-label uppercase tracking-widest text-textSecondary font-medium">{h}</th>
                         ))}
                       </tr>
                     </thead>
                     <tbody>
                       {appointments.map((a) => (
-                        <tr key={a.id} className="bg-surface-container-low hover:bg-surface-container-high transition-colors">
-                          <td className="py-4 px-4 rounded-l-2xl border-l-2 border-primary-container">
-                            <div className="text-sm font-bold text-on-surface">{a.userName}</div>
-                            <div className="text-xs text-on-surface-variant">{a.userEmail}</div>
-                            {a.userPhone && <div className="text-xs text-on-surface-variant font-mono mt-0.5">{a.userPhone}</div>}
+                        <tr key={a.id} className="bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:bg-white/10 transition-colors">
+                          <td className="py-4 px-4 rounded-l-2xl border-l-4 border-primary">
+                            <div className="text-sm font-bold text-textPrimary">{a.userName}</div>
+                            <div className="text-xs text-textSecondary">{a.userEmail}</div>
+                            {a.userPhone && <div className="text-xs text-textSecondary font-mono mt-0.5">{a.userPhone}</div>}
                           </td>
                           <td className="py-4 px-4 text-sm font-medium text-primary">{a.serviceName || "Appointment"}</td>
                           <td className="py-4 px-4">
-                            <div className="text-sm text-on-surface">{a.date}</div>
-                            <div className="text-xs text-on-surface-variant">{a.startTime} – {a.endTime}</div>
+                            <div className="text-sm text-textPrimary">{a.date}</div>
+                            <div className="text-xs text-textSecondary">{a.startTime} – {a.endTime}</div>
                           </td>
                           <td className="py-4 px-4">
-                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ${statusBadge(a.status)}`}>{a.status}</span>
+                            <span className={`inline-flex items-center px-3 py-1 border rounded-full text-xs font-bold ${statusBadge(a.status)}`}>{a.status}</span>
                           </td>
                           <td className="py-4 px-4 rounded-r-2xl">
                             <div className="flex gap-2 items-center">
@@ -536,7 +546,7 @@ export default function ProviderDashboard() {
                               {a.status === "BOOKED" && (
                                 <button
                                   onClick={() => cancelAppointmentByProvider(a.id)}
-                                  className="flex items-center gap-1 text-xs font-bold text-red-400 hover:text-red-300 transition-colors"
+                                  className="flex items-center gap-1 text-xs font-bold text-coral hover:text-coral/80 transition-colors"
                                 >
                                   <span className="material-symbols-outlined text-sm">cancel</span>
                                   Cancel
@@ -575,16 +585,16 @@ export default function ProviderDashboard() {
 
             <div className="glass-card rounded-3xl p-6 md:p-8 shadow-2xl">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-headline font-bold tracking-tight text-on-surface">Past Appointments</h2>
-                <span className="text-xs font-label tracking-widest text-on-surface-variant uppercase bg-white/5 px-4 py-2 rounded-full">
+                <h2 className="text-xl font-headline font-bold tracking-tight text-textPrimary">Past Appointments</h2>
+                <span className="text-xs font-label tracking-widest text-textSecondary uppercase bg-white/5 px-4 py-2 rounded-full">
                   {history.length} total
                 </span>
               </div>
 
               {history.length === 0 ? (
                 <div className="text-center py-16">
-                  <span className="material-symbols-outlined text-5xl text-on-surface-variant/20 mb-3 block">history</span>
-                  <p className="text-on-surface-variant/50 font-headline font-bold">No history for the selected range</p>
+                  <span className="material-symbols-outlined text-5xl text-textSecondary/20 mb-3 block">history</span>
+                  <p className="text-textSecondary/50 font-headline font-bold">No history for the selected range</p>
                 </div>
               ) : (
                 <div className="overflow-x-auto">
@@ -592,25 +602,25 @@ export default function ProviderDashboard() {
                     <thead>
                       <tr className="text-left">
                         {["Customer", "Service", "Date & Time", "Status", "Action"].map((h) => (
-                          <th key={h} className="pb-1 px-4 text-xs font-label uppercase tracking-widest text-on-surface-variant font-medium">{h}</th>
+                          <th key={h} className="pb-1 px-4 text-xs font-label uppercase tracking-widest text-textSecondary font-medium">{h}</th>
                         ))}
                       </tr>
                     </thead>
                     <tbody>
                       {history.map((a) => (
-                        <tr key={a.id} className="bg-surface-container-low hover:bg-surface-container-high transition-colors">
+                        <tr key={a.id} className="bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:bg-white/10 transition-colors">
                           <td className="py-4 px-4 rounded-l-2xl border-l-2 border-surface-container-highest">
-                            <div className="text-sm font-bold text-on-surface">{a.userName}</div>
-                            <div className="text-xs text-on-surface-variant">{a.userEmail}</div>
-                            {a.userPhone && <div className="text-xs text-on-surface-variant font-mono mt-0.5">{a.userPhone}</div>}
+                            <div className="text-sm font-bold text-textPrimary">{a.userName}</div>
+                            <div className="text-xs text-textSecondary">{a.userEmail}</div>
+                            {a.userPhone && <div className="text-xs text-textSecondary font-mono mt-0.5">{a.userPhone}</div>}
                           </td>
                           <td className="py-4 px-4 text-sm font-medium text-primary">{a.serviceName || "Appointment"}</td>
                           <td className="py-4 px-4">
-                            <div className="text-sm text-on-surface">{a.date}</div>
-                            <div className="text-xs text-on-surface-variant">{a.startTime} – {a.endTime}</div>
+                            <div className="text-sm text-textPrimary">{a.date}</div>
+                            <div className="text-xs text-textSecondary">{a.startTime} – {a.endTime}</div>
                           </td>
                           <td className="py-4 px-4">
-                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ${statusBadge(a.status)}`}>{a.status}</span>
+                            <span className={`inline-flex items-center px-3 py-1 border rounded-full text-xs font-bold ${statusBadge(a.status)}`}>{a.status}</span>
                           </td>
                           <td className="py-4 px-4 rounded-r-2xl">
                             <button
@@ -636,7 +646,7 @@ export default function ProviderDashboard() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             <div className="lg:col-span-5">
               <div className="glass-card rounded-3xl p-6 md:p-8">
-                <h2 className="text-xl font-headline font-bold text-on-surface mb-6">Add New Service</h2>
+                <h2 className="text-xl font-headline font-bold text-textPrimary mb-6">Add New Service</h2>
                 <form onSubmit={addService} className="space-y-4">
                   <div>
                     <label className={labelClass}>Service Name *</label>
@@ -659,8 +669,8 @@ export default function ProviderDashboard() {
                       <input type="number" min="10" max="240" required value={svcForm.duration} onChange={(e) => setSvcForm({ ...svcForm, duration: e.target.value })} className={inputClass} />
                     </div>
                   </div>
-                  {svcMsg && <p className={`text-sm font-bold ${svcMsg.startsWith("✓") ? "text-green-400" : "text-red-400"}`}>{svcMsg}</p>}
-                  <button type="submit" className="w-full py-3.5 rounded-xl bg-gradient-to-r from-primary-container to-secondary-container text-white font-headline font-bold text-sm uppercase tracking-wider hover:scale-[1.02] active:scale-95 transition-all">
+                  {svcMsg && <p className={`text-sm font-bold ${svcMsg.startsWith("✓") ? "text-green-400" : "text-coral"}`}>{svcMsg}</p>}
+                  <button type="submit" className="w-full py-3.5 rounded-xl bg-primary text-deep-navy font-headline font-bold text-sm uppercase tracking-wider hover:scale-[1.02] active:scale-95 transition-all">
                     Add Service
                   </button>
                 </form>
@@ -668,18 +678,18 @@ export default function ProviderDashboard() {
             </div>
 
             <div className="lg:col-span-7 space-y-4">
-              <h2 className="text-xl font-headline font-bold text-on-surface">My Services</h2>
+              <h2 className="text-xl font-headline font-bold text-textPrimary">My Services</h2>
               {services.length === 0 ? (
-                <div className="glass-panel rounded-2xl p-10 text-center">
-                  <span className="material-symbols-outlined text-4xl text-on-surface-variant/20 mb-2 block">category</span>
-                  <p className="text-on-surface-variant/50 text-sm">No services added yet.</p>
+                <div className="bg-black/5 dark:bg-white/5 border border-glassBorder rounded-2xl p-10 text-center">
+                  <span className="material-symbols-outlined text-4xl text-textSecondary/20 mb-2 block">category</span>
+                  <p className="text-textSecondary/50 text-sm">No services added yet.</p>
                 </div>
               ) : (
                 services.map((s) => (
                   <div key={s.id} className="glass-card rounded-2xl p-5 flex justify-between items-center hover:scale-[1.01] transition-transform">
                     <div>
-                      <div className="font-headline font-bold text-on-surface">{s.name}</div>
-                      <div className="text-xs text-on-surface-variant mt-1">⏱ {s.durationMinutes} min</div>
+                      <div className="font-headline font-bold text-textPrimary">{s.name}</div>
+                      <div className="text-xs text-textSecondary mt-1">⏱ {s.durationMinutes} min</div>
                     </div>
                     <div className="text-2xl font-headline font-black text-primary">₹{s.price}</div>
                   </div>
@@ -694,7 +704,7 @@ export default function ProviderDashboard() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             <div className="lg:col-span-5">
               <div className="glass-card rounded-3xl p-6 md:p-8">
-                <h2 className="text-xl font-headline font-bold text-on-surface mb-6">Add Availability Window</h2>
+                <h2 className="text-xl font-headline font-bold text-textPrimary mb-6">Add Availability Window</h2>
                 <form onSubmit={addAvailability} className="space-y-4">
                   <div>
                     <label className={labelClass}>Day of Week</label>
@@ -712,8 +722,8 @@ export default function ProviderDashboard() {
                       <input type="time" value={availForm.endTime} onChange={(e) => setAvailForm({ ...availForm, endTime: e.target.value })} className={inputClass} />
                     </div>
                   </div>
-                  {availMsg && <p className={`text-sm font-bold ${availMsg.startsWith("✓") ? "text-green-400" : "text-red-400"}`}>{availMsg}</p>}
-                  <button type="submit" className="w-full py-3.5 rounded-xl bg-gradient-to-r from-primary-container to-secondary-container text-white font-headline font-bold text-sm uppercase tracking-wider hover:scale-[1.02] active:scale-95 transition-all">
+                  {availMsg && <p className={`text-sm font-bold ${availMsg.startsWith("✓") ? "text-green-400" : "text-coral"}`}>{availMsg}</p>}
+                  <button type="submit" className="w-full py-3.5 rounded-xl bg-primary text-deep-navy font-headline font-bold text-sm uppercase tracking-wider hover:scale-[1.02] active:scale-95 transition-all">
                     Save Schedule
                   </button>
                 </form>
@@ -721,11 +731,11 @@ export default function ProviderDashboard() {
             </div>
 
             <div className="lg:col-span-7 space-y-4">
-              <h2 className="text-xl font-headline font-bold text-on-surface">Working Hours</h2>
+              <h2 className="text-xl font-headline font-bold text-textPrimary">Working Hours</h2>
               {availability.length === 0 ? (
-                <div className="glass-panel rounded-2xl p-10 text-center">
-                  <span className="material-symbols-outlined text-4xl text-on-surface-variant/20 mb-2 block">event_available</span>
-                  <p className="text-on-surface-variant/50 text-sm">No availability windows set yet.</p>
+                <div className="bg-black/5 dark:bg-white/5 border border-glassBorder rounded-2xl p-10 text-center">
+                  <span className="material-symbols-outlined text-4xl text-textSecondary/20 mb-2 block">event_available</span>
+                  <p className="text-textSecondary/50 text-sm">No availability windows set yet.</p>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -742,25 +752,25 @@ export default function ProviderDashboard() {
                           </div>
                           <div className="flex gap-2">
                             <button onClick={() => saveAvailEdit(a.id)} className="flex-1 py-2 rounded-xl bg-green-500/20 text-green-300 border border-green-500/30 text-sm font-bold hover:bg-green-500/30 transition-all">Save</button>
-                            <button onClick={() => setEditingAvailId(null)} className="flex-1 py-2 rounded-xl bg-surface-container-high text-on-surface-variant text-sm font-bold hover:bg-surface-bright transition-all">Cancel</button>
+                            <button onClick={() => setEditingAvailId(null)} className="flex-1 py-2 rounded-xl bg-black/10 dark:bg-white/10 text-textSecondary text-sm font-bold hover:bg-black/15 dark:bg-white/15 transition-all">Cancel</button>
                           </div>
                         </div>
                       ) : (
                         <div className="flex justify-between items-center">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-primary-container/30 flex items-center justify-center">
+                            <div className="w-10 h-10 rounded-xl bg-primary/30 flex items-center justify-center">
                               <span className="material-symbols-outlined text-primary text-lg">event</span>
                             </div>
                             <div>
-                              <span className="font-headline font-bold text-on-surface text-sm block">{a.dayOfWeek}</span>
+                              <span className="font-headline font-bold text-textPrimary text-sm block">{a.dayOfWeek}</span>
                               <span className="text-secondary font-mono text-sm font-bold">{a.startTime} – {a.endTime}</span>
                             </div>
                           </div>
                           <div className="flex gap-2">
-                            <button onClick={() => { setEditingAvailId(a.id); setEditAvailForm({ dayOfWeek: a.dayOfWeek, startTime: a.startTime, endTime: a.endTime }); }} className="p-2 rounded-xl bg-white/5 text-on-surface-variant hover:text-white hover:bg-white/10 transition-all" title="Edit">
+                            <button onClick={() => { setEditingAvailId(a.id); setEditAvailForm({ dayOfWeek: a.dayOfWeek, startTime: a.startTime, endTime: a.endTime }); }} className="p-2 rounded-xl bg-white/5 text-textSecondary hover:text-white hover:bg-white/10 transition-all" title="Edit">
                               <span className="material-symbols-outlined text-sm">edit</span>
                             </button>
-                            <button onClick={() => deleteAvailability(a.id)} className="p-2 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all" title="Delete">
+                            <button onClick={() => deleteAvailability(a.id)} className="p-2 rounded-xl bg-coral/10 text-coral hover:bg-coral/20 transition-all" title="Delete">
                               <span className="material-symbols-outlined text-sm">delete</span>
                             </button>
                           </div>
@@ -778,14 +788,14 @@ export default function ProviderDashboard() {
         {tab === "analytics" && (
           <div className="space-y-8">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 glass-card rounded-2xl p-4">
-              <h2 className="text-lg font-headline font-bold text-on-surface">Time Range</h2>
+              <h2 className="text-lg font-headline font-bold text-textPrimary">Time Range</h2>
               <div className="flex flex-wrap items-center gap-2">
                 {["1d", "3d", "7d", "1m", "3m", "1y"].map(r => (
-                  <button key={r} onClick={() => setAnalyticsRange(r)} className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase transition-all ${analyticsRange === r ? "bg-primary text-white" : "bg-surface-container-high text-on-surface-variant hover:bg-surface-bright"}`}>
+                  <button key={r} onClick={() => setAnalyticsRange(r)} className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase transition-all ${analyticsRange === r ? "bg-primary text-white" : "bg-black/10 dark:bg-white/10 text-textSecondary hover:bg-black/15 dark:bg-white/15"}`}>
                     {r}
                   </button>
                 ))}
-                <select value={analyticsRange} onChange={(e) => setAnalyticsRange(e.target.value)} className="bg-surface-container-highest border border-outline-variant/20 rounded-xl px-3 py-1.5 text-xs text-on-surface focus:outline-none">
+                <select value={analyticsRange} onChange={(e) => setAnalyticsRange(e.target.value)} className="bg-inputBg backdrop-blur-md border border-glassBorder rounded-xl px-3 py-1.5 text-xs text-textPrimary focus:outline-none">
                   <option value="1d">1 Day</option>
                   <option value="3d">3 Days</option>
                   <option value="7d">7 Days</option>
@@ -801,10 +811,10 @@ export default function ProviderDashboard() {
             {analyticsLoading ? (
               <div className="space-y-6 animate-pulse">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {[1,2,3,4].map(i => <div key={i} className="h-28 bg-surface-container-high rounded-2xl" />)}
+                  {[1,2,3,4].map(i => <div key={i} className="h-28 bg-black/10 dark:bg-white/10 rounded-2xl" />)}
                 </div>
-                <div className="h-64 bg-surface-container-high rounded-3xl" />
-                <div className="h-64 bg-surface-container-high rounded-3xl" />
+                <div className="h-64 bg-black/10 dark:bg-white/10 rounded-3xl" />
+                <div className="h-64 bg-black/10 dark:bg-white/10 rounded-3xl" />
               </div>
             ) : (
               <>
@@ -819,8 +829,8 @@ export default function ProviderDashboard() {
                     ].map((kpi) => (
                       <div key={kpi.label} className={`glass-card rounded-2xl p-5 bg-gradient-to-br ${kpi.color}`}>
                         <span className="material-symbols-outlined text-2xl text-primary mb-2 block">{kpi.icon}</span>
-                        <div className="text-2xl font-headline font-black text-on-surface">{kpi.value}</div>
-                        <div className="text-xs text-on-surface-variant font-label tracking-widest uppercase mt-1">{kpi.label}</div>
+                        <div className="text-2xl font-headline font-black text-textPrimary">{kpi.value}</div>
+                        <div className="text-xs text-textSecondary font-label tracking-widest uppercase mt-1">{kpi.label}</div>
                       </div>
                     ))}
                   </div>
@@ -828,10 +838,10 @@ export default function ProviderDashboard() {
 
                 {/* Bookings per Week — Line Chart */}
                 <div className="glass-card rounded-3xl p-6 md:p-8">
-                  <h2 className="text-lg font-headline font-bold text-on-surface mb-1">Bookings — {getRangeLabel(analyticsRange)}</h2>
-                  <p className="text-xs text-on-surface-variant mb-6">Daily booking count trend</p>
+                  <h2 className="text-lg font-headline font-bold text-textPrimary mb-1">Bookings — {getRangeLabel(analyticsRange)}</h2>
+                  <p className="text-xs text-textSecondary mb-6">Daily booking count trend</p>
                   {bookingsWeek.length === 0 ? (
-                    <div className="text-center py-10 text-on-surface-variant/40 text-sm">No data available.</div>
+                    <div className="text-center py-10 text-textSecondary/40 text-sm">No data available.</div>
                   ) : (
                     <ResponsiveContainer width="100%" height={220}>
                       <LineChart data={bookingsWeek}>
@@ -839,7 +849,7 @@ export default function ProviderDashboard() {
                         <XAxis dataKey="date" tick={{ fill: "#9ca3af", fontSize: 11 }} tickFormatter={(d) => d.slice(5)} />
                         <YAxis tick={{ fill: "#9ca3af", fontSize: 11 }} allowDecimals={false} />
                         <Tooltip content={<CustomTooltip suffix=" bookings" />} />
-                        <Line type="monotone" dataKey="count" stroke="#5de6ff" strokeWidth={2.5} dot={{ fill: "#5de6ff", r: 4 }} activeDot={{ r: 6 }} />
+                        <Line type="monotone" dataKey="count" stroke="#14b8a6" strokeWidth={2.5} dot={{ fill: "#5de6ff", r: 4 }} activeDot={{ r: 6 }} />
                       </LineChart>
                     </ResponsiveContainer>
                   )}
@@ -847,10 +857,10 @@ export default function ProviderDashboard() {
 
                 {/* Revenue per Month — Bar Chart */}
                 <div className="glass-card rounded-3xl p-6 md:p-8">
-                  <h2 className="text-lg font-headline font-bold text-on-surface mb-1">Revenue — {getRangeLabel(analyticsRange)}</h2>
-                  <p className="text-xs text-on-surface-variant mb-6">Monthly revenue from completed appointments (₹)</p>
+                  <h2 className="text-lg font-headline font-bold text-textPrimary mb-1">Revenue — {getRangeLabel(analyticsRange)}</h2>
+                  <p className="text-xs text-textSecondary mb-6">Monthly revenue from completed appointments (₹)</p>
                   {revenueMonth.length === 0 ? (
-                    <div className="text-center py-10 text-on-surface-variant/40 text-sm">No data available.</div>
+                    <div className="text-center py-10 text-textSecondary/40 text-sm">No data available.</div>
                   ) : (
                     <ResponsiveContainer width="100%" height={220}>
                       <BarChart data={revenueMonth}>
@@ -858,7 +868,7 @@ export default function ProviderDashboard() {
                         <XAxis dataKey="month" tick={{ fill: "#9ca3af", fontSize: 11 }} tickFormatter={(m) => m.slice(5)} />
                         <YAxis tick={{ fill: "#9ca3af", fontSize: 11 }} />
                         <Tooltip content={<CustomTooltip prefix="₹" />} />
-                        <Bar dataKey="revenue" fill="#7c3aed" radius={[4, 4, 0, 0]} />
+                        <Bar dataKey="revenue" fill="#22d3ee" radius={[4, 4, 0, 0]} />
                       </BarChart>
                     </ResponsiveContainer>
                   )}
@@ -866,9 +876,9 @@ export default function ProviderDashboard() {
 
                 {/* Peak Hours — Bar Chart */}
                 <div className="glass-card rounded-3xl p-6 md:p-8">
-                  <h2 className="text-lg font-headline font-bold text-on-surface mb-1">Peak Booking Hours — {getRangeLabel(analyticsRange)}</h2>
+                  <h2 className="text-lg font-headline font-bold text-textPrimary mb-1">Peak Booking Hours — {getRangeLabel(analyticsRange)}</h2>
                   {peakHours.length === 0 ? (
-                    <div className="text-center py-10 text-on-surface-variant/40 text-sm">No booking data yet.</div>
+                    <div className="text-center py-10 text-textSecondary/40 text-sm">No booking data yet.</div>
                   ) : (
                     <ResponsiveContainer width="100%" height={220}>
                       <BarChart data={peakHours}>
@@ -876,7 +886,7 @@ export default function ProviderDashboard() {
                         <XAxis dataKey="label" tick={{ fill: "#9ca3af", fontSize: 11 }} />
                         <YAxis tick={{ fill: "#9ca3af", fontSize: 11 }} allowDecimals={false} />
                         <Tooltip content={<CustomTooltip suffix=" bookings" />} />
-                        <Bar dataKey="count" fill="#f59e0b" radius={[4, 4, 0, 0]} />
+                        <Bar dataKey="count" fill="#fb7185" radius={[4, 4, 0, 0]} />
                       </BarChart>
                     </ResponsiveContainer>
                   )}
@@ -889,21 +899,21 @@ export default function ProviderDashboard() {
                       <span className="material-symbols-outlined text-purple-400 text-xl">psychology</span>
                     </div>
                     <div>
-                      <h2 className="text-lg font-headline font-bold text-on-surface">AI Recommendations — {getRangeLabel(analyticsRange)}</h2>
+                      <h2 className="text-lg font-headline font-bold text-textPrimary">AI Recommendations — {getRangeLabel(analyticsRange)}</h2>
                     </div>
                   </div>
                   <div className="space-y-3">
                     {recommendations.length === 0 ? (
-                      <div className="text-center py-4 text-on-surface-variant/40 text-sm">No data available.</div>
+                      <div className="text-center py-4 text-textSecondary/40 text-sm">No data available.</div>
                     ) : (
                       recommendations.map((rec, i) => (
                         <div
                           key={i}
-                          className="flex items-start gap-3 p-4 rounded-2xl bg-surface-container-low border border-outline-variant/10 hover:border-primary/20 transition-all"
+                          className="flex items-start gap-3 p-4 rounded-2xl bg-black/5 dark:bg-white/5 border border-glassBorder hover:border-primary/20 transition-all"
                           style={{ animationDelay: `${i * 80}ms` }}
                         >
                           <div className="w-2 h-2 rounded-full bg-gradient-to-br from-primary to-secondary mt-2 shrink-0" />
-                          <p className="text-sm text-on-surface leading-relaxed">{rec}</p>
+                          <p className="text-sm text-textPrimary leading-relaxed">{rec}</p>
                         </div>
                       ))
                     )}
@@ -919,20 +929,20 @@ export default function ProviderDashboard() {
           <div className="space-y-8">
             {/* Upload Section */}
             <div className="glass-card rounded-3xl p-6 md:p-8">
-              <h2 className="text-xl font-headline font-bold text-on-surface mb-2">Portfolio Gallery</h2>
-              <p className="text-xs text-on-surface-variant mb-6">Upload images showcasing your work (JPEG, PNG, WebP, GIF — max 5 MB each)</p>
+              <h2 className="text-xl font-headline font-bold text-textPrimary mb-2">Portfolio Gallery</h2>
+              <p className="text-xs text-textSecondary mb-6">Upload images showcasing your work (JPEG, PNG, WebP, GIF — max 5 MB each)</p>
 
               <div
-                className="border-2 border-dashed border-outline-variant/30 rounded-2xl p-10 text-center hover:border-primary/40 transition-all cursor-pointer group"
+                className="border-2 border-dashed border-glassBorder rounded-2xl p-10 text-center hover:border-primary/40 transition-all cursor-pointer group"
                 onClick={() => fileInputRef.current?.click()}
               >
-                <span className="material-symbols-outlined text-5xl text-on-surface-variant/30 group-hover:text-primary/50 transition-all block mb-3">
+                <span className="material-symbols-outlined text-5xl text-textSecondary/30 group-hover:text-primary/50 transition-all block mb-3">
                   {uploading ? "hourglass_top" : "cloud_upload"}
                 </span>
-                <p className="font-headline font-bold text-on-surface-variant/60 text-sm">
+                <p className="font-headline font-bold text-textSecondary/60 text-sm">
                   {uploading ? "Uploading…" : "Click to upload an image"}
                 </p>
-                <p className="text-xs text-on-surface-variant/40 mt-1">or drag and drop</p>
+                <p className="text-xs text-textSecondary/40 mt-1">or drag and drop</p>
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -944,7 +954,7 @@ export default function ProviderDashboard() {
               </div>
 
               {uploadMsg && (
-                <p className={`mt-3 text-sm font-bold text-center ${uploadMsg.startsWith("✓") ? "text-green-400" : "text-red-400"}`}>
+                <p className={`mt-3 text-sm font-bold text-center ${uploadMsg.startsWith("✓") ? "text-green-400" : "text-coral"}`}>
                   {uploadMsg}
                 </p>
               )}
@@ -952,15 +962,15 @@ export default function ProviderDashboard() {
 
             {/* Image Grid */}
             {portfolioImages.length === 0 ? (
-              <div className="glass-panel rounded-3xl p-16 text-center">
-                <span className="material-symbols-outlined text-5xl text-on-surface-variant/20 mb-4 block">photo_library</span>
-                <p className="font-headline font-bold text-on-surface-variant/40">No portfolio images yet.</p>
-                <p className="text-xs text-on-surface-variant/30 mt-1">Upload images to showcase your work to clients.</p>
+              <div className="bg-black/5 dark:bg-white/5 border border-glassBorder rounded-3xl p-16 text-center">
+                <span className="material-symbols-outlined text-5xl text-textSecondary/20 mb-4 block">photo_library</span>
+                <p className="font-headline font-bold text-textSecondary/40">No portfolio images yet.</p>
+                <p className="text-xs text-textSecondary/30 mt-1">Upload images to showcase your work to clients.</p>
               </div>
             ) : (
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-sm font-label font-bold uppercase tracking-widest text-on-surface-variant">
+                  <h3 className="text-sm font-label font-bold uppercase tracking-widest text-textSecondary">
                     {portfolioImages.length} image{portfolioImages.length !== 1 ? "s" : ""}
                   </h3>
                 </div>
@@ -968,7 +978,7 @@ export default function ProviderDashboard() {
                   {portfolioImages.map((filename) => (
                     <div
                       key={filename}
-                      className="relative group rounded-2xl overflow-hidden aspect-square bg-surface-container-low border border-outline-variant/10"
+                      className="relative group rounded-2xl overflow-hidden aspect-square bg-black/5 dark:bg-white/5 border border-glassBorder"
                     >
                       <img
                         src={`http://localhost:8080/uploads/provider/${filename}`}
@@ -999,11 +1009,11 @@ export default function ProviderDashboard() {
         {tab === "profile" && (
           <div className="space-y-8">
             <div className="glass-card rounded-3xl p-6 md:p-8 shadow-2xl">
-              <h2 className="text-xl font-headline font-bold text-on-surface mb-6">Profile Settings</h2>
+              <h2 className="text-xl font-headline font-bold text-textPrimary mb-6">Profile Settings</h2>
               
               <div className="flex items-center gap-6 mb-8">
                 <div className="relative group">
-                  <div className="w-24 h-24 rounded-full overflow-hidden bg-surface-container-high border-2 border-outline-variant/30 flex items-center justify-center">
+                  <div className="w-24 h-24 rounded-full overflow-hidden bg-black/10 dark:bg-white/10 border-2 border-glassBorder flex items-center justify-center">
                     {profileForm.profileImageUrl ? (
                       <img 
                          src={`${BASE_URL}${profileForm.profileImageUrl.startsWith('/') ? '' : '/'}${profileForm.profileImageUrl}`} 
@@ -1011,7 +1021,7 @@ export default function ProviderDashboard() {
                          className="w-full h-full object-cover" 
                       />
                     ) : (
-                      <span className="material-symbols-outlined text-4xl text-on-surface-variant">person</span>
+                      <span className="material-symbols-outlined text-4xl text-textSecondary">person</span>
                     )}
                   </div>
                   <label className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
@@ -1020,8 +1030,8 @@ export default function ProviderDashboard() {
                   </label>
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-on-surface">Profile Picture</h3>
-                  <p className="text-xs text-on-surface-variant mt-1">Click the image to upload a new avatar.</p>
+                  <h3 className="text-lg font-bold text-textPrimary">Profile Picture</h3>
+                  <p className="text-xs text-textSecondary mt-1">Click the image to upload a new avatar.</p>
                 </div>
               </div>
 
@@ -1044,34 +1054,34 @@ export default function ProviderDashboard() {
                     <input type="text" value={profileForm.pincode} onChange={(e) => setProfileForm({ ...profileForm, pincode: e.target.value })} className={inputClass} placeholder="Enter pincode" />
                   </div>
                 </div>
-                {profileMsg && <p className={`text-sm font-bold mt-2 ${profileMsg.startsWith("✓") ? "text-green-400" : "text-red-400"}`}>{profileMsg}</p>}
-                <button type="submit" className="w-full mt-4 py-3.5 rounded-xl bg-gradient-to-r from-primary-container to-secondary-container text-white font-headline font-bold text-sm uppercase tracking-wider hover:scale-[1.02] active:scale-95 transition-all">
+                {profileMsg && <p className={`text-sm font-bold mt-2 ${profileMsg.startsWith("✓") ? "text-green-400" : "text-coral"}`}>{profileMsg}</p>}
+                <button type="submit" className="w-full mt-4 py-3.5 rounded-xl bg-primary text-deep-navy font-headline font-bold text-sm uppercase tracking-wider hover:scale-[1.02] active:scale-95 transition-all">
                   Save Changes
                 </button>
               </form>
             </div>
 
-            <div className="glass-card rounded-3xl p-6 md:p-8 border border-red-500/20 bg-red-500/5 shadow-2xl">
-              <h2 className="text-xl font-headline font-bold text-red-400 mb-2">Danger Zone</h2>
-              <p className="text-sm text-on-surface-variant mb-6">These actions affect your account status. Please proceed with caution.</p>
+            <div className="glass-card rounded-3xl p-6 md:p-8 border border-coral/20 bg-red-500/5 shadow-2xl">
+              <h2 className="text-xl font-headline font-bold text-coral mb-2">Danger Zone</h2>
+              <p className="text-sm text-textSecondary mb-6">These actions affect your account status. Please proceed with caution.</p>
               
               <div className="space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-surface-container-low border border-outline-variant/10">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-black/5 dark:bg-white/5 border border-glassBorder">
                   <div>
-                    <h3 className="font-headline font-bold text-on-surface">Deactivate Account</h3>
-                    <p className="text-xs text-on-surface-variant mt-1">Temporarily hide your profile from customers. Requires Admin approval to reactivate.</p>
+                    <h3 className="font-headline font-bold text-textPrimary">Deactivate Account</h3>
+                    <p className="text-xs text-textSecondary mt-1">Temporarily hide your profile from customers. Requires Admin approval to reactivate.</p>
                   </div>
                   <button onClick={deactivateAccount} className="px-5 py-2.5 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20 font-bold text-sm hover:bg-amber-500/20 transition-all whitespace-nowrap">
                     Pause Account
                   </button>
                 </div>
 
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-surface-container-low border border-red-500/10 hover:border-red-500/30 transition-colors">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-black/5 dark:bg-white/5 border border-coral/10 hover:border-coral/30 transition-colors">
                   <div>
-                    <h3 className="font-headline font-bold text-red-400">Delete Account</h3>
-                    <p className="text-xs text-on-surface-variant mt-1">Permanently remove your provider profile. This action cannot be undone.</p>
+                    <h3 className="font-headline font-bold text-coral">Delete Account</h3>
+                    <p className="text-xs text-textSecondary mt-1">Permanently remove your provider profile. This action cannot be undone.</p>
                   </div>
-                  <button onClick={deleteAccount} className="px-5 py-2.5 rounded-xl bg-red-500/10 text-red-400 border border-red-500/20 font-bold text-sm hover:bg-red-500/20 transition-all whitespace-nowrap">
+                  <button onClick={deleteAccount} className="px-5 py-2.5 rounded-xl bg-coral/10 text-coral border border-coral/20 font-bold text-sm hover:bg-coral/20 transition-all whitespace-nowrap">
                     Permanently Delete
                   </button>
                 </div>
@@ -1080,13 +1090,14 @@ export default function ProviderDashboard() {
           </div>
         )}
       </div>
-
       <ChatWindow
         isOpen={!!activeChat}
         onClose={() => setActiveChat(null)}
         currentUser={{ id: userId, name: userName }}
         otherUserId={activeChat?.id}
         otherUserName={activeChat?.name}
+        isMaximized={isChatMaximized}
+        onToggleMaximize={() => setIsChatMaximized(!isChatMaximized)}
       />
 
       <AppointmentDetailModal
@@ -1097,6 +1108,6 @@ export default function ProviderDashboard() {
         onCancel={(id) => cancelAppointmentByProvider(id)}
         onChat={(targetId, targetName) => setActiveChat({ id: targetId, name: targetName })}
       />
-    </div>
+    </PageWrapper>
   );
 }
