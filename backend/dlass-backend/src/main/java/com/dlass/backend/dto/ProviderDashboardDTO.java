@@ -8,7 +8,7 @@ public class ProviderDashboardDTO {
 
     private double totalRevenue;
 
-    private double averageRating;
+    private double rating;
     private long reviewCount;
 
     private String providerId;
@@ -57,12 +57,11 @@ public class ProviderDashboardDTO {
         this.totalRevenue = totalRevenue;
     }
 
-    public double getAverageRating() {
-        return averageRating;
+    public double getRating() {
+        return rating;
     }
-
-    public void setAverageRating(double averageRating) {
-        this.averageRating = averageRating;
+    public void setRating(double rating) {
+        this.rating = rating;
     }
 
     public long getReviewCount() {

@@ -14,6 +14,8 @@ public interface AppointmentRepository extends MongoRepository<Appointment, Stri
     @Query("{ 'providerId': ?0, 'date': ?1, $or: [ { 'isDeleted': false }, { 'isDeleted': { $exists: false } } ] }")
     List<Appointment> findByProviderIdAndDate(String providerId, LocalDate date);
 
+    void deleteByProviderId(String providerId);
+
     @Query("{ 'userId': ?0, $or: [ { 'isDeleted': false }, { 'isDeleted': { $exists: false } } ] }")
     List<Appointment> findByUserId(String userId);
 
