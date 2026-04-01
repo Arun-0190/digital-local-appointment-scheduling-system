@@ -12,6 +12,7 @@ import AppointmentDetailModal from "../components/AppointmentDetailModal";
 import PageWrapper from "../components/ui/PageWrapper";
 import StatCard from "../components/ui/StatCard";
 import Button from "../components/ui/Button";
+import AvailabilityCalendar from "../components/AvailabilityCalendar";
 
 const API = "http://localhost:8080/api";
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
@@ -77,6 +78,7 @@ export default function ProviderDashboard() {
   const [availMsg, setAvailMsg] = useState("");
   const [editingAvailId, setEditingAvailId] = useState(null);
   const [editAvailForm, setEditAvailForm] = useState({ dayOfWeek: "MONDAY", startTime: "09:00", endTime: "18:00" });
+  const [selectedDate, setSelectedDate] = useState(new Date());
 
   // Appointments
   const [appointments, setAppointments] = useState([]);
@@ -201,6 +203,14 @@ export default function ProviderDashboard() {
     .then(r => setHistory(r.data))
     .catch(() => setHistory([]));
   }, [providerId, tab, historyDays]);
+
+  // Fetch all appointments for calendar markers
+  useEffect(() => {
+    if (!providerId) return;
+    axios.get(`${API}/appointments/provider`, { headers: authHeaders() })
+      .then(r => setAppointments(r.data))
+      .catch(() => {});
+  }, [providerId]);
 
   // ── Analytics tab ─────────────────────────────────────────────────────────
   useEffect(() => {
@@ -744,85 +754,141 @@ export default function ProviderDashboard() {
 
         {/* ════════════════ AVAILABILITY TAB ════════════════════ */}
         {tab === "availability" && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <div className="lg:col-span-5">
-              <div className="glass-card rounded-3xl p-6 md:p-8">
-                <h2 className="text-xl font-headline font-bold text-textPrimary mb-6">Add Availability Window</h2>
-                <form onSubmit={addAvailability} className="space-y-4">
-                  <div>
-                    <label className={labelClass}>Day of Week</label>
-                    <select value={availForm.dayOfWeek} onChange={(e) => setAvailForm({ ...availForm, dayOfWeek: e.target.value })} className={inputClass}>
-                      {DAYS.map((d) => (<option key={d} value={d}>{d}</option>))}
-                    </select>
+          <div className="space-y-8 animate-in fade-in duration-700">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              {/* Left Column: Calendar */}
+              <div className="lg:col-span-7">
+                <AvailabilityCalendar 
+                  availability={availability} 
+                  appointments={appointments} 
+                  selectedDate={selectedDate}
+                  onDateSelect={setSelectedDate}
+                />
+                
+                {/* Weekly Rules Summary */}
+                <div className="mt-8 glass-card rounded-3xl p-6 md:p-8">
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-lg font-headline font-bold text-textPrimary">Weekly Schedule Rules</h3>
+                    <button 
+                      onClick={() => document.getElementById('add-avail-form')?.scrollIntoView({ behavior: 'smooth' })}
+                      className="text-xs font-bold text-primary hover:underline flex items-center gap-1"
+                    >
+                      <span className="material-symbols-outlined text-sm">add</span>
+                      Add Rule
+                    </button>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className={labelClass}>Start Time</label>
-                      <input type="time" value={availForm.startTime} onChange={(e) => setAvailForm({ ...availForm, startTime: e.target.value })} className={inputClass} />
-                    </div>
-                    <div>
-                      <label className={labelClass}>End Time</label>
-                      <input type="time" value={availForm.endTime} onChange={(e) => setAvailForm({ ...availForm, endTime: e.target.value })} className={inputClass} />
-                    </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {availability.length === 0 ? (
+                      <p className="col-span-full text-center py-4 text-textSecondary/40 text-xs italic">No weekly rules set.</p>
+                    ) : (
+                      availability.map((a) => (
+                        <div key={a.id} className="flex items-center justify-between p-3 rounded-2xl bg-black/5 dark:bg-white/5 border border-glassBorder group hover:border-primary/20 transition-all">
+                          <div>
+                            <div className="text-[10px] font-label font-black text-textSecondary uppercase tracking-widest">{a.dayOfWeek}</div>
+                            <div className="text-xs font-bold text-textPrimary">{a.startTime} – {a.endTime}</div>
+                          </div>
+                          <button onClick={() => deleteAvailability(a.id)} className="p-2 opacity-0 group-hover:opacity-100 rounded-lg bg-coral/10 text-coral hover:bg-coral/20 transition-all">
+                            <span className="material-symbols-outlined text-xs">delete</span>
+                          </button>
+                        </div>
+                      ))
+                    )}
                   </div>
-                  {availMsg && <p className={`text-sm font-bold ${availMsg.startsWith("✓") ? "text-green-400" : "text-coral"}`}>{availMsg}</p>}
-                  <button type="submit" className="w-full py-3.5 rounded-xl bg-primary text-deep-navy font-headline font-bold text-sm uppercase tracking-wider hover:scale-[1.02] active:scale-95 transition-all">
-                    Save Schedule
-                  </button>
-                </form>
+                </div>
               </div>
-            </div>
 
-            <div className="lg:col-span-7 space-y-4">
-              <h2 className="text-xl font-headline font-bold text-textPrimary">Working Hours</h2>
-              {availability.length === 0 ? (
-                <div className="bg-black/5 dark:bg-white/5 border border-glassBorder rounded-2xl p-10 text-center">
-                  <span className="material-symbols-outlined text-4xl text-textSecondary/20 mb-2 block">event_available</span>
-                  <p className="text-textSecondary/50 text-sm">No availability windows set yet.</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {availability.map((a) => (
-                    <div key={a.id} className="glass-card rounded-2xl px-5 py-4">
-                      {editingAvailId === a.id ? (
-                        <div className="space-y-3">
-                          <div className="grid grid-cols-3 gap-3">
-                            <select value={editAvailForm.dayOfWeek} onChange={(e) => setEditAvailForm({ ...editAvailForm, dayOfWeek: e.target.value })} className={`${inputClass} col-span-1`}>
-                              {DAYS.map((d) => (<option key={d} value={d}>{d}</option>))}
-                            </select>
-                            <input type="time" value={editAvailForm.startTime} onChange={(e) => setEditAvailForm({ ...editAvailForm, startTime: e.target.value })} className={inputClass} />
-                            <input type="time" value={editAvailForm.endTime} onChange={(e) => setEditAvailForm({ ...editAvailForm, endTime: e.target.value })} className={inputClass} />
-                          </div>
-                          <div className="flex gap-2">
-                            <button onClick={() => saveAvailEdit(a.id)} className="flex-1 py-2 rounded-xl bg-indigo-600 text-white font-bold text-sm hover:bg-indigo-700 transition-all shadow-md shadow-indigo-500/20">Save</button>
-                            <button onClick={() => setEditingAvailId(null)} className="flex-1 py-2 rounded-xl bg-black/10 dark:bg-white/10 text-textSecondary text-sm font-bold hover:bg-black/15 dark:bg-white/15 transition-all">Cancel</button>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="flex justify-between items-center">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-primary/30 flex items-center justify-center">
-                              <span className="material-symbols-outlined text-primary text-lg">event</span>
-                            </div>
-                            <div>
-                                <span className="font-headline font-bold text-textPrimary text-sm block">{a.dayOfWeek}</span>
-                                <span className="text-secondary font-bold text-xs tracking-widest uppercase">{a.startTime} – {a.endTime}</span>
-                            </div>
-                          </div>
-                          <div className="flex gap-2">
-                            <button onClick={() => { setEditingAvailId(a.id); setEditAvailForm({ dayOfWeek: a.dayOfWeek, startTime: a.startTime, endTime: a.endTime }); }} className="p-2 rounded-xl bg-white/5 text-textSecondary hover:text-white hover:bg-white/10 transition-all" title="Edit">
-                              <span className="material-symbols-outlined text-sm">edit</span>
-                            </button>
-                            <button onClick={() => deleteAvailability(a.id)} className="p-2 rounded-xl bg-coral/10 text-coral hover:bg-coral/20 transition-all" title="Delete">
-                              <span className="material-symbols-outlined text-sm">delete</span>
-                            </button>
-                          </div>
-                        </div>
-                      )}
+              {/* Right Column: Day Detail & Add Form */}
+              <div className="lg:col-span-5 space-y-8">
+                {/* Day Detail View */}
+                <div className="glass-card rounded-3xl p-6 md:p-8">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-12 h-12 rounded-2xl bg-primary/20 flex flex-col items-center justify-center text-primary">
+                       <span className="text-[10px] font-black uppercase leading-none">{selectedDate.toLocaleDateString('en-US', { month: 'short' })}</span>
+                       <span className="text-xl font-headline font-black leading-none">{selectedDate.getDate()}</span>
                     </div>
-                  ))}
+                    <div>
+                      <h3 className="text-lg font-headline font-bold text-textPrimary">{selectedDate.toLocaleDateString('en-US', { weekday: 'long' })}</h3>
+                      <p className="text-xs text-textSecondary">Viewing all slots for this date</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                    {(() => {
+                      const dayName = selectedDate.toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
+                      const dateStr = selectedDate.toISOString().split('T')[0];
+                      const rules = availability.filter(a => a.dayOfWeek === dayName);
+                      const dayAppts = appointments.filter(app => app.date === dateStr && app.status !== "CANCELLED");
+
+                      if (rules.length === 0) {
+                        return <div className="text-center py-10 text-textSecondary/40 text-xs italic">No availability set for {dayName}s.</div>;
+                      }
+
+                      return rules.map((rule, idx) => (
+                        <div key={idx} className="space-y-4">
+                           <div className="flex items-center gap-2 mb-2">
+                             <div className="h-[1px] flex-1 bg-glassBorder" />
+                             <span className="text-[10px] font-label font-bold text-textSecondary uppercase tracking-widest">{rule.startTime} – {rule.endTime} Window</span>
+                             <div className="h-[1px] flex-1 bg-glassBorder" />
+                           </div>
+                           
+                           {/* Highlight appointments that fall in this range */}
+                           {dayAppts.length > 0 ? (
+                             dayAppts.map(ap => (
+                               <div key={ap.id} className="p-4 rounded-2xl bg-amber-500/5 border border-amber-500/20 flex items-center justify-between">
+                                 <div className="flex items-center gap-3">
+                                   <div className="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center">
+                                      <span className="material-symbols-outlined text-amber-500 text-sm">event_busy</span>
+                                   </div>
+                                   <div>
+                                      <div className="text-xs font-bold text-textPrimary">{ap.userName}</div>
+                                      <div className="text-[10px] text-textSecondary">{ap.startTime} – {ap.endTime}</div>
+                                   </div>
+                                 </div>
+                                 <span className="text-[10px] font-bold text-amber-500 uppercase tracking-widest">Booked</span>
+                               </div>
+                             ))
+                           ) : (
+                             <div className="p-8 text-center rounded-2xl bg-emerald-500/5 border border-emerald-500/10">
+                               <span className="material-symbols-outlined text-emerald-400 text-3xl mb-2">check_circle</span>
+                               <p className="text-xs font-bold text-emerald-500/60 uppercase racking-widest">Fully Open for Bookings</p>
+                             </div>
+                           )}
+                        </div>
+                      ));
+                    })()}
+                  </div>
                 </div>
-              )}
+
+                {/* Add Rule Form */}
+                <div id="add-avail-form" className="glass-card rounded-3xl p-6 md:p-8 border border-primary/20 shadow-xl shadow-primary/5">
+                  <h3 className="text-xl font-headline font-bold text-textPrimary mb-6 flex items-center gap-2">
+                    <span className="material-symbols-outlined text-primary">add_circle</span>
+                    Define Working Hours
+                  </h3>
+                  <form onSubmit={addAvailability} className="space-y-5">
+                    <div>
+                      <label className={labelClass}>Day of Week</label>
+                      <select value={availForm.dayOfWeek} onChange={(e) => setAvailForm({ ...availForm, dayOfWeek: e.target.value })} className={inputClass}>
+                        {DAYS.map((d) => (<option key={d} value={d}>{d}</option>))}
+                      </select>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className={labelClass}>Start Time</label>
+                        <input type="time" value={availForm.startTime} onChange={(e) => setAvailForm({ ...availForm, startTime: e.target.value })} className={inputClass} />
+                      </div>
+                      <div>
+                        <label className={labelClass}>End Time</label>
+                        <input type="time" value={availForm.endTime} onChange={(e) => setAvailForm({ ...availForm, endTime: e.target.value })} className={inputClass} />
+                      </div>
+                    </div>
+                    {availMsg && <p className={`text-center text-sm font-bold ${availMsg.startsWith("✓") ? "text-green-400" : "text-coral"}`}>{availMsg}</p>}
+                    <button type="submit" className="w-full py-4 rounded-xl bg-primary text-deep-navy font-headline font-black text-sm uppercase tracking-wider hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-primary/20">
+                      Save Weekly Rule
+                    </button>
+                  </form>
+                </div>
+              </div>
             </div>
           </div>
         )}
