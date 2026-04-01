@@ -10,4 +10,6 @@ public interface ReviewRepository extends MongoRepository<Review, String> {
     List<Review> findByProviderId(String providerId);
 
     boolean existsByAppointmentId(String appointmentId);
+
+    boolean existsByProviderIdAndUserId(String providerId, String userId);
 }

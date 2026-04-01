@@ -9,7 +9,7 @@ export default function Input({ label, icon, error, className = '', containerCla
           </span>
         )}
         <input 
-          className={`w-full bg-inputBg border ${error ? 'border-coral text-coral' : 'border-inputBorder text-gray-900 dark:text-white'} rounded-xl px-4 py-3.5 ${icon ? 'pl-12' : ''} focus:border-primary focus:ring-2 focus:ring-primary/50 focus:shadow-[0_0_15px_rgba(20,184,166,0.2)] focus:-translate-y-[1px] outline-none transition-all duration-300 placeholder:text-gray-500 dark:placeholder:text-gray-400 ${className}`}
+          className={`w-full bg-inputBg border ${error ? 'border-coral text-coral focus:ring-coral/20' : 'border-inputBorder text-gray-900 dark:text-white focus:border-primary focus:ring-primary/20'} rounded-xl px-4 py-3.5 ${icon ? 'pl-11' : ''} focus:ring-4 outline-none transition-all duration-200 placeholder:text-gray-400 dark:placeholder:text-gray-500 ${className}`}
           {...props}
         />
       </div>

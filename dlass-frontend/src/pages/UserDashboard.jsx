@@ -11,6 +11,8 @@ import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
 import Dropdown from "../components/ui/Dropdown";
 import ReviewModal from "../components/ReviewModal";
+import StatCard from "../components/ui/StatCard";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 
 const API = "http://localhost:8080/api";
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
@@ -174,9 +176,28 @@ function UserDashboard() {
   const canReview = (a) => {
     if (a.status !== "COMPLETED") return false;
     const endDateTime = new Date(`${a.date}T${a.endTime}`);
-    const currentMs = new Date();
-    const diffMins = (currentMs - endDateTime) / 1000 / 60;
-    return diffMins >= 1 && diffMins <= 24 * 60 && !reviewedIds.includes(a.id);
+    const now = new Date();
+    const diffHours = (now - endDateTime) / (1000 * 60 * 60);
+    return diffHours >= 0 && diffHours <= 24 && !reviewedIds.includes(a.id);
+  };
+
+  // Chart data: Bookings per day
+  const chartData = appointments.reduce((acc, a) => {
+    const day = a.date;
+    const existing = acc.find(item => item.date === day);
+    if (existing) {
+      existing.count += 1;
+    } else {
+      acc.push({ date: day, count: 1 });
+    }
+    return acc;
+  }, []).sort((a, b) => new Date(a.date) - new Date(b.date)).slice(-7);
+
+  const stats = {
+    total: appointments.length,
+    upcoming: upcoming.length,
+    completed: appointments.filter(a => a.status === "COMPLETED").length,
+    spent: appointments.filter(a => a.status === "COMPLETED").reduce((acc, a) => acc + a.amount, 0)
   };
 
   const past = appointments
@@ -194,7 +215,7 @@ function UserDashboard() {
     if (status === "CANCELLED")
       return "px-4 py-1.5 bg-coral/10 text-coral rounded-full text-xs font-bold border border-coral/20";
     if (status === "COMPLETED")
-      return "px-4 py-1.5 bg-teal-500/10 text-teal-400 rounded-full text-xs font-bold border border-teal-500/20";
+      return "px-4 py-1.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-full text-xs font-bold border border-emerald-500/20";
     return "px-4 py-1.5 bg-black/5 dark:bg-white/5 text-textSecondary rounded-full text-xs font-bold border border-glassBorder";
   };
 
@@ -211,57 +232,58 @@ function UserDashboard() {
     <PageWrapper className="pt-24 pb-16 px-4 md:px-8">
       <div className="max-w-7xl mx-auto space-y-10">
         {/* Welcome Header */}
-        <header className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-end">
-          <div className="space-y-3">
-            <h1 className="text-4xl md:text-5xl font-headline font-extrabold tracking-tight text-textPrimary mb-2">
-              Hey {username.split(' ')[0]}, ready for your next appointment?
+        <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-1">
+            <h1 className="text-3xl font-headline font-extrabold tracking-tight text-textPrimary">
+              Dashboard Overview
             </h1>
-            <p className="text-textSecondary text-base leading-relaxed max-w-md">
-              {getHeaderContent()}
+            <p className="text-textSecondary text-sm">
+              Manage your services and track your appointments
             </p>
           </div>
 
-          {/* Quick Search */}
-          <div className="relative group">
-            <div className="absolute inset-0 bg-secondary/10 blur-2xl rounded-full opacity-0 group-focus-within:opacity-100 transition-opacity duration-500" />
-            <div className="relative flex items-center gap-3 bg-inputBg backdrop-blur-xl border border-inputBorder rounded-2xl p-3 focus-within:ring-2 focus-within:ring-secondary/40 transition-all duration-300">
-              <span className="material-symbols-outlined text-textSecondary px-1">location_on</span>
-              <input
-                type="text"
-                placeholder="Enter pincode to find providers…"
-                value={pincode}
-                onChange={(e) => setPincode(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleQuickSearch()}
-                className="bg-transparent border-none focus:ring-0 focus:outline-none w-full text-textPrimary placeholder:text-textSecondary/50 text-sm font-body"
-              />
-              <Button
-                onClick={handleQuickSearch}
-                className="shrink-0 !py-2 !px-4 text-xs tracking-wider"
-              >
-                Search
-              </Button>
-            </div>
+          <div className="flex items-center gap-3">
+             <div className="relative group">
+                <input
+                  type="text"
+                  placeholder="Quick search pins..."
+                  value={pincode}
+                  onChange={(e) => setPincode(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleQuickSearch()}
+                  className="bg-white dark:bg-gray-800 border border-inputBorder rounded-xl pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-primary/20 outline-none w-64 transition-all"
+                />
+                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-textSecondary text-xl">search</span>
+             </div>
+             <Button onClick={handleQuickSearch} className="!py-2 !px-4 text-xs">Search</Button>
           </div>
         </header>
 
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <StatCard title="Total Bookings" value={stats.total} icon="bookmark" trend="up" trendValue="+12%" />
+          <StatCard title="Upcoming" value={stats.upcoming} icon="calendar_today" color="secondary" />
+          <StatCard title="Completed" value={stats.completed} icon="check_circle" color="success" />
+          <StatCard title="Total Spent" value={`₹${stats.spent}`} icon="payments" color="warning" />
+        </div>
+
         {/* Tabs */}
-        <div className="flex flex-wrap bg-black/5 dark:bg-white/5 p-1.5 rounded-full shadow-inner border border-glassBorder w-fit gap-1">
+        <div className="flex flex-wrap items-center bg-gray-100 dark:bg-gray-800/50 p-1 rounded-xl w-fit gap-1 border border-gray-200 dark:border-gray-700">
           {[
-            { key: "appointments", icon: "calendar_today", label: "Appointments" },
-            { key: "history", icon: "history", label: "History" },
-            { key: "profile", icon: "person", label: "Profile" },
+            { key: "appointments", icon: "dashboard", label: "Overview" },
+            { key: "history", icon: "history", label: "Booking History" },
+            { key: "profile", icon: "person", label: "Account" },
           ].map(({ key, icon, label }) => (
             <button
               key={key}
               onClick={() => setTab(key)}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-full font-headline font-bold text-xs uppercase tracking-widest transition-all duration-300 ${
+              className={`flex items-center gap-2 px-6 py-2 rounded-lg font-medium text-sm transition-all ${
                 tab === key
-                  ? "bg-primary text-deep-navy shadow-lg"
+                  ? "bg-white dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 shadow-sm"
                   : "text-textSecondary hover:text-textPrimary"
               }`}
             >
-              <span className="material-symbols-outlined text-sm">{icon}</span>
-              <span className="hidden sm:inline">{label}</span>
+              <span className="material-symbols-outlined text-xl">{icon}</span>
+              {label}
             </button>
           ))}
         </div>
@@ -271,22 +293,55 @@ function UserDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
           {/* Upcoming Appointments – 8 col */}
           <section className="md:col-span-8 space-y-5">
-            <div className="flex justify-between items-center">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {/* Chart Card */}
+              <GlassCard className="lg:col-span-2 !p-6 flex flex-col h-[400px]">
+                <h3 className="font-headline font-bold text-lg mb-6">Booking Trends</h3>
+                <div className="flex-1 w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={chartData}>
+                      <defs>
+                        <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#4F46E5" stopOpacity={0.3}/>
+                          <stop offset="95%" stopColor="#4F46E5" stopOpacity={0}/>
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
+                      <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#6B7280'}} dy={10} />
+                      <YAxis axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#6B7280'}} />
+                      <Tooltip 
+                        contentStyle={{ backgroundColor: '#fff', borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} 
+                      />
+                      <Area type="monotone" dataKey="count" stroke="#4F46E5" strokeWidth={3} fillOpacity={1} fill="url(#colorCount)" />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              </GlassCard>
+
+              {/* Sidebar Info */}
+              <GlassCard className="!p-6 flex flex-col justify-between overflow-hidden relative">
+                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-2xl" />
+                 <div>
+                    <h3 className="font-headline font-bold text-lg mb-2">Member Rewards</h3>
+                    <p className="text-sm text-textSecondary mb-6">You've reached Silver level. Book 2 more to hit Gold!</p>
+                    <div className="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-2 mb-2">
+                       <div className="bg-primary-gradient h-full rounded-full w-2/3" />
+                    </div>
+                    <span className="text-xs text-textSecondary">14/20 points</span>
+                 </div>
+                 <Button variant="outline" className="w-full mt-8">View Benefits</Button>
+              </GlassCard>
+            </div>
+
+            <div className="flex justify-between items-center mt-10 mb-4">
               <h2 className="font-headline text-xl font-bold flex items-center gap-3 text-textPrimary">
-                <span className="w-1.5 h-7 bg-primary rounded-full" />
                 Upcoming Appointments
               </h2>
-              <button
-                onClick={() => navigate("/search")}
-                className="text-secondary text-sm font-label tracking-widest uppercase hover:underline underline-offset-4 transition-all"
-              >
-                Find Services
-              </button>
             </div>
 
             {loading ? (
               <div className="flex justify-center py-10">
-                <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
+                <div className="w-8 h-8 border-4 border-indigo-500/30 border-t-indigo-600 rounded-full animate-spin" />
               </div>
             ) : upcoming.length === 0 ? (
               <GlassCard className="!p-12 text-center border-dashed border-glassBorder shadow-none bg-transparent">
@@ -370,59 +425,7 @@ function UserDashboard() {
             )}
           </section>
 
-          {/* Sidebar – 4 col */}
-          <aside className="md:col-span-4 space-y-6">
-            {/* Insights card */}
-            <GlassCard className="!p-6 space-y-5 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-28 h-28 bg-primary/10 blur-3xl rounded-full -mr-14 -mt-14 pointer-events-none" />
-              <h2 className="font-headline text-lg font-bold text-textPrimary">Your Insights</h2>
-              <div className="space-y-3 relative z-10">
-                <div className="flex justify-between items-center bg-black/5 dark:bg-white/5 p-3.5 rounded-xl border border-glassBorder">
-                  <span className="text-textSecondary text-sm">Total Bookings</span>
-                  <span className="text-primary font-bold">{appointments.length}</span>
-                </div>
-                <div className="flex justify-between items-center bg-black/5 dark:bg-white/5 p-3.5 rounded-xl border border-glassBorder">
-                  <span className="text-textSecondary text-sm">Upcoming</span>
-                  <span className="text-secondary font-bold">{upcoming.length}</span>
-                </div>
-                <div className="flex justify-between items-center bg-black/5 dark:bg-white/5 p-3.5 rounded-xl border border-glassBorder">
-                  <span className="text-textSecondary text-sm">Completed</span>
-                  <span className="text-teal-400 font-bold">
-                    {appointments.filter((a) => a.status === "COMPLETED").length}
-                  </span>
-                </div>
-              </div>
-              <Button
-                onClick={() => navigate("/search")}
-                className="w-full text-sm"
-              >
-                Schedule New Service
-              </Button>
-            </GlassCard>
 
-            {/* Past Appointments */}
-            {past.length > 0 && (
-              <div className="space-y-3">
-                <h2 className="font-headline text-base font-bold px-1 text-textPrimary">Recently Completed</h2>
-                {past.slice(0, 4).map((a) => (
-                  <div
-                    key={a.id}
-                    className="p-4 bg-black/5 dark:bg-white/5 rounded-xl border-l-2 border-glassBorder hover:bg-black/10 dark:hover:bg-white/10 transition-colors group cursor-default"
-                  >
-                    <div className="flex justify-between">
-                      <span className="text-sm font-bold text-textPrimary truncate pr-2">
-                        {a.serviceName}
-                      </span>
-                      <span className={statusPill(a.status)}>{a.status}</span>
-                    </div>
-                    <p className="text-xs text-textSecondary mt-1">
-                      {a.date} · {a.providerName}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            )}
-          </aside>
         </div>
         )}
 

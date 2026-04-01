@@ -2,26 +2,28 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&display=swap');
+
 @layer base {
   :root {
-    --bg-surface: #f8fafc;
-    --text-primary: #0f172a;
-    --text-secondary: #475569;
+    --bg-surface: #F9FAFB; /* Light gray background */
+    --text-primary: #111827; /* Dark gray text */
+    --text-secondary: #4B5563;
     --glass-bg: rgba(255, 255, 255, 0.7);
-    --glass-border: rgba(255, 255, 255, 0.4);
-    --card-hover: rgba(241, 245, 249, 0.9);
-    --input-bg: rgba(255, 255, 255, 0.8);
-    --input-border: #cbd5e1;
+    --glass-border: rgba(229, 231, 235, 0.5);
+    --card-hover: rgba(243, 244, 246, 0.8);
+    --input-bg: #FFFFFF;
+    --input-border: #D1D5DB;
   }
   .dark {
-    --bg-surface: #0f172a;
-    --text-primary: #f8fafc;
-    --text-secondary: #94a3b8;
-    --glass-bg: rgba(15, 23, 42, 0.6);
-    --glass-border: rgba(34, 211, 238, 0.15); /* Subtle cyan edge */
-    --card-hover: rgba(30, 41, 59, 0.8);
-    --input-bg: rgba(30, 41, 59, 0.5);
-    --input-border: rgba(148, 163, 184, 0.2);
+    --bg-surface: #0B0F19;
+    --text-primary: #F9FAFB;
+    --text-secondary: #9CA3AF;
+    --glass-bg: rgba(17, 24, 39, 0.7);
+    --glass-border: rgba(79, 70, 229, 0.2); /* Subtle indigo edge */
+    --card-hover: rgba(31, 41, 55, 0.6);
+    --input-bg: rgba(17, 24, 39, 0.5);
+    --input-border: rgba(75, 85, 99, 0.3);
   }
 }
 
@@ -60,7 +62,7 @@ body::before {
   left: -10%;
   width: 50vw;
   height: 50vw;
-  background: #14b8a6; /* Teal */
+  background: #4F46E5; /* Indigo */
 }
 
 body::after {
@@ -68,17 +70,22 @@ body::after {
   right: -10%;
   width: 50vw;
   height: 50vw;
-  background: #22d3ee; /* Cyan */
+  background: #3B82F6; /* Blue */
 }
 
 /* Glass Card implementation */
 .glass-card {
   background: var(--glass-bg);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--glass-border);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.05);
-  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  transform: translateY(-2px);
 }
 
 .dark .glass-card {
@@ -99,10 +106,10 @@ body::after {
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg-surface); }
 ::-webkit-scrollbar-thumb { background: var(--text-secondary); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #14b8a6; }
+::-webkit-scrollbar-thumb:hover { background: #4F46E5; }
 
 ::selection {
-  background: rgba(34, 211, 238, 0.3);
+  background: rgba(79, 70, 229, 0.2);
   color: inherit;
 }
 

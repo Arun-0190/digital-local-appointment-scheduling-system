@@ -105,7 +105,7 @@ export default function NotificationPanel({ isOpen, onClose, unreadCount, onNoti
               {unreadCount > 0 && (
                 <button 
                   onClick={handleMarkAllRead}
-                  className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
+                  className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline transition-colors"
                 >
                   Mark all as read
                 </button>
@@ -120,8 +120,8 @@ export default function NotificationPanel({ isOpen, onClose, unreadCount, onNoti
                   onClick={() => setActiveFilter(f)}
                   className={`px-3 py-1 pb-[0.2rem] whitespace-nowrap rounded-full text-xs font-medium transition-all ${
                     activeFilter === f 
-                      ? "bg-blue-600 text-white shadow-md shadow-blue-500/30" 
-                      : "bg-white/5 text-gray-600 dark:text-gray-300 hover:bg-white/20"
+                      ? "bg-indigo-600 text-white shadow-md shadow-indigo-500/30" 
+                      : "bg-white/5 text-gray-500 dark:text-gray-400 hover:bg-white/20"
                   }`}
                 >
                   {f.charAt(0) + f.slice(1).toLowerCase()}
@@ -147,25 +147,25 @@ export default function NotificationPanel({ isOpen, onClose, unreadCount, onNoti
                       whileHover={{ x: 4, transition: { duration: 0.2 } }}
                       onClick={() => handleNotificationClick(n)}
                       className={`p-3 rounded-xl cursor-pointer flex gap-3 group transition-all duration-300
-                        ${!n.isRead ? "bg-blue-50/50 dark:bg-blue-900/20" : "hover:bg-black/5 dark:hover:bg-white/5"}
+                        ${!n.isRead ? "bg-indigo-50/50 dark:bg-indigo-900/20" : "hover:bg-black/5 dark:hover:bg-white/5"}
                       `}
                     >
                       <div className="flex flex-col gap-1 flex-grow">
                         <div className="flex justify-between items-start">
-                          <span className={`text-xs font-semibold ${!n.isRead ? "text-blue-600 dark:text-blue-400" : "text-gray-500 dark:text-gray-400"}`}>
+                          <span className={`text-xs font-semibold ${!n.isRead ? "text-indigo-600 dark:text-indigo-400" : "text-gray-500 dark:text-gray-400"}`}>
                             {n.type}
                           </span>
-                          <span className="text-xs text-gray-400">
+                          <span className="text-xs text-textSecondary uppercase tracking-tighter opacity-60">
                             {timeSince(n.createdAt)}
                           </span>
                         </div>
-                        <p className={`text-sm ${!n.isRead ? "font-semibold text-gray-900 dark:text-gray-100" : "text-gray-600 dark:text-gray-300"}`}>
+                        <p className={`text-sm ${!n.isRead ? "font-semibold text-textPrimary" : "text-textSecondary"}`}>
                           {n.message}
                         </p>
                       </div>
                       {!n.isRead && (
                         <div className="flex-shrink-0 flex items-center justify-center pt-2">
-                          <div className="w-2.5 h-2.5 bg-blue-500 rounded-full shadow-[0_0_8px_rgba(59,130,246,0.8)]" />
+                          <div className="w-2.5 h-2.5 bg-indigo-500 rounded-full shadow-[0_0_8px_rgba(79,70,229,0.5)]" />
                         </div>
                       )}
                     </motion.div>

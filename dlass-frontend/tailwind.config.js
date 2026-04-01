@@ -8,10 +8,13 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: "#14b8a6", // Teal
-        secondary: "#22d3ee", // Cyan
-        coral: "#fb7185",
-        "deep-navy": "#0f172a",
+        primary: "#6366F1", // Indigo 500
+        secondary: "#3B82F6", // Blue 500
+        accent: "#10B981", // Emerald 500
+        rose: "#F43F5E", // Rose 500
+        amber: "#F59E0B", // Amber 500
+        coral: "#F43F5E", // Rose 500 (alias)
+        "deep-navy": "#0F172A", // Slate 900
         surface: "var(--bg-surface)",
         textPrimary: "var(--text-primary)",
         textSecondary: "var(--text-secondary)",
@@ -22,16 +25,17 @@ export default {
         inputBorder: "var(--input-border)",
       },
       fontFamily: {
-        headline: ["Manrope", "sans-serif"],
+        headline: ["Poppins", "Manrope", "sans-serif"],
         body: ["Inter", "sans-serif"],
         label: ["Inter", "sans-serif"],
       },
       borderRadius: {
+        "xl": "0.75rem",
         "2xl": "1rem",
         "3xl": "1.5rem",
       },
       backgroundImage: {
-        'primary-gradient': 'linear-gradient(to right, #14b8a6, #22d3ee)',
+        'primary-gradient': 'linear-gradient(135deg, #4F46E5 0%, #3B82F6 100%)',
       }
     },
   },

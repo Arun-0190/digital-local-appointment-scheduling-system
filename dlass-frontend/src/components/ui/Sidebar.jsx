@@ -29,14 +29,14 @@ export default function Sidebar({ items = [], onNavigate, isOpen, setIsOpen }) {
              onClick={() => { onNavigate(item.id); if (isMobile) setIsOpen(false); }}
              className={`flex items-center px-4 py-3.5 rounded-2xl transition-all duration-300 relative group overflow-hidden ${
                item.active 
-                 ? "text-primary font-bold shadow-sm" 
-                 : "text-textSecondary hover:bg-black/5 dark:hover:bg-white/5 hover:text-textPrimary"
+                 ? "text-indigo-600 font-semibold shadow-sm" 
+                 : "text-textSecondary hover:bg-indigo-50/50 dark:hover:bg-indigo-900/20 hover:text-indigo-600"
              }`}
            >
              {item.active && (
                <motion.div 
                  layoutId="sidebar-active" 
-                 className="absolute inset-0 bg-primary/10 dark:bg-primary/20 border border-primary/20 rounded-2xl z-0" 
+                 className="absolute inset-0 bg-indigo-500/10 dark:bg-indigo-500/20 border border-indigo-500/20 rounded-2xl z-0" 
                  transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                />
              )}
@@ -45,7 +45,7 @@ export default function Sidebar({ items = [], onNavigate, isOpen, setIsOpen }) {
                <motion.span 
                  whileHover={{ rotate: [0, -12, 12, -4, 0], scale: 1.15 }}
                  transition={{ duration: 0.5, type: "spring", bounce: 0.5 }}
-                 className={`material-symbols-outlined text-2xl transition-transform duration-300 ${item.active ? 'scale-110 text-primary drop-shadow-[0_0_8px_rgba(20,184,166,0.6)]' : 'text-textSecondary group-hover:text-primary group-hover:scale-110'}`}
+                 className={`material-symbols-outlined text-2xl transition-transform duration-300 ${item.active ? 'scale-110 text-indigo-600 drop-shadow-[0_0_8px_rgba(79,70,229,0.3)]' : 'text-textSecondary group-hover:text-indigo-600 group-hover:scale-110'}`}
                >
                  {item.icon}
                </motion.span>
@@ -87,8 +87,8 @@ export default function Sidebar({ items = [], onNavigate, isOpen, setIsOpen }) {
             >
               {/* Mobile Header Logo */}
               <div className="flex items-center justify-between p-6 border-b border-glassBorder mb-2">
-                <div className="font-headline font-black text-2xl tracking-tighter text-textPrimary flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white shadow-lg shadow-primary/30">
+                 <div className="font-headline font-black text-2xl tracking-tighter text-textPrimary flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-primary-gradient flex items-center justify-center text-white shadow-lg shadow-primary/30">
                     D
                   </div>
                   DLASS

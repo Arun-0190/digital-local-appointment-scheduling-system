@@ -46,13 +46,14 @@ function Navbar() {
     }`;
 
   return (
-    <nav className="fixed top-0 w-full z-50 bg-glassBg backdrop-blur-xl border-b border-glassBorder shadow-sm transition-colors duration-400">
-      <div className="flex justify-between items-center px-6 md:px-12 h-20 max-w-[1440px] mx-auto">
+    <nav className="fixed top-0 w-full z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 shadow-sm transition-all duration-300">
+      <div className="flex justify-between items-center px-6 md:px-12 h-16 max-w-[1440px] mx-auto">
         {/* Brand */}
         <Link
           to="/"
-          className="text-2xl font-black tracking-tighter text-transparent bg-clip-text bg-primary-gradient font-headline uppercase select-none"
+          className="text-2xl font-black tracking-tighter text-indigo-600 dark:text-indigo-400 font-headline uppercase select-none flex items-center gap-2"
         >
+          <div className="w-8 h-8 rounded-lg bg-primary-gradient flex items-center justify-center text-white text-sm shadow-md shadow-indigo-500/20">D</div>
           DLASS
         </Link>
 
@@ -80,7 +81,7 @@ function Navbar() {
               <span className="hidden sm:block text-xs text-textSecondary font-label tracking-widest truncate max-w-[180px]">
                 {email}
               </span>
-              <Button onClick={handleLogout} variant="ghost" className="!px-4 !py-2 !text-sm border border-outline-variant hover:border-coral hover:text-coral transition-colors">
+              <Button onClick={handleLogout} variant="ghost" className="!px-4 !py-2 !text-sm border border-gray-200 dark:border-gray-700 hover:border-rose dark:hover:border-rose/50 hover:text-rose transition-colors">
                 Logout
               </Button>
             </>

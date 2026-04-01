@@ -30,11 +30,11 @@ export default function ReviewModal({ isOpen, onClose, appointmentId, providerId
         { appointmentId, providerId, rating, comment },
         { headers: { Authorization: `Bearer ${getToken()}` } }
       );
-      if (onSuccess) onSuccess(appointmentId);
+      if (onSuccess) onSuccess(appointmentId || providerId);
       onClose();
     } catch (err) {
       console.error(err);
-      setError("Failed to submit review. You may have already reviewed this appointment.");
+      setError(err.response?.data?.message || "Failed to submit review. You may have already reviewed this provider.");
     } finally {
       setLoading(false);
     }
@@ -50,12 +50,12 @@ export default function ReviewModal({ isOpen, onClose, appointmentId, providerId
             exit={{ opacity: 0, scale: 0.95, y: -20 }}
             className="bg-glassBg backdrop-blur-xl border border-glassBorder rounded-3xl w-full max-w-md shadow-2xl overflow-hidden relative"
           >
-            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 blur-3xl rounded-full -mr-16 -mt-16 pointer-events-none" />
+            <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 blur-3xl rounded-full -mr-16 -mt-16 pointer-events-none" />
             
             <header className="px-6 py-4 border-b border-glassBorder flex justify-between items-center relative z-10">
               <h2 className="font-headline font-bold text-lg text-textPrimary flex items-center gap-2">
-                <span className="material-symbols-outlined text-primary">star</span>
-                Rate Provider
+                <span className="material-symbols-outlined text-indigo-600 dark:text-indigo-400">rate_review</span>
+                Share your Experience
               </h2>
               <button onClick={onClose} className="p-1 rounded-full text-textSecondary hover:bg-black/10 dark:hover:bg-white/10 transition-colors">
                 <span className="material-symbols-outlined text-[20px]">close</span>
@@ -84,8 +84,8 @@ export default function ReviewModal({ isOpen, onClose, appointmentId, providerId
                       onClick={() => setRating(star)}
                       className="focus:outline-none"
                     >
-                      <span className={`material-symbols-outlined text-4xl transition-colors ${
-                        (hoverRating || rating) >= star ? "text-yellow-400 fill-current drop-shadow-md" : "text-textSecondary/30"
+                      <span className={`material-symbols-outlined text-4xl transition-all duration-300 ${
+                        (hoverRating || rating) >= star ? "text-amber-400 drop-shadow-[0_0_10px_rgba(251,191,36,0.3)]" : "text-gray-300 dark:text-gray-600"
                       }`} style={{ fontVariationSettings: (hoverRating || rating) >= star ? "'FILL' 1" : "'FILL' 0" }}>
                         star
                       </span>
@@ -101,17 +101,20 @@ export default function ReviewModal({ isOpen, onClose, appointmentId, providerId
                   onChange={(e) => setComment(e.target.value)}
                   placeholder="Share details of your experience..."
                   rows={4}
-                  className="w-full bg-inputBg border border-inputBorder rounded-xl p-4 text-textPrimary placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:ring-2 focus:ring-primary/50 focus:border-primary focus:shadow-[0_0_15px_rgba(20,184,166,0.2)] outline-none transition-all resize-none"
+                  className="w-full bg-white dark:bg-gray-800/50 border border-inputBorder rounded-xl p-4 text-textPrimary placeholder:text-gray-400 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all resize-none"
                 />
               </div>
 
-              <div className="flex justify-end gap-3">
-                <Button type="button" variant="ghost" onClick={onClose} disabled={loading}>
-                  Cancel
+              <div className="flex flex-col gap-3">
+                <Button type="submit" variant="primary" className="w-full" isLoading={loading}>
+                  Submit Review
                 </Button>
-                <div className="w-1/2">
-                  <Button type="submit" variant="primary" className="w-full" isLoading={loading}>
-                    Submit Review
+                <div className="flex gap-3">
+                  <Button type="button" variant="ghost" className="flex-1" onClick={onClose} disabled={loading}>
+                    Not Now
+                  </Button>
+                  <Button type="button" variant="ghost" className="flex-1" onClick={onClose} disabled={loading}>
+                    Skip for Now
                   </Button>
                 </div>
               </div>
