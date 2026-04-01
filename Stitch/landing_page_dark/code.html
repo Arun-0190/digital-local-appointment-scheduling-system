@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&amp;family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              colors: {
+                "on-secondary": "#00363e",
+                "secondary-fixed-dim": "#2fd9f4",
+                "on-error": "#690005",
+                "secondary-fixed": "#a2eeff",
+                "inverse-surface": "#dae2fd",
+                "surface-container-high": "#222a3d",
+                "inverse-primary": "#006b5f",
+                "tertiary": "#ffb2b9",
+                "on-primary-fixed": "#00201c",
+                "primary-container": "#14b8a6",
+                "surface": "#0b1326",
+                "on-secondary-fixed": "#001f25",
+                "error": "#ffb4ab",
+                "primary": "#4fdbc8",
+                "on-surface": "#dae2fd",
+                "on-primary-container": "#00423b",
+                "on-surface-variant": "#bbcac6",
+                "secondary": "#5de6ff",
+                "on-tertiary-container": "#770827",
+                "primary-fixed": "#71f8e4",
+                "error-container": "#93000a",
+                "on-secondary-container": "#00515d",
+                "on-primary": "#003731",
+                "surface-container-low": "#131b2e",
+                "surface-bright": "#31394d",
+                "primary-fixed-dim": "#4fdbc8",
+                "on-background": "#dae2fd",
+                "surface-container-lowest": "#060e20",
+                "on-tertiary": "#67001f",
+                "tertiary-fixed": "#ffdadc",
+                "surface-container": "#171f33",
+                "surface-dim": "#0b1326",
+                "outline-variant": "#3c4947",
+                "tertiary-fixed-dim": "#ffb2b9",
+                "surface-variant": "#2d3449",
+                "on-secondary-fixed-variant": "#004e5a",
+                "on-error-container": "#ffdad6",
+                "on-primary-fixed-variant": "#005048",
+                "on-tertiary-fixed-variant": "#891933",
+                "on-tertiary-fixed": "#400010",
+                "outline": "#859490",
+                "tertiary-container": "#ff7a8c",
+                "inverse-on-surface": "#283044",
+                "secondary-container": "#00cbe6",
+                "surface-container-highest": "#2d3449",
+                "background": "#0b1326",
+                "surface-tint": "#4fdbc8"
+              },
+              fontFamily: {
+                "headline": ["Manrope"],
+                "body": ["Inter"],
+                "label": ["Inter"]
+              },
+              borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+            },
+          },
+        }
+    </script>
+<style>
+        body { background-color: #0b1326; color: #dae2fd; font-family: 'Inter', sans-serif; }
+        .glass-card {
+            background: rgba(49, 57, 77, 0.4);
+            backdrop-filter: blur(24px);
+            border-top: 1px solid rgba(113, 248, 228, 0.2);
+            border-left: 1px solid rgba(113, 248, 228, 0.2);
+        }
+        .hero-gradient {
+            background: radial-gradient(circle at 50% -20%, rgba(20, 184, 166, 0.15) 0%, rgba(11, 19, 38, 0) 60%);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface selection:bg-primary/30">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 bg-slate-900/40 backdrop-blur-xl shadow-[0_20px_40px_-10px_rgba(20,184,166,0.08)] flex justify-between items-center px-8 py-4 max-w-full">
+<div class="flex items-center gap-12">
+<span class="text-2xl font-black tracking-tighter bg-gradient-to-br from-teal-400 to-cyan-400 bg-clip-text text-transparent font-headline">DLASS</span>
+<div class="hidden md:flex gap-8">
+<a class="text-slate-400 hover:text-teal-200 transition-colors font-label text-sm tracking-wide" href="#">Dashboard</a>
+<a class="text-slate-400 hover:text-teal-200 transition-colors font-label text-sm tracking-wide" href="#">Chat</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-teal-400 hover:bg-teal-400/10 rounded-full transition-all flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-primary/20">
+<img alt="User Profile" data-alt="Close-up portrait of a professional male user with friendly expression in soft studio lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBZNtGFhHrOyFOZLQMhsmpLTCW2Sr_6wrMT_4IJ9_ZwV98fa2TpqbFaHmpCg-q5mfFa7_XvV7vG9D2hoHed4tcDRnBvus5EsH3jsvJGojvaZ3fQ_HhXbtb83eqv8RJzInWEXA_8SXQTpQ4bk7YhwmgN2CeEf7UCMmsRXOGZlwnq3YXzyrm5gq5fBEKzZvlONByiKKy6ans7lxNJE08_HLsCmVVDZ82C06wJ2fCqh5K525pZvqP95_3_rrRaGSpFcH4grsCu3zzKrhk"/>
+</div>
+</div>
+</nav>
+<main class="pt-24 overflow-x-hidden">
+<!-- Hero Section -->
+<section class="hero-gradient relative px-8 py-24 md:py-32 flex flex-col items-center text-center">
+<div class="max-w-4xl space-y-8">
+<span class="font-body text-sm font-semibold tracking-[0.2em] text-primary uppercase">The Luminous Concierge</span>
+<h1 class="font-headline text-5xl md:text-7xl font-extrabold tracking-tight text-white leading-tight">
+                    Intelligence that <br/>
+<span class="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Anticipates Your Needs.</span>
+</h1>
+<p class="font-body text-on-surface-variant text-lg md:text-xl max-w-2xl mx-auto leading-relaxed">
+                    Transforming standard appointments into a fluid, high-end digital experience. Manage your time with the precision of a digital elite.
+                </p>
+<div class="flex flex-col md:flex-row gap-4 justify-center items-center pt-8">
+<button class="px-10 py-5 rounded-xl bg-gradient-to-r from-primary to-secondary text-on-primary font-headline font-bold text-lg shadow-[0_0_15px_rgba(79,219,200,0.3)] hover:scale-95 duration-200 transition-all">
+                        Explore Services
+                    </button>
+<button class="px-10 py-5 rounded-xl bg-tertiary-container text-on-tertiary-container font-headline font-bold text-lg hover:scale-95 duration-200 transition-all">
+                        Get Started
+                    </button>
+</div>
+</div>
+<div class="mt-20 w-full max-w-6xl relative">
+<div class="absolute -top-20 -left-20 w-64 h-64 bg-primary/10 rounded-full blur-[100px]"></div>
+<div class="absolute -bottom-20 -right-20 w-64 h-64 bg-secondary/10 rounded-full blur-[100px]"></div>
+<div class="glass-card rounded-lg p-4 overflow-hidden shadow-2xl">
+<img class="w-full rounded-lg" data-alt="High-tech minimalist user interface dashboard showing glowing data visualizations and scheduling grids in deep teal and cyan tones" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCNq7oZG9ptJxmrzMq0HGWIHBPLuxf1u__dASk950SNOTAbZPlekB5ljjLR8pcZI3Y-l6btVosV2_r31yBteV6v6UTEGGvUBiMg458GlKJFtYmnCymxpMOsygYPfgxLGvQqVwcr3aJR7Ov_n9CzmUFXySD_MQFStlX3icAqBcma-OTXnaBzL5_FUt52o7dm5d4SfiGOvFO6heLLGiKyNiySIa-SdYKTKdhOj0infB3tF4FdlaKm2divNE3pmooj9UX93wRqy29Nc2M"/>
+</div>
+</div>
+</section>
+<!-- Why DLASS (Bento Grid) -->
+<section class="px-8 py-24 max-w-7xl mx-auto">
+<div class="mb-16">
+<span class="font-body text-sm font-semibold text-primary tracking-widest uppercase">Precision Utility</span>
+<h2 class="font-headline text-4xl font-bold mt-2 text-white">Why DLASS</h2>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="md:col-span-2 glass-card rounded-lg p-10 flex flex-col justify-between group hover:surface-container-highest transition-colors duration-500">
+<div class="space-y-4">
+<span class="material-symbols-outlined text-primary text-4xl" data-icon="auto_awesome">auto_awesome</span>
+<h3 class="font-headline text-3xl font-bold text-white">Predictive Logistics</h3>
+<p class="text-on-surface-variant text-lg">Our engine doesn't just schedule; it optimizes your entire flow based on behavioral patterns and environmental data.</p>
+</div>
+<div class="mt-8 overflow-hidden rounded-lg">
+<img class="w-full opacity-60 group-hover:opacity-100 transition-opacity" data-alt="Abstract digital representation of flowing data points and network connections in neon cyan against a dark background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBgyLrWKOCt59n2-SdD5GGJ8nak6mviuNf6eB61BtGa41n0l9x4YBEN4gVc9cimn8dk9cZtbKu0f6_zZLkfPB9s31o5yMVbCWqtrNHZSbFVJ1e5Rdfc1hUisPDaWBi0noiNNia5e7pXypwRSATR9MnsgRX-QAyeNKKakVpV9hNU3Q3L177il_c9aLcSF_5NTMRu5CH6vMQo0tKNbmFHbCGWKiE33H4T3feD5d6PLQRwkoXGIH-bbvz9BURCMC1INoMvkxpWThHsLlo"/>
+</div>
+</div>
+<div class="glass-card rounded-lg p-10 flex flex-col items-center text-center space-y-6">
+<div class="w-20 h-20 rounded-full bg-secondary/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary text-4xl" data-icon="security">security</span>
+</div>
+<h3 class="font-headline text-2xl font-bold text-white">Encrypted Privacy</h3>
+<p class="text-on-surface-variant">Your interactions are shielded by enterprise-grade cryptographic layers, ensuring complete concierge discretion.</p>
+</div>
+<div class="glass-card rounded-lg p-10 flex flex-col justify-center space-y-6">
+<span class="material-symbols-outlined text-tertiary text-4xl" data-icon="bolt">bolt</span>
+<h3 class="font-headline text-2xl font-bold text-white">Instant Sync</h3>
+<p class="text-on-surface-variant">Real-time updates across all your devices with sub-100ms latency. The intelligence that follows you.</p>
+</div>
+<div class="md:col-span-2 glass-card rounded-lg p-10 flex items-center gap-8 overflow-hidden">
+<div class="flex-1 space-y-4">
+<h3 class="font-headline text-2xl font-bold text-white">Fluid Interface</h3>
+<p class="text-on-surface-variant">No borders, no friction. Just a seamless flow of information designed for the modern professional.</p>
+</div>
+<div class="flex-1">
+<div class="relative">
+<div class="w-12 h-12 rounded-full bg-secondary animate-pulse absolute -top-4 -left-4 blur-sm opacity-50"></div>
+<img class="rounded-lg" data-alt="Close-up of a sleek glass-morphic interface on a tablet showing scheduling charts and glowing teal icons" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCA7TfNe67hq7tHjvVGBJWGetzQI5-hV9KHF-qY57Yqwdq1eIqv2cfsyKN0XqIY4g8U6rfLNXgEUKLkgw-atolDflUjI61HoWXbqHq-kWWk9j1Re-Olblo0GmU08bEbGSrjOjivCM-TWSM-bBU8Fny0a3fAdEyFD5RgY5LnSqTajyZGXffVcoQyv9KmOz6LCtQI-oUqXfVVBVOi8nUkAUt7S3QExpbTWBiPHG_MigPqBVZfPPhu0gDpd9EXiAlCODQ3zXj5KgCRr04"/>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- How It Works -->
+<section class="bg-surface-container-low py-24 px-8">
+<div class="max-w-7xl mx-auto flex flex-col md:flex-row gap-16 items-center">
+<div class="flex-1 order-2 md:order-1">
+<div class="relative">
+<div class="absolute -inset-10 bg-primary/5 rounded-full blur-[100px]"></div>
+<div class="space-y-12">
+<div class="flex gap-6 items-start">
+<div class="w-12 h-12 rounded-full bg-surface-container-highest flex-shrink-0 flex items-center justify-center font-headline font-bold text-primary border border-primary/20">01</div>
+<div class="space-y-2">
+<h4 class="font-headline text-xl font-bold text-white">Connect Context</h4>
+<p class="text-on-surface-variant">Link your existing calendars and preferences to build your unique behavioral profile.</p>
+</div>
+</div>
+<div class="flex gap-6 items-start translate-x-4">
+<div class="w-12 h-12 rounded-full bg-surface-container-highest flex-shrink-0 flex items-center justify-center font-headline font-bold text-secondary border border-secondary/20">02</div>
+<div class="space-y-2">
+<h4 class="font-headline text-xl font-bold text-white">Intelligent Mapping</h4>
+<p class="text-on-surface-variant">Our AI analyzes time-blocks, transit, and priority to map the optimal day.</p>
+</div>
+</div>
+<div class="flex gap-6 items-start translate-x-8">
+<div class="w-12 h-12 rounded-full bg-surface-container-highest flex-shrink-0 flex items-center justify-center font-headline font-bold text-tertiary border border-tertiary/20">03</div>
+<div class="space-y-2">
+<h4 class="font-headline text-xl font-bold text-white">Seamless Execution</h4>
+<p class="text-on-surface-variant">Confirm with a single tap. DLASS handles the coordination and reminders.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="flex-1 order-1 md:order-2 space-y-6">
+<span class="font-body text-sm font-semibold text-primary tracking-widest uppercase">The Process</span>
+<h2 class="font-headline text-4xl font-bold text-white leading-tight">Effortless coordination <br/>defined by logic.</h2>
+<p class="text-on-surface-variant text-lg">We've removed the manual burden of scheduling. Our system learns your habits to provide recommendations that feel like intuition.</p>
+<button class="text-secondary font-headline font-bold flex items-center gap-2 group">
+                        Learn more about our engine
+                        <span class="material-symbols-outlined group-hover:translate-x-2 transition-transform" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Top-rated Providers -->
+<section class="px-8 py-24 max-w-7xl mx-auto">
+<div class="flex justify-between items-end mb-12">
+<div>
+<span class="font-body text-sm font-semibold text-primary tracking-widest uppercase">The Network</span>
+<h2 class="font-headline text-4xl font-bold mt-2 text-white">Elite Service Providers</h2>
+</div>
+<button class="hidden md:block px-6 py-3 rounded-full border border-outline-variant text-on-surface-variant font-label hover:border-primary transition-colors">View All Directory</button>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+<!-- Provider 1 -->
+<div class="group relative overflow-hidden rounded-lg">
+<img class="w-full h-[400px] object-cover transition-transform duration-700 group-hover:scale-110" data-alt="Portrait of a sophisticated female executive in professional attire against a blurred architectural background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB71EEbp-vs-mCMFbC5q4i-m9gRVtCqH-DR5D0ZoSY2NWK43q0SF8E2mJeAJj5pF_GRtI9yGWGNysIjkX1qSVX-5KM1TnXm1v7kz1UlB1uZa4DpuwqmKuepKLYdWNeWrJb9aJ1S6HmEy33U__uffRk4o0D37t6E-psPhnvmRixO0iUm26iOS8VkMZMfe_43RlmD4zM2phKMy7H8VFAhLIbcZrGAKT5oz5s_Db2LeUnWhl9t_VBgWm8zaN1dsSEENRE7Ofzp1FdDQtI"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-dim via-surface-dim/40 to-transparent p-6 flex flex-col justify-end">
+<div class="space-y-1">
+<span class="text-primary font-label text-xs uppercase tracking-widest">Business Strategy</span>
+<h4 class="font-headline text-xl font-bold text-white">Elena Rodriguez</h4>
+<div class="flex items-center gap-2 text-on-surface-variant text-sm">
+<span class="material-symbols-outlined text-secondary text-sm" data-icon="star" style="font-variation-settings: 'FILL' 1;">star</span>
+                                4.9 (124 reviews)
+                            </div>
+</div>
+</div>
+</div>
+<!-- Provider 2 -->
+<div class="group relative overflow-hidden rounded-lg">
+<img class="w-full h-[400px] object-cover transition-transform duration-700 group-hover:scale-110" data-alt="Professional man in a tailored suit looking confidently at the camera in a modern glass office setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDuiyt-h252tyCIH47SzXU945Fxz4b6hZYVsAraJJaOVjCeLbjNSV6dhSRFpqTH8HtQiPRfErA1YNEyMvBP4g0yOQMPuB3i4jYf5ijh3D0JcW7_qUwNwIpc4bWTyQw6pM1XWQx_lLVUko0XJtGE6gNHzRNjsXWSdbRVFQVwlD7xwgyCfufmKArtN1577jt_L0LY3m4skEOC5iYlvRuDtxn2EJ5rvwjRmS8q3bQ3Z5wHeNgezCyE2oCPJwaYrbAaufO-6Mp7JY0hP68"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-dim via-surface-dim/40 to-transparent p-6 flex flex-col justify-end">
+<div class="space-y-1">
+<span class="text-primary font-label text-xs uppercase tracking-widest">System Architecture</span>
+<h4 class="font-headline text-xl font-bold text-white">Marcus Thorne</h4>
+<div class="flex items-center gap-2 text-on-surface-variant text-sm">
+<span class="material-symbols-outlined text-secondary text-sm" data-icon="star" style="font-variation-settings: 'FILL' 1;">star</span>
+                                5.0 (89 reviews)
+                            </div>
+</div>
+</div>
+</div>
+<!-- Provider 3 -->
+<div class="group relative overflow-hidden rounded-lg">
+<img class="w-full h-[400px] object-cover transition-transform duration-700 group-hover:scale-110" data-alt="A woman with glasses and a smart-casual look smiling warmly in a bright creative studio space" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBhmIrNMlABSTvQIlY4rRbMm3U9NrIJSomw98ZchRS_XcFg5UoDULQFOkbI7wLOsJhuJVamAqUeqOmkw1un9eytoPr4TQG43gRLdhqjJwvCSA_xkYA5V6BdMV71hYfnsJ7IUkIg-rMRVxf8samrVV9Hj7DuvQkkUaS7RMCeHlo9D0Eta4nXMrVLG_j8EtcO76mIxcY5rday13sYQLm1I7RFD1EN9rDm3kEBhqKVLm3XukxM7pa6Bwms4mv9jAu15RCk_0N9Mim3D6M"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-dim via-surface-dim/40 to-transparent p-6 flex flex-col justify-end">
+<div class="space-y-1">
+<span class="text-primary font-label text-xs uppercase tracking-widest">Growth Analytics</span>
+<h4 class="font-headline text-xl font-bold text-white">Sarah Jenkins</h4>
+<div class="flex items-center gap-2 text-on-surface-variant text-sm">
+<span class="material-symbols-outlined text-secondary text-sm" data-icon="star" style="font-variation-settings: 'FILL' 1;">star</span>
+                                4.8 (210 reviews)
+                            </div>
+</div>
+</div>
+</div>
+<!-- Provider 4 -->
+<div class="group relative overflow-hidden rounded-lg">
+<img class="w-full h-[400px] object-cover transition-transform duration-700 group-hover:scale-110" data-alt="Senior male executive with grey hair in a minimalist dark office environment, soft cinematic lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBYSEwISev2VNabRApf0w53Ge9Hbjla66rvQmRj-PwUaXfop5pDrKhPHV9COfMJE5pUWE6YzJ6j1n2AsS0AwOdmjqRm8tbMOuucQtcC0RPp7pkSXxR_nAxWGwRN2o-0t3H8C73DE5fc3OB08aiCVH_XEm2AayA24tlDd-TVHN774V6vAx3V4zhoPqKZ_5c6XqsoSrzLh4XbBbytLR_mUlZ6i2BwmmgtVmb2Q3Fe4ePjcoWStpbizWWCpP9APUEFgrXt6paeyLM9NfY"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-dim via-surface-dim/40 to-transparent p-6 flex flex-col justify-end">
+<div class="space-y-1">
+<span class="text-primary font-label text-xs uppercase tracking-widest">Wealth Concierge</span>
+<h4 class="font-headline text-xl font-bold text-white">David Chen</h4>
+<div class="flex items-center gap-2 text-on-surface-variant text-sm">
+<span class="material-symbols-outlined text-secondary text-sm" data-icon="star" style="font-variation-settings: 'FILL' 1;">star</span>
+                                4.9 (156 reviews)
+                            </div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- CTA Section -->
+<section class="px-8 py-24">
+<div class="max-w-5xl mx-auto glass-card rounded-lg p-12 md:p-20 text-center relative overflow-hidden">
+<div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-secondary to-tertiary"></div>
+<div class="space-y-8 relative z-10">
+<h2 class="font-headline text-4xl md:text-5xl font-bold text-white">Ready to elevate your intelligence?</h2>
+<p class="text-on-surface-variant text-lg max-w-2xl mx-auto">Join the elite network of professionals using DLASS to reclaim their time and focus on what truly matters.</p>
+<div class="flex flex-col sm:flex-row gap-4 justify-center">
+<button class="px-10 py-5 rounded-xl bg-gradient-to-r from-primary to-secondary text-on-primary font-headline font-bold text-lg shadow-[0_0_15px_rgba(79,219,200,0.3)] hover:scale-95 duration-200 transition-all">
+                            Get Started Now
+                        </button>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-slate-950 w-full py-12 px-8 flex flex-col md:flex-row justify-between items-center gap-6">
+<div class="flex flex-col items-center md:items-start gap-4">
+<span class="font-manrope font-bold text-teal-400 text-xl tracking-tight">DLASS</span>
+<p class="font-inter text-sm tracking-wide text-slate-500 max-w-xs text-center md:text-left">
+                Redefining the digital concierge experience through luminous intelligence and seamless utility.
+            </p>
+</div>
+<div class="flex gap-8 items-center">
+<a class="text-slate-500 hover:text-teal-300 transition-colors font-inter text-sm tracking-wide" href="#">Privacy Policy</a>
+<a class="text-slate-500 hover:text-teal-300 transition-colors font-inter text-sm tracking-wide" href="#">Terms of Service</a>
+<a class="text-slate-500 hover:text-teal-300 transition-colors font-inter text-sm tracking-wide" href="#">Help Center</a>
+</div>
+<div class="text-slate-500 font-inter text-xs tracking-wide text-center md:text-right">
+            © 2024 DLASS Intelligence. All rights reserved.
+        </div>
+</footer>
+</body></html>

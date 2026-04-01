@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-secondary": "#00363e",
+                        "secondary-fixed-dim": "#2fd9f4",
+                        "on-error": "#690005",
+                        "secondary-fixed": "#a2eeff",
+                        "inverse-surface": "#dae2fd",
+                        "surface-container-high": "#222a3d",
+                        "inverse-primary": "#006b5f",
+                        "tertiary": "#ffb2b9",
+                        "on-primary-fixed": "#00201c",
+                        "primary-container": "#14b8a6",
+                        "surface": "#0b1326",
+                        "on-secondary-fixed": "#001f25",
+                        "error": "#ffb4ab",
+                        "primary": "#4fdbc8",
+                        "on-surface": "#dae2fd",
+                        "on-primary-container": "#00423b",
+                        "on-surface-variant": "#bbcac6",
+                        "secondary": "#5de6ff",
+                        "on-tertiary-container": "#770827",
+                        "primary-fixed": "#71f8e4",
+                        "error-container": "#93000a",
+                        "on-secondary-container": "#00515d",
+                        "on-primary": "#003731",
+                        "surface-container-low": "#131b2e",
+                        "surface-bright": "#31394d",
+                        "primary-fixed-dim": "#4fdbc8",
+                        "on-background": "#dae2fd",
+                        "surface-container-lowest": "#060e20",
+                        "on-tertiary": "#67001f",
+                        "tertiary-fixed": "#ffdadc",
+                        "surface-container": "#171f33",
+                        "surface-dim": "#0b1326",
+                        "outline-variant": "#3c4947",
+                        "tertiary-fixed-dim": "#ffb2b9",
+                        "surface-variant": "#2d3449",
+                        "on-secondary-fixed-variant": "#004e5a",
+                        "on-error-container": "#ffdad6",
+                        "on-primary-fixed-variant": "#005048",
+                        "on-tertiary-fixed-variant": "#891933",
+                        "on-tertiary-fixed": "#400010",
+                        "outline": "#859490",
+                        "tertiary-container": "#ff7a8c",
+                        "inverse-on-surface": "#283044",
+                        "secondary-container": "#00cbe6",
+                        "surface-container-highest": "#2d3449",
+                        "background": "#0b1326",
+                        "surface-tint": "#4fdbc8"
+                    },
+                    fontFamily: {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    },
+                    borderRadius: { "DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-card {
+            background: rgba(49, 57, 77, 0.4);
+            backdrop-filter: blur(24px);
+            border-top: 1px solid rgba(113, 248, 228, 0.2);
+            border-left: 1px solid rgba(113, 248, 228, 0.2);
+        }
+        .pulse-secondary {
+            position: relative;
+        }
+        .pulse-secondary::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: #5de6ff;
+            opacity: 0.2;
+            animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+        }
+        @keyframes pulse-ring {
+            0% { transform: scale(1); opacity: 0.2; }
+            80%, 100% { transform: scale(3); opacity: 0; }
+        }
+    </style>
+</head>
+<body class="bg-surface-dim text-on-surface font-body selection:bg-primary/30">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 bg-slate-900/40 backdrop-blur-xl shadow-[0_20px_40px_-10px_rgba(20,184,166,0.08)]">
+<div class="flex justify-between items-center w-full px-8 py-4 max-w-full">
+<div class="flex items-center gap-8">
+<span class="text-2xl font-black tracking-tighter bg-gradient-to-br from-teal-400 to-cyan-400 bg-clip-text text-transparent font-headline">DLASS</span>
+<div class="hidden md:flex gap-6">
+<a class="font-manrope tracking-tight text-slate-400 hover:text-teal-200 transition-colors" href="#">Dashboard</a>
+<a class="font-manrope tracking-tight text-slate-400 hover:text-teal-200 transition-colors" href="#">Chat</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden sm:block">
+<div class="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-slate-400 text-sm">search</span>
+</div>
+<input class="bg-surface-container-lowest border-none rounded-full py-2 pl-10 pr-4 text-sm w-64 focus:ring-2 focus:ring-primary/20 transition-all text-on-surface" placeholder="Explore services..." type="text"/>
+</div>
+<button class="p-2 hover:bg-teal-400/10 rounded-full transition-all text-slate-400 active:scale-95 duration-200">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<div class="h-10 w-10 rounded-full overflow-hidden border-2 border-primary/20">
+<img alt="User Profile" class="h-full w-full object-cover" data-alt="Close-up portrait of a professional man in a dark studio setting with soft cyan ambient light on the side of his face" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAj4DgrdEU9n2RKuP5t54LJ5AbFNM0GAvGP3vTr9GKLqGhQkRyJC9B-9kZP-EFZrEHcBe4y3UicI8nVYmG3rd7ato8tCU5L8uASTHHEGV5w0xAIO2WDBGqjjviPlQzVPrsEtYAjxXggvBVHEdqG_7Yjwi0rPO9aVkZlqvRkqXZgcO1xngWM4wKZm19wi38yaqbnXbl6MZXiYZXU0hIAFrz550PG-IYFjs6m38wGnosa5sWo-kZnB-c2b47xEoPYYKw3pddHrw7gakg"/>
+</div>
+</div>
+</div>
+</nav>
+<main class="pt-32 pb-24 px-8 max-w-7xl mx-auto">
+<!-- Hero Section -->
+<header class="mb-16">
+<div class="flex items-center gap-3 mb-4">
+<div class="w-3 h-3 rounded-full bg-secondary pulse-secondary"></div>
+<span class="text-primary-fixed body-sm font-semibold tracking-wider uppercase">Intelligent Discovery</span>
+</div>
+<h1 class="font-headline text-5xl md:text-6xl font-extrabold tracking-tight text-on-surface mb-6">
+                Find your <span class="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">perfect match</span>.
+            </h1>
+<!-- Bento-style Search Filter -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-4 mt-12 bg-surface-container-low p-4 rounded-lg">
+<div class="md:col-span-5 bg-surface-container-lowest p-4 rounded-md flex flex-col gap-2">
+<label class="label-sm text-on-surface-variant ml-1">Service Category</label>
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">category</span>
+<select class="bg-transparent border-none text-on-surface focus:ring-0 w-full font-medium">
+<option>AI Strategy Consulting</option>
+<option>Neural Network Design</option>
+<option>Data Architecture</option>
+<option>Quantum Logistics</option>
+</select>
+</div>
+</div>
+<div class="md:col-span-4 bg-surface-container-lowest p-4 rounded-md flex flex-col gap-2">
+<label class="label-sm text-on-surface-variant ml-1">Location</label>
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">location_on</span>
+<input class="bg-transparent border-none text-on-surface focus:ring-0 w-full font-medium" type="text" value="San Francisco, CA"/>
+</div>
+</div>
+<div class="md:col-span-3">
+<button class="w-full h-full bg-gradient-to-r from-primary-container to-secondary-container text-on-primary-container font-bold rounded-md flex items-center justify-center gap-2 hover:shadow-[0_0_20px_rgba(79,219,200,0.3)] transition-all active:scale-[0.98]">
+<span class="material-symbols-outlined">search</span>
+                        Search Now
+                    </button>
+</div>
+</div>
+</header>
+<!-- Results Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<!-- Sidebar Filters (Asymmetric Layout) -->
+<aside class="lg:col-span-1 space-y-8">
+<div class="glass-card p-8 rounded-lg">
+<h3 class="font-headline text-xl font-bold mb-6">Refine Results</h3>
+<div class="space-y-6">
+<div>
+<span class="label-md text-primary-fixed block mb-3">Availability</span>
+<div class="flex flex-wrap gap-2">
+<button class="px-4 py-2 rounded-full bg-primary-container text-on-primary-container text-xs font-bold">Today</button>
+<button class="px-4 py-2 rounded-full bg-surface-variant text-on-surface-variant text-xs hover:bg-surface-bright transition-colors">This Week</button>
+<button class="px-4 py-2 rounded-full bg-surface-variant text-on-surface-variant text-xs hover:bg-surface-bright transition-colors">Flexible</button>
+</div>
+</div>
+<div>
+<span class="label-md text-primary-fixed block mb-3">Rating Range</span>
+<div class="flex items-center gap-4 text-on-surface-variant">
+<span class="text-xs">4.0+</span>
+<input class="w-full accent-primary h-1 bg-surface-variant rounded-full appearance-none" type="range"/>
+<span class="text-xs">5.0</span>
+</div>
+</div>
+<div class="pt-4 border-t border-outline-variant/20">
+<label class="flex items-center gap-3 cursor-pointer group">
+<div class="w-5 h-5 rounded border border-outline group-hover:border-primary transition-colors flex items-center justify-center">
+<span class="material-symbols-outlined text-[14px] text-primary hidden">check</span>
+</div>
+<span class="text-sm text-on-surface-variant group-hover:text-on-surface transition-colors">Show DLASS Verified Only</span>
+</label>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-high p-8 rounded-lg overflow-hidden relative group">
+<div class="relative z-10">
+<h4 class="font-headline text-lg font-bold mb-2">Need priority support?</h4>
+<p class="text-sm text-on-surface-variant mb-6 leading-relaxed">Upgrade to DLASS Platinum for instant concierge booking.</p>
+<button class="text-primary font-bold text-sm flex items-center gap-1 group-hover:gap-2 transition-all">
+                            Learn More <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+<div class="absolute -bottom-10 -right-10 w-32 h-32 bg-primary/10 rounded-full blur-3xl transition-transform duration-700 group-hover:scale-150"></div>
+</div>
+</aside>
+<!-- Provider Cards -->
+<section class="lg:col-span-2 space-y-8">
+<!-- Provider 1 -->
+<div class="glass-card group hover:shadow-[0_20px_40px_-10px_rgba(20,184,166,0.12)] transition-all duration-500 overflow-hidden rounded-lg">
+<div class="flex flex-col md:flex-row">
+<div class="md:w-1/3 h-64 md:h-auto overflow-hidden relative">
+<img alt="Provider" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" data-alt="Professional woman in a minimalist modern office with large windows and soft afternoon light, high-end corporate aesthetic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD_xF7Ki8qKbBgYUB1p31I-nAwj4NK9RAc4hQgwG8vYnjVqxfWXXRPaKrBDqQ9PxeQWmlhX76447yQ6lEMYcrD93CYp57KRpUwXq1ySq8Px-c-DZyRijDQCyf6B9-NzfwdsSU0EciKdkiE-HzP_iovB4z6bVMivsJVL3zyKjJViIPK3UwqDwxoJ_DeieW5mYS1DmJKV5_Kzv1yqhL1lAmLuH3Pogv9fQLVFxVqLLN62gzGku9kN_vz9b88H5uePCz9gsnWYR6oxW1I"/>
+<div class="absolute top-4 left-4 bg-surface-dim/80 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-bold text-secondary uppercase tracking-widest">
+                                Neural Expert
+                            </div>
+</div>
+<div class="md:w-2/3 p-8">
+<div class="flex justify-between items-start mb-4">
+<div>
+<h3 class="font-headline text-2xl font-extrabold text-on-surface">Dr. Helena Vance</h3>
+<div class="flex items-center gap-2 mt-1">
+<div class="flex text-secondary">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<span class="text-xs font-bold text-on-surface-variant">4.9 (124 reviews)</span>
+</div>
+</div>
+<div class="text-right">
+<span class="text-xs text-on-surface-variant uppercase font-bold tracking-tighter">Starts at</span>
+<p class="text-2xl font-black text-primary">$240<span class="text-sm font-normal text-on-surface-variant">/hr</span></p>
+</div>
+</div>
+<p class="text-on-surface-variant text-sm mb-6 leading-relaxed">Specializing in large-scale transformer models and cognitive architecture for autonomous enterprise systems.</p>
+<div class="flex flex-wrap gap-2 mb-8">
+<span class="bg-surface-variant px-3 py-1 rounded-full text-[10px] font-semibold text-on-surface-variant">#NLP</span>
+<span class="bg-surface-variant px-3 py-1 rounded-full text-[10px] font-semibold text-on-surface-variant">#PYTORCH</span>
+<span class="bg-surface-variant px-3 py-1 rounded-full text-[10px] font-semibold text-on-surface-variant">#STRATEGY</span>
+</div>
+<div class="flex items-center gap-4">
+<button class="flex-1 py-3 bg-gradient-to-r from-primary to-secondary text-on-primary font-bold rounded-full hover:shadow-[0_0_20px_rgba(79,219,200,0.4)] transition-all active:scale-95">
+                                    Book Now
+                                </button>
+<button class="p-3 bg-surface-container-highest text-on-surface rounded-full hover:bg-surface-bright transition-colors active:scale-90">
+<span class="material-symbols-outlined">chat_bubble</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Provider 2 -->
+<div class="glass-card group hover:shadow-[0_20px_40px_-10px_rgba(20,184,166,0.12)] transition-all duration-500 overflow-hidden rounded-lg">
+<div class="flex flex-col md:flex-row">
+<div class="md:w-1/3 h-64 md:h-auto overflow-hidden relative">
+<img alt="Provider" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" data-alt="Modern professional male in a high-tech lab setting with neon blue lighting and digital displays in the background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCO7bFF9k-Q4hENhU3e6eIZJbx963dF1UfLjgpLD4DmrKV8t8JhsVTaWcABFeIlt9OHueYAPT45212IcNr5sG6Ue6CrVwTN9rlkKEDXOYl9xzOCuUh1osoORyw7Kr-NGXo-HWIu9VI1gv_Jg4gccBwCTZ7-FXxNYqDrBYsFFhJed__HGydom0Qjtu1rInb3CXLyeuBArVQsJ6UdeOWJpJqB3YVW2c55f0Qe_0jrFbx9cR3dOG-Q5o4RfsMFzu6HLpxu6ECPPyUs7XQ"/>
+<div class="absolute top-4 left-4 bg-surface-dim/80 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-bold text-secondary uppercase tracking-widest">
+                                Data Architect
+                            </div>
+</div>
+<div class="md:w-2/3 p-8">
+<div class="flex justify-between items-start mb-4">
+<div>
+<h3 class="font-headline text-2xl font-extrabold text-on-surface">Marcus Thorne</h3>
+<div class="flex items-center gap-2 mt-1">
+<div class="flex text-secondary">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm text-outline">star</span>
+</div>
+<span class="text-xs font-bold text-on-surface-variant">4.8 (89 reviews)</span>
+</div>
+</div>
+<div class="text-right">
+<span class="text-xs text-on-surface-variant uppercase font-bold tracking-tighter">Starts at</span>
+<p class="text-2xl font-black text-primary">$195<span class="text-sm font-normal text-on-surface-variant">/hr</span></p>
+</div>
+</div>
+<p class="text-on-surface-variant text-sm mb-6 leading-relaxed">Expert in distributed ledger technologies and high-availability cloud database infrastructure for FinTech.</p>
+<div class="flex flex-wrap gap-2 mb-8">
+<span class="bg-surface-variant px-3 py-1 rounded-full text-[10px] font-semibold text-on-surface-variant">#BLOCKCHAIN</span>
+<span class="bg-surface-variant px-3 py-1 rounded-full text-[10px] font-semibold text-on-surface-variant">#AWS</span>
+<span class="bg-surface-variant px-3 py-1 rounded-full text-[10px] font-semibold text-on-surface-variant">#REDIS</span>
+</div>
+<div class="flex items-center gap-4">
+<button class="flex-1 py-3 bg-gradient-to-r from-primary to-secondary text-on-primary font-bold rounded-full hover:shadow-[0_0_20px_rgba(79,219,200,0.4)] transition-all active:scale-95">
+                                    Book Now
+                                </button>
+<button class="p-3 bg-surface-container-highest text-on-surface rounded-full hover:bg-surface-bright transition-colors active:scale-90">
+<span class="material-symbols-outlined">chat_bubble</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-slate-950 w-full py-12 px-8">
+<div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+<div class="flex flex-col items-center md:items-start gap-2">
+<span class="font-manrope font-bold text-teal-400 text-xl">DLASS</span>
+<p class="font-inter text-sm tracking-wide text-slate-500">© 2024 DLASS Intelligence. All rights reserved.</p>
+</div>
+<div class="flex gap-8">
+<a class="font-inter text-sm tracking-wide text-slate-500 hover:text-teal-300 transition-colors opacity-80 hover:opacity-100" href="#">Privacy Policy</a>
+<a class="font-inter text-sm tracking-wide text-slate-500 hover:text-teal-300 transition-colors opacity-80 hover:opacity-100" href="#">Terms of Service</a>
+<a class="font-inter text-sm tracking-wide text-slate-500 hover:text-teal-300 transition-colors opacity-80 hover:opacity-100" href="#">Help Center</a>
+</div>
+<div class="flex gap-4">
+<div class="h-8 w-8 rounded-full bg-slate-900 flex items-center justify-center text-teal-500 hover:text-teal-300 transition-colors cursor-pointer">
+<span class="material-symbols-outlined text-lg">share</span>
+</div>
+<div class="h-8 w-8 rounded-full bg-slate-900 flex items-center justify-center text-teal-500 hover:text-teal-300 transition-colors cursor-pointer">
+<span class="material-symbols-outlined text-lg">public</span>
+</div>
+</div>
+</div>
+</footer>
+</body></html>

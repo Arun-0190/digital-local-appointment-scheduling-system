@@ -11,6 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.dlass.backend.service.ServiceProviderService;
 import com.dlass.backend.service.UserService;
+import com.dlass.backend.service.NotificationService;
+import com.dlass.backend.model.NotificationType;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -26,17 +28,20 @@ public class AdminController {
     private final UserRepository userRepository;
     private final ServiceProviderRepository providerRepository;
     private final AppointmentRepository appointmentRepository;
+    private final NotificationService notificationService;
 
     public AdminController(ServiceProviderService serviceProviderService,
                            UserService userService,
                            UserRepository userRepository,
                            ServiceProviderRepository providerRepository,
-                           AppointmentRepository appointmentRepository) {
+                           AppointmentRepository appointmentRepository,
+                           NotificationService notificationService) {
         this.serviceProviderService = serviceProviderService;
         this.userService = userService;
         this.userRepository = userRepository;
         this.providerRepository = providerRepository;
         this.appointmentRepository = appointmentRepository;
+        this.notificationService = notificationService;
     }
 
     @GetMapping("/test")
@@ -53,12 +58,32 @@ public class AdminController {
 
     @PostMapping("/providers/{id}/approve")
     public ServiceProvider approveProvider(@PathVariable String id) {
-        return serviceProviderService.approve(id);
+        ServiceProvider provider = serviceProviderService.approve(id);
+        if (provider != null && provider.getUserId() != null) {
+            notificationService.createNotification(
+                    provider.getUserId(),
+                    "Your provider account has been approved by the admin. You are now ACTIVE.",
+                    NotificationType.ADMIN,
+                    provider.getId(),
+                    "/provider/dashboard"
+            );
+        }
+        return provider;
     }
 
     @PostMapping("/providers/{id}/reject")
     public ServiceProvider rejectProvider(@PathVariable String id) {
-        return serviceProviderService.reject(id);
+        ServiceProvider provider = serviceProviderService.reject(id);
+        if (provider != null && provider.getUserId() != null) {
+            notificationService.createNotification(
+                    provider.getUserId(),
+                    "Your provider account application was rejected by the admin.",
+                    NotificationType.ADMIN,
+                    provider.getId(),
+                    "/dashboard"
+            );
+        }
+        return provider;
     }
 
     // ── Aggregate Stats ───────────────────────────────────────────────────────
@@ -189,12 +214,30 @@ public class AdminController {
     @PutMapping("/users/{id}/reactivate")
     public ResponseEntity<String> reactivateUser(@PathVariable String id) {
         userService.reactivateUser(id);
+        
+        notificationService.createNotification(
+                id,
+                "Your account has been reactivated by the admin.",
+                NotificationType.ADMIN,
+                id,
+                "/dashboard"
+        );
+        
         return ResponseEntity.ok("User reactivated successfully");
     }
 
     @DeleteMapping("/user/{id}")
     public ResponseEntity<String> deleteUser(@PathVariable String id) {
         userService.deleteUser(id);
+        
+        notificationService.createNotification(
+                id,
+                "Your account has been deactivated by the admin.",
+                NotificationType.ADMIN,
+                id,
+                "/dashboard"
+        );
+        
         return ResponseEntity.ok("User deactivated");
     }
 
@@ -213,12 +256,34 @@ public class AdminController {
     @PutMapping("/providers/{id}/reactivate")
     public ResponseEntity<String> reactivateProvider(@PathVariable String id) {
         serviceProviderService.reactivateProvider(id);
+        
+        providerRepository.findById(id).ifPresent(provider -> {
+            notificationService.createNotification(
+                    provider.getUserId(),
+                    "Your provider account has been reactivated by the admin.",
+                    NotificationType.ADMIN,
+                    provider.getId(),
+                    "/provider/dashboard"
+            );
+        });
+        
         return ResponseEntity.ok("Provider reactivated successfully");
     }
 
     @DeleteMapping("/provider/{id}")
     public ResponseEntity<String> deleteProvider(@PathVariable String id) {
         serviceProviderService.deleteProvider(id);
+        
+        providerRepository.findById(id).ifPresent(provider -> {
+            notificationService.createNotification(
+                    provider.getUserId(),
+                    "Your provider account has been deactivated by the admin.",
+                    NotificationType.ADMIN,
+                    provider.getId(),
+                    "/dashboard"
+            );
+        });
+        
         return ResponseEntity.ok("Provider deactivated");
     }
 }

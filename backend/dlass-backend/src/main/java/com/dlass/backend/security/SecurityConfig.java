@@ -133,6 +133,9 @@ public class SecurityConfig {
                         // Chat
                         .requestMatchers("/api/chat/**").authenticated()
 
+                        // Notifications
+                        .requestMatchers("/api/notifications", "/api/notifications/**").authenticated()
+
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session ->

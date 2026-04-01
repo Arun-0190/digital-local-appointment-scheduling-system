@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-secondary": "#00363e",
+              "secondary-fixed-dim": "#2fd9f4",
+              "on-error": "#690005",
+              "secondary-fixed": "#a2eeff",
+              "inverse-surface": "#dae2fd",
+              "surface-container-high": "#222a3d",
+              "inverse-primary": "#006b5f",
+              "tertiary": "#ffb2b9",
+              "on-primary-fixed": "#00201c",
+              "primary-container": "#14b8a6",
+              "surface": "#0b1326",
+              "on-secondary-fixed": "#001f25",
+              "error": "#ffb4ab",
+              "primary": "#4fdbc8",
+              "on-surface": "#dae2fd",
+              "on-primary-container": "#00423b",
+              "on-surface-variant": "#bbcac6",
+              "secondary": "#5de6ff",
+              "on-tertiary-container": "#770827",
+              "primary-fixed": "#71f8e4",
+              "error-container": "#93000a",
+              "on-secondary-container": "#00515d",
+              "on-primary": "#003731",
+              "surface-container-low": "#131b2e",
+              "surface-bright": "#31394d",
+              "primary-fixed-dim": "#4fdbc8",
+              "on-background": "#dae2fd",
+              "surface-container-lowest": "#060e20",
+              "on-tertiary": "#67001f",
+              "tertiary-fixed": "#ffdadc",
+              "surface-container": "#171f33",
+              "surface-dim": "#0b1326",
+              "outline-variant": "#3c4947",
+              "tertiary-fixed-dim": "#ffb2b9",
+              "surface-variant": "#2d3449",
+              "on-secondary-fixed-variant": "#004e5a",
+              "on-error-container": "#ffdad6",
+              "on-primary-fixed-variant": "#005048",
+              "on-tertiary-fixed-variant": "#891933",
+              "on-tertiary-fixed": "#400010",
+              "outline": "#859490",
+              "tertiary-container": "#ff7a8c",
+              "inverse-on-surface": "#283044",
+              "secondary-container": "#00cbe6",
+              "surface-container-highest": "#2d3449",
+              "background": "#0b1326",
+              "surface-tint": "#4fdbc8"
+            },
+            fontFamily: {
+              "headline": ["Manrope"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(49, 57, 77, 0.4);
+            backdrop-filter: blur(24px);
+            border-top: 1px solid rgba(113, 248, 228, 0.2);
+            border-left: 1px solid rgba(113, 248, 228, 0.2);
+        }
+        .chat-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+        .chat-scroll::-webkit-scrollbar-thumb {
+            background: #3c4947;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-surface-dim text-on-surface font-body selection:bg-primary/30 min-h-screen flex flex-col">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 bg-slate-900/40 backdrop-blur-xl shadow-[0_20px_40px_-10px_rgba(20,184,166,0.08)]">
+<div class="flex justify-between items-center w-full px-8 py-4 max-w-full">
+<div class="flex items-center gap-8">
+<span class="text-2xl font-black tracking-tighter bg-gradient-to-br from-teal-400 to-cyan-400 bg-clip-text text-transparent font-headline">DLASS</span>
+<div class="hidden md:flex gap-6 items-center">
+<a class="text-slate-400 hover:text-teal-200 transition-colors font-label" href="#">Dashboard</a>
+<a class="text-teal-400 border-b-2 border-teal-400 pb-1 font-label" href="#">Chat</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative group">
+<button class="p-2 hover:bg-teal-400/10 rounded-full transition-all text-slate-400">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<span class="absolute top-2 right-2 w-2 h-2 bg-tertiary-container rounded-full"></span>
+</div>
+<div class="w-10 h-10 rounded-full overflow-hidden border border-outline-variant/30">
+<img alt="User Profile" class="w-full h-full object-cover" data-alt="Professional headshot of a smiling man with clean styling and soft studio lighting on a neutral background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC0ynj2OtrAlfzUderk1EvXIIgq3jxP6qh_adxohs0aUFK7dNMiXpDzzmdqC79J1U902yVCxv2lBIhrvLfkINrr3EL1d2MCHjTsAbz0dvpXenmrw9FdYgwAe3vA-tsMbZMifAERijDd78i83_uNkM4B5u0RoLYOzLczNgbiYn5l3uVcwDDuAEBr3Q75StkxJ4olFTV3JTOe0alAbBX0IZYrEd2ne8mVW4p5JBv_IqVFrHtqrshrVYXEz4DsJnDkjH3VsYSyHMkHWv4"/>
+</div>
+</div>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="flex-grow pt-24 pb-12 px-4 md:px-8 max-w-7xl mx-auto w-full flex gap-6">
+<!-- Sidebar: Active Conversations -->
+<aside class="hidden lg:flex flex-col w-80 glass-panel rounded-lg p-6 overflow-hidden">
+<h2 class="font-headline text-xl font-bold tracking-tight text-on-surface mb-6">Messages</h2>
+<div class="relative mb-6">
+<input class="w-full bg-surface-container-lowest border-none rounded-md py-3 pl-10 pr-4 text-sm focus:ring-1 focus:ring-primary/40 placeholder:text-outline transition-all" placeholder="Search conversations..." type="text"/>
+<span class="material-symbols-outlined absolute left-3 top-2.5 text-outline text-lg">search</span>
+</div>
+<div class="flex flex-col gap-2 chat-scroll overflow-y-auto pr-2">
+<!-- Conversation Item Active -->
+<button class="flex items-center gap-4 p-4 rounded-lg bg-surface-container-highest shadow-lg border-l-2 border-secondary transition-all text-left">
+<div class="relative">
+<img class="w-12 h-12 rounded-full object-cover" data-alt="Close-up portrait of a woman with a warm expression and soft cinematic lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC2bfxTi_pblVdlQr5DCd25a8zsHiyUXh6GfCE5b4dZiFMagXNDzK84yXsYj58vCsXdYGbcnmE-UuLDcpGg8u32uMv997XSJoY_VWzF1ngHN2uKbIaHhdosRnLyFIAaR9DJzyZByW8Eqwi41OgicDYogyYpot139hMCE1R5pwjCEbiplZH_r4CR5ofkBk3jT9WpCAnAxVUQhmBtEc5EbVoiODbNhPtaVAbN6Ftw9ngxBN10jSPqYvw6GubSp2Bn6HZwmqq_bJPxKbI"/>
+<span class="absolute bottom-0 right-0 w-3 h-3 bg-primary border-2 border-surface-container-highest rounded-full"></span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-baseline">
+<h3 class="font-bold text-on-surface truncate">Sarah Jensen</h3>
+<span class="text-[10px] text-outline">12:45 PM</span>
+</div>
+<p class="text-sm text-secondary font-medium truncate">Typing...</p>
+</div>
+</button>
+<!-- Conversation Item -->
+<button class="flex items-center gap-4 p-4 rounded-lg hover:bg-surface-container/50 transition-all text-left group">
+<img class="w-12 h-12 rounded-full object-cover grayscale group-hover:grayscale-0 transition-all" data-alt="Portrait of a male professional looking directly at the camera with a confident smile" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDAd0R5BApccanC0aWF5nzZECCN3_RBkwnakAdz-m0I8eoZO5AlcLGm3KpXdH8fpJpx9USjoirYaZM8RmYO3TLVRP_PqoA5HpEPMhzmp1Rin_5PjFq491qQ8701xr8w385sOHcvz3_ukg9BkBAhjcpad3uoXXuBQJvz90g_1zhIOms5NNkx6hkN3wR4pQFlOcdjePxXHizTYikpgD866dXojD1CCaqw36iVcBsJ8_3GWvW0so8pBuxiY2VOi-ZMfLQV0zu3bXboX2A"/>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-baseline">
+<h3 class="font-bold text-on-surface truncate">Marcus Chen</h3>
+<span class="text-[10px] text-outline">Yesterday</span>
+</div>
+<p class="text-sm text-on-surface-variant truncate">The scheduling works for me.</p>
+</div>
+</button>
+<!-- Conversation Item -->
+<button class="flex items-center gap-4 p-4 rounded-lg hover:bg-surface-container/50 transition-all text-left group">
+<div class="w-12 h-12 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container font-bold">AI</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-baseline">
+<h3 class="font-bold text-on-surface truncate">DLASS Assistant</h3>
+<span class="text-[10px] text-outline">Oct 24</span>
+</div>
+<p class="text-sm text-on-surface-variant truncate">I've optimized your dashboard view.</p>
+</div>
+</button>
+</div>
+</aside>
+<!-- Chat Window -->
+<section class="flex-1 flex flex-col glass-panel rounded-lg overflow-hidden shadow-2xl">
+<!-- Chat Header -->
+<header class="px-8 py-6 flex items-center justify-between border-b border-outline-variant/10">
+<div class="flex items-center gap-4">
+<div class="md:hidden">
+<span class="material-symbols-outlined text-outline">arrow_back</span>
+</div>
+<div class="relative">
+<img class="w-10 h-10 rounded-full object-cover" data-alt="Portrait of Sarah Jensen" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAunjmTwdWX0hCe6_RJhkuyTc0Dl6mMebSAfoZGVRWGJae6a0mkTEM0fCDkicIT3VkkGz3gfeyCuHWI_-__rVYNNoAOF3xLOnG-4Vgqyl9sJU4vAE1WRlgzaqqauOWvHMQDUkd5BNF_MIl6pJIBia539xfk17EQHjTGXvYooXn-lVqlT73tCrX_fv5pQZEHHebsNhNTYylCe2fBh_PdfIus5EJeBgZOCSshvuITSz9Fqe2WxhSXCDTkS3zbNFL9Twt32iTt3e6NONo"/>
+<span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-primary border-2 border-surface-bright rounded-full"></span>
+</div>
+<div>
+<h2 class="font-headline font-bold text-on-surface leading-tight">Sarah Jensen</h2>
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
+<span class="text-[10px] text-primary uppercase tracking-widest font-bold">Active Now</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 hover:bg-teal-400/10 rounded-full transition-all text-outline">
+<span class="material-symbols-outlined">videocam</span>
+</button>
+<button class="p-2 hover:bg-teal-400/10 rounded-full transition-all text-outline">
+<span class="material-symbols-outlined">call</span>
+</button>
+<button class="p-2 hover:bg-teal-400/10 rounded-full transition-all text-outline">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+</header>
+<!-- Message Area -->
+<div class="flex-1 p-8 overflow-y-auto chat-scroll flex flex-col gap-6">
+<!-- System Timestamp -->
+<div class="flex justify-center">
+<span class="px-4 py-1 rounded-full bg-surface-container-low text-[10px] text-outline-variant font-bold uppercase tracking-tighter">Today, October 28</span>
+</div>
+<!-- Provider Message -->
+<div class="flex items-end gap-3 max-w-[80%]">
+<img class="w-8 h-8 rounded-full object-cover" data-alt="Thumbnail of Sarah Jensen" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBDNyB_c3IUT6hBDyFqUw1PPq7yV_8tNZQAbZj-C-aT-R2rVx2m81AiG-4rnhhTh0p4OapbO82uvuSbtxyQOpuMjIbSFZhvfrH4OfoPEPMYlkRb6eae23qIeePYFKxCCS-eRJ_GAm6icHHTyONjR_zR9NG5jONlVP2peBGatlNWXu4ae0gln5-xBFXUNTzrwnDVp9n5vc2uKto04RA5lWsPXSWT32f0FJsWUYgdpMXjktqFC35HbO6Vb40xEKUrN1We6EXLyM-jG2s"/>
+<div class="p-4 rounded-lg rounded-bl-none bg-surface-container-highest text-on-surface text-sm leading-relaxed">
+                        Hi there! I've reviewed the quarterly performance metrics you shared. Everything looks great, but I think we can optimize the neural processing latency in the second quadrant.
+                    </div>
+<span class="text-[10px] text-outline mb-1">12:30 PM</span>
+</div>
+<!-- User Message -->
+<div class="flex items-end gap-3 max-w-[80%] ml-auto flex-row-reverse">
+<div class="p-4 rounded-lg rounded-br-none bg-gradient-to-br from-primary-container to-secondary-container text-on-primary-container text-sm leading-relaxed shadow-lg shadow-primary/10">
+                        That sounds reasonable. I was worried about the latency spikes during peak load anyway. What's your proposed fix?
+                    </div>
+<span class="text-[10px] text-outline mb-1">12:32 PM</span>
+</div>
+<!-- Provider Message -->
+<div class="flex items-end gap-3 max-w-[80%]">
+<img class="w-8 h-8 rounded-full object-cover" data-alt="Thumbnail of Sarah Jensen" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCV9xKD_jBCk7UtMF6j8DwGF7YJwLAAbfUQs6uj0xO8xhLMmjyoOQhJvoxPtW1Cl7OE8J7MfvWW9TXTyqLmW2djxuLKgxbS9giU7p-AWOwuQN8jUv6vrarJbi8VnntbEnzv_chVgpNZ-bxCgNRxhNPfAn2GL_iqPqEGUfmy8URYER5aEAMmQp_lOzH5BmuuLX7hG5oZzZkhZYqtv4fniLlyst0CPcbY5YBk39p07CWVcH217yuA7muVPbnSlFedDNLzgcY5VGnygPA"/>
+<div class="p-4 rounded-lg rounded-bl-none bg-surface-container-highest text-on-surface text-sm leading-relaxed">
+                        I'm thinking of implementing an asynchronous cache layer between the primary node and the intelligence engine. It should reduce the round-trip by at least 40ms.
+                    </div>
+<span class="text-[10px] text-outline mb-1">12:35 PM</span>
+</div>
+<!-- User Message -->
+<div class="flex items-end gap-3 max-w-[80%] ml-auto flex-row-reverse">
+<div class="p-4 rounded-lg rounded-br-none bg-gradient-to-br from-primary-container to-secondary-container text-on-primary-container text-sm leading-relaxed shadow-lg shadow-primary/10">
+                        Excellent. Let's run a test on the sandbox environment this afternoon.
+                    </div>
+<div class="flex flex-col items-end gap-1">
+<span class="text-[10px] text-outline">12:40 PM</span>
+<span class="material-symbols-outlined text-[12px] text-primary">done_all</span>
+</div>
+</div>
+<!-- Typing Indicator -->
+<div class="flex items-center gap-2 ml-11">
+<div class="flex gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary/40 animate-bounce"></span>
+<span class="w-1.5 h-1.5 rounded-full bg-primary/60 animate-bounce [animation-delay:0.2s]"></span>
+<span class="w-1.5 h-1.5 rounded-full bg-primary/80 animate-bounce [animation-delay:0.4s]"></span>
+</div>
+<span class="text-[10px] font-bold text-outline uppercase tracking-widest">Sarah is typing</span>
+</div>
+</div>
+<!-- Chat Input Area -->
+<footer class="p-6 bg-surface-container-low/50 backdrop-blur-md">
+<div class="flex items-center gap-4">
+<button class="p-2 text-outline hover:text-primary transition-colors">
+<span class="material-symbols-outlined">attach_file</span>
+</button>
+<div class="flex-1 relative">
+<input class="w-full bg-surface-container-lowest border-none rounded-lg py-4 px-6 text-on-surface focus:ring-1 focus:ring-primary/30 transition-all shadow-inner" placeholder="Type your message..." type="text"/>
+<button class="absolute right-3 top-2.5 p-2 text-outline hover:text-primary transition-colors">
+<span class="material-symbols-outlined">sentiment_satisfied</span>
+</button>
+</div>
+<button class="w-12 h-12 rounded-full bg-tertiary-container flex items-center justify-center text-on-tertiary-container shadow-xl shadow-tertiary/20 hover:scale-105 active:scale-95 transition-all">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">send</span>
+</button>
+</div>
+</footer>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-slate-950 w-full py-12 px-8 mt-auto">
+<div class="flex flex-col md:flex-row justify-between items-center gap-6 max-w-7xl mx-auto">
+<div class="flex flex-col gap-2">
+<span class="font-manrope font-bold text-teal-400">DLASS Intelligence</span>
+<p class="font-inter text-sm tracking-wide text-slate-500">© 2024 DLASS Intelligence. All rights reserved.</p>
+</div>
+<div class="flex gap-8">
+<a class="text-slate-500 hover:text-teal-300 transition-colors font-inter text-sm tracking-wide" href="#">Privacy Policy</a>
+<a class="text-slate-500 hover:text-teal-300 transition-colors font-inter text-sm tracking-wide" href="#">Terms of Service</a>
+<a class="text-slate-500 hover:text-teal-300 transition-colors font-inter text-sm tracking-wide" href="#">Help Center</a>
+</div>
+</div>
+</footer>
+</body></html>

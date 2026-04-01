@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useEffect } from "react";
+import { ThemeProvider } from "./context/ThemeContext";
 
 import Navbar from "./components/Navbar";
 
@@ -23,63 +24,65 @@ function App() {
   }, []);
 
   return (
-    <BrowserRouter>
-      <Navbar />
+    <ThemeProvider>
+      <BrowserRouter>
+        <Navbar />
 
-      <Routes>
-        <Route path="/" element={<Home />} />
+        <Routes>
+          <Route path="/" element={<Home />} />
 
-        <Route path="/login" element={<Login />} />
+          <Route path="/login" element={<Login />} />
 
-        <Route path="/register" element={<Register />} />
+          <Route path="/register" element={<Register />} />
 
-        <Route path="/search" element={<SearchProviders />} />
+          <Route path="/search" element={<SearchProviders />} />
 
-        {/* Provider detail page – public */}
-        <Route path="/provider/:id" element={<ProviderDetail />} />
+          {/* Provider detail page – public */}
+          <Route path="/provider/:id" element={<ProviderDetail />} />
 
-        {/* USER-only route */}
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute roles={["USER"]}>
-              <UserDashboard />
-            </ProtectedRoute>
-          }
-        />
+          {/* USER-only route */}
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute roles={["USER"]}>
+                <UserDashboard />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/apply-provider"
-          element={
-            <ProtectedRoute>
-              <ProviderApply />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/apply-provider"
+            element={
+              <ProtectedRoute>
+                <ProviderApply />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/admin"
-          element={
-            <ProtectedRoute roles={["ADMIN"]}>
-               <AdminDashboard />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute roles={["ADMIN"]}>
+                 <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
 
-        {/* PROVIDER-only route */}
-        <Route
-          path="/provider-dashboard"
-          element={
-            <ProtectedRoute roles={["PROVIDER"]}>
-              <ProviderDashboard />
-            </ProtectedRoute>
-          }
-        />
+          {/* PROVIDER-only route */}
+          <Route
+            path="/provider-dashboard"
+            element={
+              <ProtectedRoute roles={["PROVIDER"]}>
+                <ProviderDashboard />
+              </ProtectedRoute>
+            }
+          />
 
-        {/* Fallback – redirect to login */}
-        <Route path="*" element={<Navigate to="/login" replace />} />
-      </Routes>
-    </BrowserRouter>
+          {/* Fallback – redirect to login */}
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </ThemeProvider>
   );
 }
 

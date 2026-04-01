@@ -15,6 +15,7 @@ import com.dlass.backend.model.SlotLock;
 import com.dlass.backend.repository.SlotLockRepository;
 import com.dlass.backend.model.PlatformConfig;
 import com.dlass.backend.repository.PlatformConfigRepository;
+import com.dlass.backend.model.NotificationType;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 
@@ -32,6 +33,7 @@ public class AppointmentService {
     private final ServiceOfferingRepository serviceOfferingRepository;
     private final SlotLockRepository slotLockRepository;
     private final EmailService emailService;
+    private final NotificationService notificationService;
     private final PlatformConfigRepository platformConfigRepository;
 
     public AppointmentService(AppointmentRepository appointmentRepository,
@@ -40,6 +42,7 @@ public class AppointmentService {
                               ServiceOfferingRepository serviceOfferingRepository,
                               SlotLockRepository slotLockRepository,
                               EmailService emailService,
+                              NotificationService notificationService,
                               PlatformConfigRepository platformConfigRepository) {
 
         this.appointmentRepository = appointmentRepository;
@@ -48,6 +51,7 @@ public class AppointmentService {
         this.serviceOfferingRepository = serviceOfferingRepository;
         this.slotLockRepository = slotLockRepository;
         this.emailService = emailService;
+        this.notificationService = notificationService;
         this.platformConfigRepository = platformConfigRepository;
     }
 
@@ -149,6 +153,22 @@ public class AppointmentService {
                             + "Customer: " + user.getFullName() + "\n"
                             + "Date: " + saved.getDate() + "\n"
                             + "Time: " + saved.getStartTime()
+            );
+
+            notificationService.createNotification(
+                    providerUser.getId(),
+                    "New appointment booked by " + user.getFullName() + " on " + saved.getDate(),
+                    NotificationType.APPOINTMENT,
+                    saved.getId(),
+                    "/provider-dashboard"
+            );
+
+            notificationService.createNotification(
+                    userId,
+                    "Your appointment with " + provider.getBusinessName() + " has been booked for " + saved.getDate(),
+                    NotificationType.APPOINTMENT,
+                    saved.getId(),
+                    "/dashboard"
             );
 
             // Free lock if any
@@ -318,6 +338,22 @@ public class AppointmentService {
                         + "Date: " + appointment.getDate() + "\n"
                         + "Time: " + appointment.getStartTime()
         );
+
+        notificationService.createNotification(
+                userId,
+                "You have successfully cancelled your appointment with " + provider.getBusinessName(),
+                NotificationType.APPOINTMENT,
+                appointment.getId(),
+                "/dashboard"
+        );
+
+        notificationService.createNotification(
+                providerUser.getId(),
+                "An appointment was cancelled by " + user.getFullName(),
+                NotificationType.APPOINTMENT,
+                appointment.getId(),
+                "/provider-dashboard"
+        );
     }
 
     private AppointmentResponse mapToResponse(Appointment a) {
@@ -430,7 +466,23 @@ public class AppointmentService {
                             + "Date: " + appointment.getDate() + "\n"
                             + "Time: " + appointment.getStartTime()
             );
+
+            notificationService.createNotification(
+                    customer.getId(),
+                    "Your appointment with " + provider.getBusinessName() + " has been cancelled.",
+                    NotificationType.APPOINTMENT,
+                    appointment.getId(),
+                    "/dashboard"
+            );
         }
+
+        notificationService.createNotification(
+                provider.getUserId(),
+                "You cancelled the appointment with " + (customer != null ? customer.getFullName() : "the customer"),
+                NotificationType.APPOINTMENT,
+                appointment.getId(),
+                "/provider-dashboard"
+        );
     }
 
     // ── Feature 3: Appointment Detail ────────────────────────────────────────

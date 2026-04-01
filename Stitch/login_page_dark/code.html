@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;400;700;800&amp;family=Inter:wght@300;400;500;600&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-secondary": "#00363e",
+                        "secondary-fixed-dim": "#2fd9f4",
+                        "on-error": "#690005",
+                        "secondary-fixed": "#a2eeff",
+                        "inverse-surface": "#dae2fd",
+                        "surface-container-high": "#222a3d",
+                        "inverse-primary": "#006b5f",
+                        "tertiary": "#ffb2b9",
+                        "on-primary-fixed": "#00201c",
+                        "primary-container": "#14b8a6",
+                        "surface": "#0b1326",
+                        "on-secondary-fixed": "#001f25",
+                        "error": "#ffb4ab",
+                        "primary": "#4fdbc8",
+                        "on-surface": "#dae2fd",
+                        "on-primary-container": "#00423b",
+                        "on-surface-variant": "#bbcac6",
+                        "secondary": "#5de6ff",
+                        "on-tertiary-container": "#770827",
+                        "primary-fixed": "#71f8e4",
+                        "error-container": "#93000a",
+                        "on-secondary-container": "#00515d",
+                        "on-primary": "#003731",
+                        "surface-container-low": "#131b2e",
+                        "surface-bright": "#31394d",
+                        "primary-fixed-dim": "#4fdbc8",
+                        "on-background": "#dae2fd",
+                        "surface-container-lowest": "#060e20",
+                        "on-tertiary": "#67001f",
+                        "tertiary-fixed": "#ffdadc",
+                        "surface-container": "#171f33",
+                        "surface-dim": "#0b1326",
+                        "outline-variant": "#3c4947",
+                        "tertiary-fixed-dim": "#ffb2b9",
+                        "surface-variant": "#2d3449",
+                        "on-secondary-fixed-variant": "#004e5a",
+                        "on-error-container": "#ffdad6",
+                        "on-primary-fixed-variant": "#005048",
+                        "on-tertiary-fixed-variant": "#891933",
+                        "on-tertiary-fixed": "#400010",
+                        "outline": "#859490",
+                        "tertiary-container": "#ff7a8c",
+                        "inverse-on-surface": "#283044",
+                        "secondary-container": "#00cbe6",
+                        "surface-container-highest": "#2d3449",
+                        "background": "#0b1326",
+                        "surface-tint": "#4fdbc8"
+                    },
+                    fontFamily: {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .glass-card {
+            background: rgba(23, 31, 51, 0.4);
+            backdrop-filter: blur(24px);
+            border-top: 1px solid rgba(113, 248, 228, 0.2);
+            border-left: 1px solid rgba(113, 248, 228, 0.2);
+            box-shadow: 0 20px 40px -10px rgba(20, 184, 166, 0.08);
+        }
+        .bg-mesh {
+            background-color: #0b1326;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(20, 184, 166, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(34, 211, 238, 0.1) 0px, transparent 50%);
+        }
+    </style>
+</head>
+<body class="bg-mesh font-body text-on-surface min-h-screen flex flex-col items-center justify-center p-6 overflow-x-hidden">
+<!-- Hero Decorative Element -->
+<div class="fixed top-[-10%] right-[-5%] w-[40rem] h-[40rem] bg-primary/5 rounded-full blur-[120px] pointer-events-none"></div>
+<div class="fixed bottom-[-10%] left-[-5%] w-[30rem] h-[30rem] bg-secondary/5 rounded-full blur-[100px] pointer-events-none"></div>
+<main class="w-full max-w-[480px] z-10">
+<!-- Logo Branding -->
+<div class="flex flex-col items-center mb-12">
+<div class="mb-4 flex items-center justify-center w-16 h-16 rounded-lg bg-surface-container-highest shadow-[0_0_30px_rgba(79,219,200,0.2)]">
+<span class="material-symbols-outlined text-primary text-4xl" style="font-variation-settings: 'FILL' 1;">
+                    diamond
+                </span>
+</div>
+<h1 class="font-headline font-black text-4xl tracking-tighter bg-gradient-to-br from-primary to-secondary bg-clip-text text-transparent">
+                DLASS
+            </h1>
+<p class="text-on-surface-variant font-label text-sm mt-2 tracking-widest uppercase">Intelligence Orchestration</p>
+</div>
+<!-- Login Card -->
+<div class="glass-card p-10 md:p-12 rounded-lg">
+<header class="mb-10">
+<h2 class="font-headline text-2xl font-bold tracking-tight text-white mb-2">Welcome Back</h2>
+<p class="text-on-surface-variant font-body">Access your intelligence dashboard</p>
+</header>
+<form action="#" class="space-y-6" method="POST">
+<!-- Email Input -->
+<div class="space-y-2">
+<label class="block text-xs font-semibold uppercase tracking-wider text-primary-fixed/70 px-1" for="email">Email Address</label>
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-outline text-lg group-focus-within:text-primary transition-colors">
+                                alternate_email
+                            </span>
+</div>
+<input class="w-full bg-surface-container-lowest text-on-surface border-none rounded-md py-4 pl-12 pr-4 focus:ring-1 focus:ring-primary/40 transition-all placeholder:text-outline-variant" id="email" name="email" placeholder="name@intelligence.com" required="" type="email"/>
+</div>
+</div>
+<!-- Password Input -->
+<div class="space-y-2">
+<div class="flex justify-between items-end px-1">
+<label class="block text-xs font-semibold uppercase tracking-wider text-primary-fixed/70" for="password">Password</label>
+<a class="text-xs font-medium text-secondary hover:text-primary transition-colors" href="#">Forgot Password?</a>
+</div>
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-outline text-lg group-focus-within:text-primary transition-colors">
+                                lock
+                            </span>
+</div>
+<input class="w-full bg-surface-container-lowest text-on-surface border-none rounded-md py-4 pl-12 pr-12 focus:ring-1 focus:ring-primary/40 transition-all placeholder:text-outline-variant" id="password" name="password" placeholder="••••••••" required="" type="password"/>
+<button class="absolute inset-y-0 right-0 pr-4 flex items-center text-outline hover:text-on-surface transition-colors" type="button">
+<span class="material-symbols-outlined text-lg">visibility</span>
+</button>
+</div>
+</div>
+<!-- Login Button -->
+<div class="pt-4">
+<button class="w-full py-4 px-6 rounded-xl bg-gradient-to-r from-primary-container to-secondary-container text-on-primary-container font-headline font-bold text-lg hover:shadow-[0_0_25px_rgba(79,219,200,0.3)] transition-all active:scale-[0.98] flex items-center justify-center gap-2" type="submit">
+                        Login
+                        <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</form>
+<!-- Secondary Action -->
+<div class="mt-10 pt-8 border-t border-outline-variant/20 text-center">
+<p class="text-on-surface-variant font-body text-sm">
+                    Don't have an account yet? 
+                    <a class="text-secondary font-semibold hover:underline decoration-secondary/30 underline-offset-4 ml-1" href="#">Sign up instead</a>
+</p>
+</div>
+</div>
+<!-- Footer Visual Hint -->
+<div class="mt-12 flex justify-center items-center gap-8 text-outline text-[10px] uppercase tracking-[0.2em] font-bold">
+<span class="flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-primary/40"></span>
+                Secure Endpoints
+            </span>
+<span class="flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary/40"></span>
+                Quantum Encryption
+            </span>
+</div>
+</main>
+<!-- Background Decoration Image -->
+<div class="fixed inset-0 -z-20 opacity-20 overflow-hidden">
+<img alt="Futuristic digital network nodes" class="w-full h-full object-cover grayscale brightness-50 contrast-125" data-alt="abstract digital network of glowing nodes and connection lines in deep blue and teal hues with depth of field blur" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDT5fv3Qpu_pQOIsKrUWSzFq95fUfFN8ZgzeiFTjMjRExTOxCk6K1SkM4wA2M9lhHPwBRbq_ubhcCAfr6cPhxY9ZQIWdGe-3CldKKMKDmFUzrVdF1hzrxvmoqENqPHbKEjSM9FsTI_aItfhbiIj_QekhqvJF_Cb7vhGILzXrtCDwP1S0W0X9TNThBSYsKmmLuFStxyBIpJWzFmJfuiPxmnrmtBxEhdw_wYC9ro5MFfiWoedSmVMnZQ_4Frib_gsu4YDDRw6EwVgSqc"/>
+</div>
+<!-- Footer Component (suppressed per rule but included simple attribution) -->
+<footer class="mt-auto py-8 text-on-surface-variant/40 text-[10px] font-label tracking-widest text-center">
+        © 2024 DLASS INTELLIGENCE. ALL RIGHTS RESERVED.
+    </footer>
+</body></html>

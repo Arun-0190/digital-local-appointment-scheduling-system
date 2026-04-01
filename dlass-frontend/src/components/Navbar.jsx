@@ -1,12 +1,10 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { logout, getToken, getUserRole, getUsername } from "../services/authService";
+import ThemeToggle from "./ui/ThemeToggle";
+import Button from "./ui/Button";
+import NotificationBell from "./NotificationBell";
 
-/**
- * Navbar – reactive auth state.
- * Listens to a custom "auth-change" event so it re-renders instantly
- * when login/logout happens without a full page reload.
- */
 function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -15,7 +13,6 @@ function Navbar() {
   const [role, setRole] = useState(getUserRole());
   const [email, setEmail] = useState(getUsername());
 
-  // Sync state whenever a login or logout fires the custom event
   useEffect(() => {
     const syncAuth = () => {
       setToken(getToken());
@@ -42,25 +39,25 @@ function Navbar() {
   const isActive = (path) => location.pathname === path;
 
   const navLinkClass = (path) =>
-    `font-headline font-bold tracking-tight text-sm transition-all duration-300 hover:scale-105 ${
+    `font-headline font-bold tracking-tight text-sm transition-all duration-300 hover:text-primary ${
       isActive(path)
-        ? "text-secondary border-b-2 border-secondary pb-0.5"
-        : "text-slate-300 hover:text-white"
+        ? "text-primary border-b-2 border-primary pb-1"
+        : "text-textSecondary hover:text-textPrimary"
     }`;
 
   return (
-    <nav className="fixed top-0 w-full z-50 rounded-b-2xl bg-white/10 backdrop-blur-xl shadow-[0_20px_40px_rgba(0,0,0,0.4)]">
-      <div className="flex justify-between items-center px-6 md:px-8 h-16 max-w-7xl mx-auto">
+    <nav className="fixed top-0 w-full z-50 bg-glassBg backdrop-blur-xl border-b border-glassBorder shadow-sm transition-colors duration-400">
+      <div className="flex justify-between items-center px-6 md:px-12 h-20 max-w-[1440px] mx-auto">
         {/* Brand */}
         <Link
           to="/"
-          className="text-2xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-violet-500 to-cyan-400 font-headline uppercase select-none"
+          className="text-2xl font-black tracking-tighter text-transparent bg-clip-text bg-primary-gradient font-headline uppercase select-none"
         >
           DLASS
         </Link>
 
         {/* Desktop Nav Links */}
-        <div className="hidden md:flex items-center gap-6">
+        <div className="hidden md:flex items-center gap-8 translate-x-4">
           <Link to="/" className={navLinkClass("/")}>Home</Link>
           <Link to="/search" className={navLinkClass("/search")}>Search</Link>
           {token && (
@@ -70,33 +67,33 @@ function Navbar() {
           )}
         </div>
 
-        {/* Right side auth actions */}
-        <div className="flex items-center gap-3 md:gap-4">
+        {/* Right side auth actions & Theme Toggle */}
+        <div className="flex items-center gap-4 md:gap-6">
+          <ThemeToggle />
+          
+          {token && <NotificationBell />}
+          
+          <div className="h-6 w-px bg-glassBorder hidden sm:block"></div>
+          
           {token ? (
             <>
-              <span className="hidden sm:block text-xs text-slate-400 font-label tracking-widest truncate max-w-[180px]">
+              <span className="hidden sm:block text-xs text-textSecondary font-label tracking-widest truncate max-w-[180px]">
                 {email}
               </span>
-              <button
-                onClick={handleLogout}
-                className="px-4 py-1.5 bg-gradient-to-r from-primary-container to-secondary-container rounded-lg text-white font-bold text-xs uppercase tracking-wider hover:scale-105 active:scale-95 transition-all duration-300"
-              >
+              <Button onClick={handleLogout} variant="ghost" className="!px-4 !py-2 !text-sm border border-outline-variant hover:border-coral hover:text-coral transition-colors">
                 Logout
-              </button>
+              </Button>
             </>
           ) : (
             <>
               <Link
                 to="/login"
-                className="text-slate-300 hover:text-white font-headline font-bold text-sm transition-colors"
+                className="text-textSecondary hover:text-primary font-headline font-bold text-sm transition-colors"
               >
                 Login
               </Link>
-              <Link
-                to="/register"
-                className="px-4 py-1.5 bg-gradient-to-r from-primary-container to-secondary-container rounded-lg text-white font-bold text-xs uppercase tracking-wider hover:scale-105 active:scale-95 transition-all duration-300"
-              >
-                Register
+              <Link to="/register">
+                <Button className="!px-5 !py-2 !text-sm">Register</Button>
               </Link>
             </>
           )}

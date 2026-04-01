@@ -1,10 +1,16 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { getUsername, getToken } from "../services/authService";
 import DynamicHeader from "../components/DynamicHeader";
 import ChatWindow from "../components/ChatWindow";
 import AppointmentDetailModal from "../components/AppointmentDetailModal";
+import PageWrapper from "../components/ui/PageWrapper";
+import GlassCard from "../components/ui/GlassCard";
+import Button from "../components/ui/Button";
+import Input from "../components/ui/Input";
+import Dropdown from "../components/ui/Dropdown";
+import ReviewModal from "../components/ReviewModal";
 
 const API = "http://localhost:8080/api";
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
@@ -15,14 +21,22 @@ function authHeaders() {
 
 function UserDashboard() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [username, setUsername] = useState(getUsername());
   const [userId, setUserId] = useState(null);
+
+  useEffect(() => {
+    setIsChatMaximized(false);
+  }, [location.pathname]);
   const [tab, setTab] = useState("appointments");
 
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeChat, setActiveChat] = useState(null);
+  const [isChatMaximized, setIsChatMaximized] = useState(false);
   const [selectedAppointmentId, setSelectedAppointmentId] = useState(null);
+  const [reviewTarget, setReviewTarget] = useState(null);
+  const [reviewedIds, setReviewedIds] = useState([]);
 
   // History tab state
   const [history, setHistory] = useState([]);
@@ -157,6 +171,14 @@ function UserDashboard() {
     .filter((a) => a.status === "BOOKED" && new Date(`${a.date}T${a.startTime}`) >= now)
     .sort((a, b) => new Date(`${a.date}T${a.startTime}`) - new Date(`${b.date}T${b.startTime}`));
 
+  const canReview = (a) => {
+    if (a.status !== "COMPLETED") return false;
+    const endDateTime = new Date(`${a.date}T${a.endTime}`);
+    const currentMs = new Date();
+    const diffMins = (currentMs - endDateTime) / 1000 / 60;
+    return diffMins >= 1 && diffMins <= 24 * 60 && !reviewedIds.includes(a.id);
+  };
+
   const past = appointments
     .filter(
       (a) =>
@@ -168,10 +190,12 @@ function UserDashboard() {
 
   const statusPill = (status) => {
     if (status === "BOOKED")
-      return "px-4 py-1.5 bg-primary-container/20 text-primary-fixed-dim rounded-full text-xs font-bold border border-primary/30";
+      return "px-4 py-1.5 bg-primary/10 text-primary rounded-full text-xs font-bold border border-primary/30";
     if (status === "CANCELLED")
-      return "px-4 py-1.5 bg-red-500/10 text-red-300 rounded-full text-xs font-bold border border-red-500/20";
-    return "px-4 py-1.5 bg-surface-container-high text-on-surface-variant rounded-full text-xs font-bold border border-outline-variant/20";
+      return "px-4 py-1.5 bg-coral/10 text-coral rounded-full text-xs font-bold border border-coral/20";
+    if (status === "COMPLETED")
+      return "px-4 py-1.5 bg-teal-500/10 text-teal-400 rounded-full text-xs font-bold border border-teal-500/20";
+    return "px-4 py-1.5 bg-black/5 dark:bg-white/5 text-textSecondary rounded-full text-xs font-bold border border-glassBorder";
   };
 
   const getHeaderContent = () => {
@@ -184,15 +208,15 @@ function UserDashboard() {
   };
 
   return (
-    <div className="min-h-screen pt-20 pb-16 px-4 md:px-6">
-      <div className="max-w-7xl mx-auto pt-8 space-y-10">
+    <PageWrapper className="pt-24 pb-16 px-4 md:px-8">
+      <div className="max-w-7xl mx-auto space-y-10">
         {/* Welcome Header */}
         <header className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-end">
           <div className="space-y-3">
-            <h1 className="text-4xl md:text-5xl font-headline font-extrabold tracking-tight text-on-surface mb-2">
-              Hey, ready for your next appointment?
+            <h1 className="text-4xl md:text-5xl font-headline font-extrabold tracking-tight text-textPrimary mb-2">
+              Hey {username.split(' ')[0]}, ready for your next appointment?
             </h1>
-            <p className="text-on-surface-variant text-base leading-relaxed max-w-md">
+            <p className="text-textSecondary text-base leading-relaxed max-w-md">
               {getHeaderContent()}
             </p>
           </div>
@@ -200,28 +224,28 @@ function UserDashboard() {
           {/* Quick Search */}
           <div className="relative group">
             <div className="absolute inset-0 bg-secondary/10 blur-2xl rounded-full opacity-0 group-focus-within:opacity-100 transition-opacity duration-500" />
-            <div className="relative flex items-center gap-3 bg-surface-container-highest/50 backdrop-blur-xl border border-outline-variant/20 rounded-2xl p-3 focus-within:ring-2 focus-within:ring-secondary/40 transition-all duration-300">
-              <span className="material-symbols-outlined text-on-surface-variant px-1">location_on</span>
+            <div className="relative flex items-center gap-3 bg-inputBg backdrop-blur-xl border border-inputBorder rounded-2xl p-3 focus-within:ring-2 focus-within:ring-secondary/40 transition-all duration-300">
+              <span className="material-symbols-outlined text-textSecondary px-1">location_on</span>
               <input
                 type="text"
                 placeholder="Enter pincode to find providers…"
                 value={pincode}
                 onChange={(e) => setPincode(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleQuickSearch()}
-                className="bg-transparent border-none focus:ring-0 focus:outline-none w-full text-on-surface placeholder:text-on-surface-variant/50 text-sm font-body"
+                className="bg-transparent border-none focus:ring-0 focus:outline-none w-full text-textPrimary placeholder:text-textSecondary/50 text-sm font-body"
               />
-              <button
+              <Button
                 onClick={handleQuickSearch}
-                className="shrink-0 px-4 py-2 bg-gradient-to-r from-primary-container to-secondary-container rounded-xl text-white font-headline font-bold text-xs uppercase tracking-wider hover:scale-105 active:scale-95 transition-all"
+                className="shrink-0 !py-2 !px-4 text-xs tracking-wider"
               >
                 Search
-              </button>
+              </Button>
             </div>
           </div>
         </header>
 
         {/* Tabs */}
-        <div className="flex flex-wrap bg-surface-container-low p-1.5 rounded-full shadow-inner border border-outline-variant/10 w-fit gap-1">
+        <div className="flex flex-wrap bg-black/5 dark:bg-white/5 p-1.5 rounded-full shadow-inner border border-glassBorder w-fit gap-1">
           {[
             { key: "appointments", icon: "calendar_today", label: "Appointments" },
             { key: "history", icon: "history", label: "History" },
@@ -230,10 +254,10 @@ function UserDashboard() {
             <button
               key={key}
               onClick={() => setTab(key)}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-full font-headline font-bold text-xs uppercase tracking-widest transition-all ${
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-full font-headline font-bold text-xs uppercase tracking-widest transition-all duration-300 ${
                 tab === key
-                  ? "bg-primary-container text-on-primary-container shadow-lg"
-                  : "text-on-surface-variant hover:text-white"
+                  ? "bg-primary text-deep-navy shadow-lg"
+                  : "text-textSecondary hover:text-textPrimary"
               }`}
             >
               <span className="material-symbols-outlined text-sm">{icon}</span>
@@ -248,8 +272,8 @@ function UserDashboard() {
           {/* Upcoming Appointments – 8 col */}
           <section className="md:col-span-8 space-y-5">
             <div className="flex justify-between items-center">
-              <h2 className="font-headline text-xl font-bold flex items-center gap-3">
-                <span className="w-1.5 h-7 bg-primary-container rounded-full" />
+              <h2 className="font-headline text-xl font-bold flex items-center gap-3 text-textPrimary">
+                <span className="w-1.5 h-7 bg-primary rounded-full" />
                 Upcoming Appointments
               </h2>
               <button
@@ -262,53 +286,53 @@ function UserDashboard() {
 
             {loading ? (
               <div className="flex justify-center py-10">
-                <div className="spinner" />
+                <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
               </div>
             ) : upcoming.length === 0 ? (
-              <div className="glass-panel rounded-3xl p-12 text-center border-dashed border border-outline-variant/20">
-                <span className="material-symbols-outlined text-5xl text-on-surface-variant/20 mb-3 block">
+              <GlassCard className="!p-12 text-center border-dashed border-glassBorder shadow-none bg-transparent">
+                <span className="material-symbols-outlined text-5xl text-textSecondary/30 mb-3 block">
                   calendar_today
                 </span>
-                <p className="font-headline text-lg font-bold text-on-surface-variant/40">
+                <p className="font-headline text-lg font-bold text-textSecondary/60">
                   No upcoming appointments
                 </p>
-                <button
+                <Button
                   onClick={() => navigate("/search")}
-                  className="mt-4 px-6 py-2.5 bg-gradient-to-r from-primary-container to-secondary-container rounded-xl text-white font-bold text-sm hover:scale-105 active:scale-95 transition-all"
+                  className="mt-6 mx-auto"
                 >
                   Book a Service
-                </button>
-              </div>
+                </Button>
+              </GlassCard>
             ) : (
               <div className="space-y-4">
                 {upcoming.map((a) => (
-                  <div
+                  <GlassCard
                     key={a.id}
-                    className="glass-panel p-5 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center gap-5 hover:translate-x-1 transition-transform duration-300 group border-l-2 border-primary-container"
+                    className="!p-5 flex flex-col sm:flex-row items-start sm:items-center gap-5 hover:translate-x-1 group border-l-4 border-l-primary/60 hover:border-l-primary"
                   >
-                    <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary-container to-secondary-container flex items-center justify-center shrink-0">
-                      <span className="material-symbols-outlined text-2xl text-white">
+                    <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 border border-primary/20">
+                      <span className="material-symbols-outlined text-2xl text-primary">
                         handyman
                       </span>
                     </div>
                     <div className="flex-grow">
-                      <h3 className="font-headline text-base font-bold text-white">
+                      <h3 className="font-headline text-base font-bold text-textPrimary">
                         {a.serviceName}
                       </h3>
-                      <p className="text-on-surface-variant text-sm">
+                      <p className="text-textSecondary text-sm">
                         Provider: {a.providerName}
                       </p>
                       {a.providerPhone && (
-                        <p className="text-on-surface-variant text-xs font-mono mt-0.5">
+                        <p className="text-textSecondary text-xs font-mono mt-0.5">
                           {a.providerPhone}
                         </p>
                       )}
-                      <div className="flex flex-wrap gap-4 mt-2 text-sm text-secondary/80 font-label tracking-wide">
-                        <span className="flex items-center gap-1.5">
+                      <div className="flex flex-wrap gap-4 mt-2 text-sm text-secondary/90 font-label tracking-wide">
+                        <span className="flex items-center gap-1.5 bg-secondary/10 px-2 py-0.5 rounded-md">
                           <span className="material-symbols-outlined text-sm">calendar_today</span>
                           {a.date}
                         </span>
-                        <span className="flex items-center gap-1.5">
+                        <span className="flex items-center gap-1.5 bg-secondary/10 px-2 py-0.5 rounded-md">
                           <span className="material-symbols-outlined text-sm">schedule</span>
                           {a.startTime}
                         </span>
@@ -319,28 +343,28 @@ function UserDashboard() {
                       <div className="flex gap-3">
                         <button
                           onClick={() => setSelectedAppointmentId(a.id)}
-                          className="flex items-center gap-1 text-xs font-bold text-primary hover:text-primary-container transition-colors"
+                          className="flex items-center gap-1 text-xs font-bold text-primary hover:brightness-125 transition-colors"
                         >
                           <span className="material-symbols-outlined text-sm">info</span>
                           Details
                         </button>
                         <button
                           onClick={() => setActiveChat({ id: a.providerUserId, name: a.providerName })}
-                          className="flex items-center gap-1 text-xs font-bold text-secondary hover:text-secondary-container transition-colors"
+                          className="flex items-center gap-1 text-xs font-bold text-secondary hover:brightness-125 transition-colors"
                         >
                           <span className="material-symbols-outlined text-sm">chat</span>
                           Chat
                         </button>
                         <button
                           onClick={() => handleCancel(a.id)}
-                          className="text-red-400 hover:text-red-300 text-xs font-bold flex items-center gap-1 transition-colors"
+                          className="text-coral hover:brightness-125 text-xs font-bold flex items-center gap-1 transition-colors"
                         >
                           <span className="material-symbols-outlined text-sm">cancel</span>
                           Cancel
                         </button>
                       </div>
                     </div>
-                  </div>
+                  </GlassCard>
                 ))}
               </div>
             )}
@@ -349,49 +373,49 @@ function UserDashboard() {
           {/* Sidebar – 4 col */}
           <aside className="md:col-span-4 space-y-6">
             {/* Insights card */}
-            <div className="glass-panel rounded-2xl p-6 space-y-5 overflow-hidden relative">
-              <div className="absolute top-0 right-0 w-28 h-28 bg-primary/10 blur-3xl rounded-full -mr-14 -mt-14" />
-              <h2 className="font-headline text-lg font-bold">Your Insights</h2>
-              <div className="space-y-3">
-                <div className="flex justify-between items-center bg-white/5 p-3.5 rounded-xl border border-white/5">
-                  <span className="text-on-surface-variant text-sm">Total Bookings</span>
+            <GlassCard className="!p-6 space-y-5 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-28 h-28 bg-primary/10 blur-3xl rounded-full -mr-14 -mt-14 pointer-events-none" />
+              <h2 className="font-headline text-lg font-bold text-textPrimary">Your Insights</h2>
+              <div className="space-y-3 relative z-10">
+                <div className="flex justify-between items-center bg-black/5 dark:bg-white/5 p-3.5 rounded-xl border border-glassBorder">
+                  <span className="text-textSecondary text-sm">Total Bookings</span>
                   <span className="text-primary font-bold">{appointments.length}</span>
                 </div>
-                <div className="flex justify-between items-center bg-white/5 p-3.5 rounded-xl border border-white/5">
-                  <span className="text-on-surface-variant text-sm">Upcoming</span>
+                <div className="flex justify-between items-center bg-black/5 dark:bg-white/5 p-3.5 rounded-xl border border-glassBorder">
+                  <span className="text-textSecondary text-sm">Upcoming</span>
                   <span className="text-secondary font-bold">{upcoming.length}</span>
                 </div>
-                <div className="flex justify-between items-center bg-white/5 p-3.5 rounded-xl border border-white/5">
-                  <span className="text-on-surface-variant text-sm">Completed</span>
-                  <span className="text-green-400 font-bold">
+                <div className="flex justify-between items-center bg-black/5 dark:bg-white/5 p-3.5 rounded-xl border border-glassBorder">
+                  <span className="text-textSecondary text-sm">Completed</span>
+                  <span className="text-teal-400 font-bold">
                     {appointments.filter((a) => a.status === "COMPLETED").length}
                   </span>
                 </div>
               </div>
-              <button
+              <Button
                 onClick={() => navigate("/search")}
-                className="w-full py-3 bg-gradient-to-r from-primary-container to-secondary-container rounded-xl font-bold text-white text-sm shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                className="w-full text-sm"
               >
                 Schedule New Service
-              </button>
-            </div>
+              </Button>
+            </GlassCard>
 
             {/* Past Appointments */}
             {past.length > 0 && (
               <div className="space-y-3">
-                <h2 className="font-headline text-base font-bold px-1">Recently Completed</h2>
+                <h2 className="font-headline text-base font-bold px-1 text-textPrimary">Recently Completed</h2>
                 {past.slice(0, 4).map((a) => (
                   <div
                     key={a.id}
-                    className="p-4 bg-surface-container-low/50 rounded-xl border-l-2 border-outline-variant hover:bg-surface-container-high transition-colors group cursor-default"
+                    className="p-4 bg-black/5 dark:bg-white/5 rounded-xl border-l-2 border-glassBorder hover:bg-black/10 dark:hover:bg-white/10 transition-colors group cursor-default"
                   >
                     <div className="flex justify-between">
-                      <span className="text-sm font-bold text-white truncate pr-2">
+                      <span className="text-sm font-bold text-textPrimary truncate pr-2">
                         {a.serviceName}
                       </span>
                       <span className={statusPill(a.status)}>{a.status}</span>
                     </div>
-                    <p className="text-xs text-on-surface-variant mt-1">
+                    <p className="text-xs text-textSecondary mt-1">
                       {a.date} · {a.providerName}
                     </p>
                   </div>
@@ -407,66 +431,79 @@ function UserDashboard() {
           <div className="space-y-6">
             <div className="flex flex-wrap items-center gap-4">
               <div>
-                <label className="block text-xs font-label font-bold text-on-surface-variant uppercase tracking-widest mb-1.5">Time Range</label>
-                <select
+                <Dropdown
+                  label="Time Range"
+                  icon="date_range"
+                  options={[
+                    { value: 7, label: "Last 7 Days" },
+                    { value: 15, label: "Last 15 Days" },
+                    { value: 30, label: "Last 30 Days" },
+                    { value: 90, label: "Last 3 Months" },
+                  ]}
                   value={historyDays}
-                  onChange={(e) => setHistoryDays(Number(e.target.value))}
-                  className="w-full px-4 py-3 bg-surface-container-highest/50 border border-outline-variant/20 rounded-xl text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/40 text-sm"
-                >
-                  <option value={7}>Last 7 Days</option>
-                  <option value={15}>Last 15 Days</option>
-                  <option value={30}>Last 30 Days</option>
-                  <option value={90}>Last 3 Months</option>
-                </select>
+                  onChange={(val) => setHistoryDays(val)}
+                  className="!py-2.5 min-w-40"
+                />
               </div>
             </div>
 
-            <div className="glass-card rounded-3xl p-6 md:p-8 shadow-2xl">
+            <GlassCard className="!p-6 md:!p-8 shadow-2xl overflow-hidden block">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-headline font-bold tracking-tight text-on-surface">Past Appointments</h2>
-                <span className="text-xs font-label tracking-widest text-on-surface-variant uppercase bg-white/5 px-4 py-2 rounded-full">
+                <h2 className="text-xl font-headline font-bold tracking-tight text-textPrimary">Past Appointments</h2>
+                <span className="text-xs font-label tracking-widest text-secondary uppercase bg-secondary/10 px-4 py-2 rounded-full font-bold">
                   {history.length} total
                 </span>
               </div>
 
               {history.length === 0 ? (
                 <div className="text-center py-16">
-                  <span className="material-symbols-outlined text-5xl text-on-surface-variant/20 mb-3 block">history</span>
-                  <p className="text-on-surface-variant/50 font-headline font-bold">No history for the selected range</p>
+                  <span className="material-symbols-outlined text-5xl text-textSecondary/20 mb-3 block">history</span>
+                  <p className="text-textSecondary/60 font-headline font-bold">No history for the selected range</p>
                 </div>
               ) : (
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto w-full">
                   <table className="w-full border-separate border-spacing-y-3">
                     <thead>
                       <tr className="text-left">
                         {["Provider", "Service", "Date & Time", "Status", "Action"].map((h) => (
-                          <th key={h} className="pb-1 px-4 text-xs font-label uppercase tracking-widest text-on-surface-variant font-medium">{h}</th>
+                          <th key={h} className="pb-1 px-4 text-xs font-label uppercase tracking-widest text-textSecondary font-bold">{h}</th>
                         ))}
                       </tr>
                     </thead>
                     <tbody>
                       {history.map((a) => (
-                        <tr key={a.id} className="bg-surface-container-low hover:bg-surface-container-high transition-colors">
-                          <td className="py-4 px-4 rounded-l-2xl border-l-2 border-surface-container-highest">
-                            <div className="text-sm font-bold text-on-surface">{a.providerName}</div>
-                            {a.providerPhone && <div className="text-xs text-on-surface-variant font-mono mt-0.5">{a.providerPhone}</div>}
+                        <tr key={a.id} className="bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 transition-colors">
+                          <td className="py-4 px-4 rounded-l-2xl border-l-2 border-transparent">
+                            <div className="text-sm font-bold text-textPrimary">{a.providerName}</div>
+                            {a.providerPhone && <div className="text-xs text-textSecondary font-mono mt-0.5">{a.providerPhone}</div>}
                           </td>
                           <td className="py-4 px-4 text-sm font-medium text-primary">{a.serviceName || "Appointment"}</td>
                           <td className="py-4 px-4">
-                            <div className="text-sm text-on-surface">{a.date}</div>
-                            <div className="text-xs text-on-surface-variant">{a.startTime} – {a.endTime}</div>
+                            <div className="text-sm text-textPrimary">{a.date}</div>
+                            <div className="text-xs text-textSecondary">{a.startTime} – {a.endTime}</div>
                           </td>
                           <td className="py-4 px-4">
                             <span className={statusPill(a.status)}>{a.status}</span>
                           </td>
                           <td className="py-4 px-4 rounded-r-2xl">
-                            <button
-                              onClick={() => setSelectedAppointmentId(a.id)}
-                              className="flex items-center gap-1 text-xs font-bold text-primary hover:text-primary-container transition-colors"
-                            >
-                              <span className="material-symbols-outlined text-sm">info</span>
-                              Details
-                            </button>
+                            <div className="flex items-center gap-3">
+                              <button
+                                onClick={() => setSelectedAppointmentId(a.id)}
+                                className="flex items-center gap-1 text-xs font-bold text-primary hover:scale-[1.05] transition-all"
+                              >
+                                <span className="material-symbols-outlined text-sm">info</span>
+                                Details
+                              </button>
+                              {canReview(a) && (
+                                <button
+                                  onClick={() => setReviewTarget({ appointmentId: a.id, providerId: a.providerId })}
+                                  className="flex items-center gap-1 text-xs font-bold text-coral hover:scale-[1.05] transition-all"
+                                >
+                                  <span className="material-symbols-outlined text-sm">star</span>
+                                  Rate
+                                </button>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -474,19 +511,19 @@ function UserDashboard() {
                   </table>
                 </div>
               )}
-            </div>
+            </GlassCard>
           </div>
         )}
 
         {/* ════════════════ PROFILE TAB ════════════════════════ */}
         {tab === "profile" && (
           <div className="space-y-8">
-            <div className="glass-card rounded-3xl p-6 md:p-8 shadow-2xl">
-              <h2 className="text-xl font-headline font-bold text-on-surface mb-6">Profile Settings</h2>
+            <GlassCard className="!p-6 md:!p-8 shadow-2xl">
+              <h2 className="text-xl font-headline font-bold text-textPrimary mb-6">Profile Settings</h2>
               
               <div className="flex items-center gap-6 mb-8">
                 <div className="relative group">
-                  <div className="w-24 h-24 rounded-full overflow-hidden bg-surface-container-high border-2 border-outline-variant/30 flex items-center justify-center">
+                  <div className="w-24 h-24 rounded-full overflow-hidden bg-black/10 dark:bg-white/10 border-2 border-glassBorder flex items-center justify-center">
                     {profileForm.profileImageUrl ? (
                       <img 
                          src={`${BASE_URL}${profileForm.profileImageUrl.startsWith('/') ? '' : '/'}${profileForm.profileImageUrl}`} 
@@ -494,7 +531,7 @@ function UserDashboard() {
                          className="w-full h-full object-cover" 
                       />
                     ) : (
-                      <span className="material-symbols-outlined text-4xl text-on-surface-variant">person</span>
+                      <span className="material-symbols-outlined text-4xl text-textSecondary">person</span>
                     )}
                   </div>
                   <label className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
@@ -503,54 +540,50 @@ function UserDashboard() {
                   </label>
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-on-surface">Profile Picture</h3>
-                  <p className="text-xs text-on-surface-variant mt-1">Click the image to upload a new avatar.</p>
+                  <h3 className="text-lg font-bold text-textPrimary">Profile Picture</h3>
+                  <p className="text-xs text-textSecondary mt-1">Click the image to upload a new avatar.</p>
                 </div>
               </div>
 
-              <form onSubmit={saveProfile} className="space-y-4 max-w-2xl">
-                 <div className="grid grid-cols-1 gap-4">
-                  <div>
-                    <label className="block text-xs font-label font-bold text-on-surface-variant uppercase tracking-widest mb-1.5">Full Name</label>
-                    <input type="text" required value={profileForm.fullName} onChange={(e) => setProfileForm({ ...profileForm, fullName: e.target.value })} className="w-full px-4 py-3 bg-surface-container-highest/50 border border-outline-variant/20 rounded-xl text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/40 text-sm" placeholder="Enter full name" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-label font-bold text-on-surface-variant uppercase tracking-widest mb-1.5">Phone Number</label>
-                    <input type="tel" value={profileForm.phone} onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })} className="w-full px-4 py-3 bg-surface-container-highest/50 border border-outline-variant/20 rounded-xl text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/40 text-sm" placeholder="Enter phone number" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-label font-bold text-on-surface-variant uppercase tracking-widest mb-1.5">Pincode</label>
-                    <input type="text" value={profileForm.pincode} onChange={(e) => setProfileForm({ ...profileForm, pincode: e.target.value })} className="w-full px-4 py-3 bg-surface-container-highest/50 border border-outline-variant/20 rounded-xl text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/40 text-sm" placeholder="Enter preferred pincode focus" />
-                  </div>
+              <form onSubmit={saveProfile} className="space-y-6 max-w-2xl">
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Input label="Full Name" required value={profileForm.fullName} onChange={(e) => setProfileForm({ ...profileForm, fullName: e.target.value })} placeholder="Enter full name" />
+                  <Input label="Phone Number" type="tel" value={profileForm.phone} onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })} placeholder="Enter phone number" />
+                  <Input label="Pincode" type="text" value={profileForm.pincode} onChange={(e) => setProfileForm({ ...profileForm, pincode: e.target.value })} placeholder="Enter preferred pincode" />
                 </div>
-                {profileMsg && <p className={`text-sm font-bold mt-2 ${profileMsg.startsWith("✓") ? "text-green-400" : "text-red-400"}`}>{profileMsg}</p>}
-                <button type="submit" className="w-full mt-4 py-3.5 rounded-xl bg-gradient-to-r from-primary-container to-secondary-container text-white font-headline font-bold text-sm uppercase tracking-wider hover:scale-[1.02] active:scale-95 transition-all">
-                  Save Changes
-                </button>
+                {profileMsg && <p className={`text-sm font-bold mt-2 ${profileMsg.startsWith("✓") ? "text-primary" : "text-coral"}`}>{profileMsg}</p>}
+                <div className="mt-4">
+                  <Button type="submit" className="w-full text-sm">
+                    Save Changes
+                  </Button>
+                </div>
               </form>
-            </div>
+            </GlassCard>
 
-            <div className="glass-card rounded-3xl p-6 md:p-8 border border-red-500/20 bg-red-500/5 shadow-2xl">
-              <h2 className="text-xl font-headline font-bold text-red-400 mb-2">Danger Zone</h2>
-              <p className="text-sm text-on-surface-variant mb-6">These actions affect your account status.</p>
+            <div className="glass-card rounded-3xl p-6 md:p-8 border border-coral/30 bg-coral/5 shadow-2xl mt-8">
+              <h2 className="text-xl font-headline font-bold text-coral mb-2 flex items-center gap-2">
+                <span className="material-symbols-outlined">warning</span>
+                Danger Zone
+              </h2>
+              <p className="text-sm text-textSecondary mb-6">These actions affect your account status.</p>
               
               <div className="space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-surface-container-low border border-outline-variant/10">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-black/5 dark:bg-white/5 border border-glassBorder">
                   <div>
-                    <h3 className="font-headline font-bold text-on-surface">Deactivate Account</h3>
-                    <p className="text-xs text-on-surface-variant mt-1">Temporarily block yourself from booking appointments.</p>
+                    <h3 className="font-headline font-bold text-textPrimary">Deactivate Account</h3>
+                    <p className="text-xs text-textSecondary mt-1">Temporarily block yourself from booking appointments.</p>
                   </div>
-                  <button onClick={deactivateAccount} className="px-5 py-2.5 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20 font-bold text-sm hover:bg-amber-500/20 transition-all whitespace-nowrap">
+                  <button onClick={deactivateAccount} className="px-5 py-2.5 rounded-xl bg-amber-500/10 text-amber-500 border border-amber-500/20 font-bold text-sm hover:bg-amber-500/20 transition-all whitespace-nowrap">
                     Pause Account
                   </button>
                 </div>
 
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-surface-container-low border border-red-500/10 hover:border-red-500/30 transition-colors">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-black/5 dark:bg-white/5 border border-coral/10 hover:border-coral/30 transition-colors">
                   <div>
-                    <h3 className="font-headline font-bold text-red-400">Delete Account</h3>
-                    <p className="text-xs text-on-surface-variant mt-1">Permanently remove your profile and history.</p>
+                    <h3 className="font-headline font-bold text-coral">Delete Account</h3>
+                    <p className="text-xs text-textSecondary mt-1">Permanently remove your profile and history.</p>
                   </div>
-                  <button onClick={deleteAccount} className="px-5 py-2.5 rounded-xl bg-red-500/10 text-red-400 border border-red-500/20 font-bold text-sm hover:bg-red-500/20 transition-all whitespace-nowrap">
+                  <button onClick={deleteAccount} className="px-5 py-2.5 rounded-xl bg-coral/10 text-coral border border-coral/20 font-bold text-sm hover:bg-coral/20 transition-all whitespace-nowrap">
                     Permanently Delete
                   </button>
                 </div>
@@ -560,21 +593,23 @@ function UserDashboard() {
         )}
 
         {/* Apply as provider CTA */}
-        <section className="glass-panel rounded-3xl p-8 md:p-10 flex flex-col md:flex-row items-center justify-between gap-6 border border-outline-variant/10">
+        <section className="glass-panel rounded-3xl p-8 md:p-10 flex flex-col md:flex-row items-center justify-between gap-6 border border-glassBorder bg-secondary/5 mt-10">
           <div>
-            <h3 className="font-headline text-xl font-bold text-on-surface mb-1">
+            <h3 className="font-headline text-xl font-bold text-textPrimary mb-1 flex items-center gap-2">
+              <span className="material-symbols-outlined text-secondary">workspace_premium</span>
               Are you a service professional?
             </h3>
-            <p className="text-on-surface-variant text-sm">
+            <p className="text-textSecondary text-sm pt-1">
               Apply to become a DLASS provider and grow your business.
             </p>
           </div>
-          <button
+          <Button
+            variant="outline"
             onClick={() => navigate("/apply-provider")}
-            className="shrink-0 px-8 py-3 rounded-xl border border-secondary/30 bg-secondary/5 text-secondary font-headline font-bold text-sm hover:bg-secondary/10 hover:border-secondary/60 transition-all"
+            className="shrink-0 text-sm whitespace-nowrap border-secondary/50 text-secondary hover:bg-secondary/10"
           >
             Apply as Provider →
-          </button>
+          </Button>
         </section>
       </div>
       <ChatWindow
@@ -583,6 +618,8 @@ function UserDashboard() {
         currentUser={{ id: userId, name: username }}
         otherUserId={activeChat?.id}
         otherUserName={activeChat?.name}
+        isMaximized={isChatMaximized}
+        onToggleMaximize={() => setIsChatMaximized(!isChatMaximized)}
       />
 
       <AppointmentDetailModal
@@ -593,7 +630,15 @@ function UserDashboard() {
         onCancel={(id) => handleCancel(id)}
         onChat={(targetId, targetName) => setActiveChat({ id: targetId, name: targetName })}
       />
-    </div>
+      
+      <ReviewModal
+        isOpen={!!reviewTarget}
+        onClose={() => setReviewTarget(null)}
+        appointmentId={reviewTarget?.appointmentId}
+        providerId={reviewTarget?.providerId}
+        onSuccess={(id) => setReviewedIds(prev => [...prev, id])}
+      />
+    </PageWrapper>
   );
 }
 

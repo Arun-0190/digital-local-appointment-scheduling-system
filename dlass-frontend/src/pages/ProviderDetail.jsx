@@ -2,6 +2,9 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { getToken } from "../services/authService";
+import PageWrapper from "../components/ui/PageWrapper";
+import GlassCard from "../components/ui/GlassCard";
+import Button from "../components/ui/Button";
 
 const API = "http://localhost:8080/api";
 
@@ -98,168 +101,158 @@ export default function ProviderDetail() {
 
   if (loading)
     return (
-      <div className="min-h-screen flex items-center justify-center pt-16">
-        <div className="spinner" />
-      </div>
+      <PageWrapper>
+        <div className="flex items-center justify-center pt-32">
+          <div className="w-10 h-10 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
+        </div>
+      </PageWrapper>
     );
+
   if (error)
     return (
-      <div className="min-h-screen flex items-center justify-center pt-16">
-        <p className="text-red-400 text-center">{error}</p>
-      </div>
+      <PageWrapper>
+        <div className="flex items-center justify-center pt-32">
+          <p className="text-coral text-center bg-coral/10 px-6 py-4 rounded-xl border border-coral/20">{error}</p>
+        </div>
+      </PageWrapper>
     );
 
-  const starCount = Math.round(profile?.rating || 0);
-
   return (
-    <div className="min-h-screen pt-20 pb-16 px-4 md:px-6">
+    <PageWrapper>
       <div className="max-w-6xl mx-auto">
-        {/* Back button */}
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-on-surface-variant hover:text-white font-headline font-bold text-sm mb-8 transition-colors mt-4"
+          className="flex items-center gap-2 text-textSecondary hover:text-textPrimary font-headline font-bold text-sm mb-8 transition-colors mt-4"
         >
           <span className="material-symbols-outlined text-sm">arrow_back</span>
           Back to Search
         </button>
 
-        {/* Provider Header Card */}
         <section className="mb-10">
-          <div className="glass-card rounded-3xl p-6 md:p-8 flex flex-col md:flex-row gap-6 md:gap-8 items-start md:items-center relative overflow-hidden group">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-secondary/5 opacity-50" />
+          <GlassCard className="!p-6 md:!p-8 flex flex-col md:flex-row gap-6 md:gap-8 items-start md:items-center relative overflow-hidden group">
+            <div className="absolute inset-0 bg-primary/5 opacity-50" />
 
-            {/* Avatar placeholder */}
-            <div className="relative w-24 h-24 md:w-32 md:h-32 rounded-2xl bg-gradient-to-br from-primary-container to-secondary-container flex items-center justify-center shrink-0 border border-outline-variant/20 shadow-xl">
-              <span className="material-symbols-outlined text-4xl text-white">business_center</span>
+            <div className="relative w-24 h-24 md:w-32 md:h-32 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0 border border-primary/20 shadow-xl">
+              <span className="material-symbols-outlined text-4xl text-primary">business_center</span>
             </div>
 
             <div className="relative flex-1 space-y-3">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <h1 className="text-3xl md:text-4xl font-headline font-extrabold tracking-tighter text-on-surface">
+                  <h1 className="text-3xl md:text-4xl font-headline font-extrabold tracking-tight text-textPrimary">
                     {profile?.businessName}
                   </h1>
-                  <p className="text-secondary font-headline font-bold tracking-tight flex items-center gap-1 mt-1 text-sm">
-                    <span className="material-symbols-outlined text-sm">verified_user</span>
+                  <p className="text-secondary font-headline font-bold flex items-center gap-1 mt-1 text-sm bg-secondary/10 px-3 py-1 rounded-full w-fit">
+                    <span className="material-symbols-outlined text-sm">verified</span>
                     {profile?.experienceYears} Year{profile?.experienceYears !== 1 ? "s" : ""} Experience
                   </p>
                 </div>
                 <div className="flex flex-col items-start sm:items-end gap-2">
-                  <div className="flex items-center gap-1 bg-white/5 px-3 py-1.5 rounded-full border border-outline-variant/10">
+                  <div className="flex items-center gap-2 bg-black/5 dark:bg-white/5 px-4 py-2 rounded-xl border border-glassBorder shadow-sm">
                     <span
                       className="material-symbols-outlined text-secondary text-base"
                       style={{ fontVariationSettings: "'FILL' 1" }}
                     >
                       star
                     </span>
-                    <span className="text-on-surface font-bold text-lg">{profile?.rating?.toFixed(1) || "0.0"}</span>
-                    <span className="text-on-surface-variant text-sm">({profile?.reviewCount || 0} reviews)</span>
+                    <span className="text-textPrimary font-bold text-xl leading-none">{profile?.rating?.toFixed(1) || "0.0"}</span>
+                    <span className="text-textSecondary text-xs">({profile?.reviewCount || 0} reviews)</span>
                   </div>
-                  <div className="text-on-surface-variant text-sm flex items-center gap-1">
-                    <span className="material-symbols-outlined text-xs">location_on</span>
+                  <div className="text-textSecondary text-sm flex items-center gap-1">
+                    <span className="material-symbols-outlined text-sm text-primary">location_on</span>
                     {profile?.area}, {profile?.city} — {profile?.pincode}
                   </div>
                 </div>
               </div>
               {profile?.description && (
-                <p className="text-on-surface-variant leading-relaxed max-w-2xl font-body italic text-sm">
-                  &quot;{profile.description}&quot;
+                <p className="text-textSecondary leading-relaxed max-w-2xl text-sm pt-2">
+                  {profile.description}
                 </p>
               )}
             </div>
-          </div>
+          </GlassCard>
         </section>
 
-        {/* Main 2-col grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* Services List */}
           <div className="lg:col-span-5 space-y-4">
-            <h2 className="text-2xl font-headline font-bold tracking-tight text-on-surface flex items-center gap-3">
+            <h2 className="text-2xl font-headline font-bold tracking-tight text-textPrimary flex items-center gap-3">
               Available Services
-              <span className="h-px flex-1 bg-gradient-to-r from-outline-variant/30 to-transparent" />
+              <span className="h-px flex-1 bg-gradient-to-r from-glassBorder to-transparent" />
             </h2>
 
             {services.length === 0 ? (
-              <div className="glass-panel rounded-2xl p-8 text-center">
-                <span className="material-symbols-outlined text-4xl text-on-surface-variant/30 mb-2 block">
+              <GlassCard className="!p-8 text-center shadow-none border-dashed bg-transparent">
+                <span className="material-symbols-outlined text-4xl text-textSecondary/30 mb-2 block">
                   category
                 </span>
-                <p className="text-on-surface-variant/60 text-sm">No services listed yet.</p>
-              </div>
+                <p className="text-textSecondary/60 text-sm">No services listed yet.</p>
+              </GlassCard>
             ) : (
               <div className="space-y-3">
                 {services.map((svc) => {
                   const isSelected = selectedService?.id === svc.id;
                   return (
-                    <div
+                    <GlassCard
                       key={svc.id}
+                      hoverEffect={!isSelected}
                       onClick={() => { setSelectedService(svc); setBookSuccess(""); setBookError(""); }}
-                      className={`glass-card p-5 rounded-2xl cursor-pointer transition-all duration-200 hover:translate-x-1 ${
+                      className={`!p-5 cursor-pointer transition-all duration-300 ${
                         isSelected
-                          ? "border-l-4 border-secondary ring-1 ring-secondary/30 relative"
-                          : "border-l-4 border-primary/40 hover:border-primary"
+                          ? "border-secondary ring-1 ring-secondary/30 relative shadow-[0_0_20px_rgba(34,211,238,0.15)] bg-secondary/5 scale-[1.02]"
+                          : "border-glassBorder"
                       }`}
                     >
                       {isSelected && (
-                        <div className="absolute -top-2 -right-2">
-                          <span className="w-7 h-7 rounded-full bg-secondary flex items-center justify-center shadow-lg">
-                            <span className="material-symbols-outlined text-on-secondary text-sm">check</span>
-                          </span>
+                        <div className="absolute top-4 right-4 text-secondary">
+                          <span className="material-symbols-outlined">check_circle</span>
                         </div>
                       )}
-                      <div className="flex justify-between items-start mb-1.5">
-                        <h3 className="text-base font-headline font-bold text-on-primary-container">
+                      <div className="flex justify-between items-start mb-2 pr-8">
+                        <h3 className="text-base font-headline font-bold text-textPrimary">
                           {svc.name}
                         </h3>
-                        <span className="text-secondary font-bold font-headline">₹{svc.price}</span>
                       </div>
-                      <p className="text-sm text-on-surface-variant">
-                        ⏱ {svc.durationMinutes} min
-                      </p>
-                      <button
-                        className={`w-full mt-4 py-2 rounded-xl text-xs font-headline font-bold uppercase tracking-tight transition-all ${
-                          isSelected
-                            ? "bg-surface-container-highest text-on-surface-variant cursor-default"
-                            : "bg-primary-container text-on-primary-container hover:brightness-110 active:scale-95"
-                        }`}
-                      >
-                        {isSelected ? "Selected" : "Select Service"}
-                      </button>
-                    </div>
+                      <div className="flex items-center justify-between mt-4">
+                         <span className="text-textSecondary flex items-center gap-1 text-sm bg-black/5 dark:bg-white/5 px-2 py-1 rounded-md">
+                          <span className="material-symbols-outlined text-xs">schedule</span>
+                          {svc.durationMinutes} min
+                        </span>
+                        <span className="text-primary font-bold font-headline text-lg">₹{svc.price}</span>
+                      </div>
+                    </GlassCard>
                   );
                 })}
               </div>
             )}
           </div>
 
-          {/* Booking Section */}
           <div className="lg:col-span-7">
-            <div className="glass-card rounded-3xl p-6 md:p-8 h-full">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-headline font-bold tracking-tight text-on-surface">
+            <GlassCard className="!p-6 md:!p-8 h-full">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4 border-b border-glassBorder pb-6">
+                <h2 className="text-2xl font-headline font-bold tracking-tight text-textPrimary">
                   Schedule Appointment
                 </h2>
                 {selectedService && (
-                  <span className="text-xs font-label tracking-widest text-on-surface-variant uppercase bg-white/5 px-4 py-2 rounded-full">
-                    {selectedService.name}
+                  <span className="text-xs font-label tracking-widest text-secondary uppercase bg-secondary/10 px-4 py-2 rounded-full font-bold">
+                    {selectedService.name} Selected
                   </span>
                 )}
               </div>
 
               {!selectedService ? (
-                <div className="flex flex-col items-center justify-center py-16 text-center">
-                  <span className="material-symbols-outlined text-5xl text-on-surface-variant/20 mb-4">
-                    touch_app
+                <div className="flex flex-col items-center justify-center py-20 text-center">
+                  <span className="material-symbols-outlined text-6xl text-textSecondary/20 mb-6">
+                    event_available
                   </span>
-                  <p className="text-on-surface-variant/50 font-headline font-bold">
-                    Select a service to book
+                  <p className="text-textSecondary font-headline font-bold text-lg">
+                    Select a service to view availability
                   </p>
                 </div>
               ) : (
-                <>
-                  {/* Date Picker */}
-                  <div className="mb-6">
-                    <label className="block text-xs font-label font-bold text-on-surface-variant uppercase tracking-widest mb-2">
+                <div className="animate-fade-in">
+                  <div className="mb-8">
+                    <label className="block text-xs font-label font-bold text-textSecondary uppercase tracking-widest mb-3 flex items-center gap-2">
+                       <span className="material-symbols-outlined text-sm">calendar_today</span>
                       Select Date
                     </label>
                     <input
@@ -267,36 +260,38 @@ export default function ProviderDetail() {
                       value={bookDate}
                       min={todayISO()}
                       onChange={(e) => setBookDate(e.target.value)}
-                      className="w-full px-4 py-3 bg-surface-container-highest/50 border border-outline-variant/20 rounded-xl text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/40 transition-all text-sm"
+                      className="w-full sm:w-1/2 px-4 py-3 bg-inputBg border border-inputBorder rounded-xl text-textPrimary focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all text-sm shadow-inner"
                     />
                   </div>
 
-                  {/* Time Slots */}
                   <div className="mb-8">
-                    <h3 className="text-sm font-label tracking-widest text-on-surface-variant uppercase mb-4 flex items-center gap-2">
+                    <label className="block text-xs font-label font-bold text-textSecondary uppercase tracking-widest mb-4 flex items-center gap-2">
                       <span className="material-symbols-outlined text-sm">schedule</span>
                       Available Time Slots
-                    </h3>
+                    </label>
                     {slotsLoading ? (
-                      <div className="flex justify-center py-6">
-                        <div className="spinner" />
+                      <div className="flex justify-center py-10">
+                        <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
                       </div>
                     ) : slots.length === 0 ? (
-                      <p className="text-on-surface-variant/50 text-sm py-4">
-                        No available slots for this date.
-                      </p>
+                      <div className="bg-black/5 dark:bg-white/5 rounded-xl p-6 text-center border border-glassBorder">
+                         <span className="material-symbols-outlined text-textSecondary/50 text-3xl mb-2">event_busy</span>
+                         <p className="text-textSecondary text-sm">
+                          No available slots for this date.
+                        </p>
+                      </div>
                     ) : (
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                         {slots.map((slot) => {
                           const isSelected = selectedSlot?.startTime === slot.startTime;
                           return (
                             <button
                               key={slot.startTime}
                               onClick={() => setSelectedSlot(slot)}
-                              className={`py-3 px-3 rounded-full text-xs font-bold transition-all duration-200 ${
+                              className={`py-3 px-2 rounded-xl text-sm font-bold transition-all duration-300 ${
                                 isSelected
-                                  ? "bg-secondary-container text-on-secondary-container ring-2 ring-secondary/50 shadow-[0_0_15px_rgba(93,230,255,0.4)]"
-                                  : "bg-surface-container-high text-on-surface hover:bg-primary-container hover:text-white border border-outline-variant/20"
+                                  ? "bg-secondary text-deep-navy shadow-lg scale-105"
+                                  : "bg-inputBg text-textPrimary hover:bg-glassBorder hover:border-primary/50 border border-inputBorder"
                               }`}
                             >
                               {fmt(slot.startTime)}
@@ -307,43 +302,42 @@ export default function ProviderDetail() {
                     )}
                   </div>
 
-                  {/* Feedback */}
                   {bookSuccess && (
-                    <div className="mb-4 flex items-center gap-3 p-4 rounded-xl bg-green-500/10 border border-green-500/20">
-                      <span className="material-symbols-outlined text-green-400">task_alt</span>
-                      <p className="text-green-300 text-sm font-bold">{bookSuccess}</p>
+                    <div className="mb-6 flex items-center gap-3 p-4 rounded-xl bg-teal-500/10 border border-teal-500/20">
+                      <span className="material-symbols-outlined text-teal-400">task_alt</span>
+                      <p className="text-teal-500 font-bold text-sm">{bookSuccess}</p>
                     </div>
                   )}
                   {bookError && (
-                    <div className="mb-4 flex items-center gap-3 p-4 rounded-xl bg-red-500/10 border border-red-500/20">
-                      <span className="material-symbols-outlined text-red-400">error</span>
-                      <p className="text-red-300 text-sm">{bookError}</p>
+                    <div className="mb-6 flex items-center gap-3 p-4 rounded-xl bg-coral/10 border border-coral/20">
+                      <span className="material-symbols-outlined text-coral">error</span>
+                      <p className="text-coral text-sm">{bookError}</p>
                     </div>
                   )}
 
-                  {/* Confirm Button */}
-                  <button
-                    onClick={handleBook}
-                    disabled={!selectedSlot || booking}
-                    className="w-full py-4 rounded-2xl bg-gradient-to-r from-primary to-secondary text-on-primary font-headline font-black text-base shadow-2xl hover:scale-[1.02] active:scale-95 transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed disabled:transform-none"
-                  >
-                    {booking ? (
-                      <span className="flex items-center justify-center gap-2">
-                        <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        Booking…
-                      </span>
-                    ) : selectedSlot ? (
-                      `Confirm ${fmt(selectedSlot.startTime)} – ${fmt(selectedSlot.endTime)}`
-                    ) : (
-                      "Select a slot to book"
-                    )}
-                  </button>
-                </>
+                  <div className="pt-4 border-t border-glassBorder mt-auto">
+                    <Button
+                      onClick={handleBook}
+                      disabled={!selectedSlot || booking}
+                      isLoading={booking}
+                      className="w-full text-base py-4"
+                    >
+                      {selectedSlot ? (
+                        <span className="flex items-center gap-2">
+                           <span className="material-symbols-outlined">event_on</span>
+                           Confirm {fmt(selectedSlot.startTime)} Booking
+                        </span>
+                      ) : (
+                        "Select a slot to book"
+                      )}
+                    </Button>
+                  </div>
+                </div>
               )}
-            </div>
+            </GlassCard>
           </div>
         </div>
       </div>
-    </div>
+    </PageWrapper>
   );
 }

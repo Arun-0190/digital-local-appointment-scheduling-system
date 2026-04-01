@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-secondary": "#00363e",
+              "secondary-fixed-dim": "#2fd9f4",
+              "on-error": "#690005",
+              "secondary-fixed": "#a2eeff",
+              "inverse-surface": "#dae2fd",
+              "surface-container-high": "#222a3d",
+              "inverse-primary": "#006b5f",
+              "tertiary": "#ffb2b9",
+              "on-primary-fixed": "#00201c",
+              "primary-container": "#14b8a6",
+              "surface": "#0b1326",
+              "on-secondary-fixed": "#001f25",
+              "error": "#ffb4ab",
+              "primary": "#4fdbc8",
+              "on-surface": "#dae2fd",
+              "on-primary-container": "#00423b",
+              "on-surface-variant": "#bbcac6",
+              "secondary": "#5de6ff",
+              "on-tertiary-container": "#770827",
+              "primary-fixed": "#71f8e4",
+              "error-container": "#93000a",
+              "on-secondary-container": "#00515d",
+              "on-primary": "#003731",
+              "surface-container-low": "#131b2e",
+              "surface-bright": "#31394d",
+              "primary-fixed-dim": "#4fdbc8",
+              "on-background": "#dae2fd",
+              "surface-container-lowest": "#060e20",
+              "on-tertiary": "#67001f",
+              "tertiary-fixed": "#ffdadc",
+              "surface-container": "#171f33",
+              "surface-dim": "#0b1326",
+              "outline-variant": "#3c4947",
+              "tertiary-fixed-dim": "#ffb2b9",
+              "surface-variant": "#2d3449",
+              "on-secondary-fixed-variant": "#004e5a",
+              "on-error-container": "#ffdad6",
+              "on-primary-fixed-variant": "#005048",
+              "on-tertiary-fixed-variant": "#891933",
+              "on-tertiary-fixed": "#400010",
+              "outline": "#859490",
+              "tertiary-container": "#ff7a8c",
+              "inverse-on-surface": "#283044",
+              "secondary-container": "#00cbe6",
+              "surface-container-highest": "#2d3449",
+              "background": "#0b1326",
+              "surface-tint": "#4fdbc8"
+            },
+            fontFamily: {
+              "headline": ["Manrope"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-card {
+            background: rgba(23, 31, 51, 0.4);
+            backdrop-filter: blur(24px);
+            border-top: 1px solid rgba(113, 248, 228, 0.2);
+            border-left: 1px solid rgba(113, 248, 228, 0.2);
+            box-shadow: 0 20px 40px -10px rgba(20, 184, 166, 0.08);
+        }
+        .luminous-glow {
+            box-shadow: 0 0 15px rgba(79, 219, 200, 0.15);
+        }
+        .bg-main-gradient {
+            background: radial-gradient(circle at top right, #131b2e, #0b1326);
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body selection:bg-primary/30 min-h-screen">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 bg-slate-900/40 backdrop-blur-xl flex justify-between items-center w-full px-8 py-4 max-w-full shadow-[0_20px_40px_-10px_rgba(20,184,166,0.08)]">
+<div class="flex items-center gap-8">
+<span class="text-2xl font-black tracking-tighter bg-gradient-to-br from-teal-400 to-cyan-400 bg-clip-text text-transparent font-headline">DLASS</span>
+<div class="hidden md:flex gap-6">
+<a class="text-slate-400 hover:text-teal-200 transition-colors font-label font-medium" href="#">Dashboard</a>
+<a class="text-slate-400 hover:text-teal-200 transition-colors font-label font-medium" href="#">Chat</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="hidden md:flex items-center bg-surface-container-lowest rounded-full px-4 py-2 border border-outline-variant/20 focus-within:border-primary/50 transition-all">
+<span class="material-symbols-outlined text-outline text-sm">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm text-on-surface placeholder:text-outline w-48" placeholder="Quick search..." type="text"/>
+</div>
+<button class="p-2 text-slate-400 hover:bg-teal-400/10 rounded-full transition-all">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-primary/20">
+<img alt="User Profile" data-alt="professional headshot of a person with a friendly expression in soft studio lighting against a neutral background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDPANDSZRwnjX5mNtBCgPcM-0kvBTVJRCUPguxb64JPzwBUec6VpiQgnQALAW_qbR1L7KD6CHdy8ECYKoaFV3QQ_6x7GStVMGW0U-rC3oDbz9LYcYpi7_Q6R01FQ3r5IvkWrqltDQFJq7ksiN8PZ9chhfTbwaJ82B-IlzOHA6CpJtwl1C5_g6BfwCRrRGv5RtNY26bqAurLgOlfCNPgsXjJq_kf9kg4o3DEm0D3gk9-G8s27dq0SKBZ_XnpBorJ7eNjSbefTqKrZGw"/>
+</div>
+</div>
+</nav>
+<main class="pt-28 pb-20 px-8 max-w-7xl mx-auto bg-main-gradient">
+<!-- Header Section -->
+<header class="mb-12">
+<span class="text-primary font-bold text-sm tracking-widest uppercase mb-2 block font-label">The Luminous Concierge</span>
+<h1 class="text-5xl font-black font-headline tracking-tighter text-on-surface mb-4">Find Your Provider</h1>
+<p class="text-on-surface-variant max-w-2xl text-lg leading-relaxed">Experience a fluid scheduling workspace powered by Aqua Ember Intelligence. Transparent, fast, and remarkably smart.</p>
+</header>
+<!-- Search & Filter Bento -->
+<div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-16">
+<div class="lg:col-span-3 glass-card rounded-lg p-6 flex flex-col md:flex-row gap-4 items-center">
+<div class="flex-1 w-full bg-surface-container-lowest rounded-md p-4 flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">search</span>
+<input class="bg-transparent border-none focus:ring-0 w-full text-on-surface placeholder:text-outline" placeholder="Search by name, expertise, or location..." type="text"/>
+</div>
+<div class="flex-1 w-full bg-surface-container-lowest rounded-md p-4 flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary">location_on</span>
+<input class="bg-transparent border-none focus:ring-0 w-full text-on-surface placeholder:text-outline" placeholder="San Francisco, CA" type="text"/>
+</div>
+<button class="w-full md:w-auto bg-gradient-to-r from-primary to-secondary text-on-primary font-bold px-8 py-4 rounded-xl shadow-lg hover:shadow-primary/20 transition-all hover:scale-105 active:scale-95">
+                    Search
+                </button>
+</div>
+<div class="glass-card rounded-lg p-6 flex items-center justify-between">
+<div class="flex flex-col">
+<span class="text-xs text-on-surface-variant font-label">ACTIVE FILTERS</span>
+<span class="text-lg font-bold text-on-surface">3 applied</span>
+</div>
+<button class="bg-surface-variant p-3 rounded-full hover:bg-surface-container-highest transition-colors">
+<span class="material-symbols-outlined text-primary">tune</span>
+</button>
+</div>
+</div>
+<!-- Provider Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+<!-- Provider Card 1 -->
+<div class="glass-card rounded-lg p-8 group hover:scale-[1.02] transition-all duration-300">
+<div class="relative mb-6">
+<div class="w-full h-56 rounded-md overflow-hidden">
+<img alt="Provider" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" data-alt="portrait of a confident female professional in a bright clinical setting with soft natural light" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB67G7rHHaljl5Le67F87ytTSDLjC1pB91opgt_Vpe88i-ijhdgDuZUYLPxqUAKevS2lHiW0N1kKa-sLF0yNYhujD9Tkmzh6AaFQoXwkHG_MpILymWv9NaRgpdrkvVUosvYabuQ5adEBp1kjbEtEw_PTcRJBho3IKgurTfdmAwzXU3HlejlRsfS5dAN_c5rHh4qaUdNX-8ctaliIQCgdnDlbvHasH-YtfsnI5KKvJXZto3TK9IS3b03OgrtPMoItyduJ7ClwHeIGng"/>
+</div>
+<div class="absolute top-4 right-4 bg-surface-dim/80 backdrop-blur-md px-3 py-1 rounded-full flex items-center gap-1">
+<span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="text-xs font-bold text-on-surface">4.9</span>
+</div>
+</div>
+<div class="flex flex-col gap-2 mb-6">
+<div class="flex justify-between items-start">
+<h3 class="text-2xl font-bold font-headline text-on-surface">Dr. Elena Vance</h3>
+<div class="w-3 h-3 rounded-full bg-secondary ring-4 ring-secondary/20 animate-pulse"></div>
+</div>
+<p class="text-on-surface-variant">Cognitive Logic Specialist</p>
+<div class="flex flex-wrap gap-2 mt-2">
+<span class="px-3 py-1 rounded-full bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-widest">Analytics</span>
+<span class="px-3 py-1 rounded-full bg-secondary/10 text-secondary text-[10px] font-bold uppercase tracking-widest">Strategy</span>
+</div>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-xl font-black text-on-surface">$140<span class="text-sm font-normal text-on-surface-variant">/hr</span></span>
+<button class="bg-tertiary-container text-on-tertiary-container font-bold px-6 py-3 rounded-full shadow-lg hover:shadow-tertiary/30 transition-all active:scale-95">
+                        Book Now
+                    </button>
+</div>
+</div>
+<!-- Provider Card 2 -->
+<div class="glass-card rounded-lg p-8 group hover:scale-[1.02] transition-all duration-300">
+<div class="relative mb-6">
+<div class="w-full h-56 rounded-md overflow-hidden">
+<img alt="Provider" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" data-alt="mature male professional smiling warmly in a modern high-rise office with evening city lights in the background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuByFTTwtH6fnUV7gmzX9YmWskBX7xBMXRhB2LZOuVBxu8iU1URD6gvD3arExVxhMYDGMxtbb4M0R-58HbFSgDBj2SdCS5Gk7l3qVpIFctPYkhykoNccMPOst6X2ZwfkMyF9OQzpNHUmpfF12Ikxgz0JySdARqnKKESlLAWYdT6bK2sbqTgZYai_sM-Mn9y0vXdecYNaU1vs1nAce1h7vlJb2JsT9I2ELFNPOFex5mH_vXzHYM_kLGajM9NYCSSrVhzbP6B0rdw7VGc"/>
+</div>
+<div class="absolute top-4 right-4 bg-surface-dim/80 backdrop-blur-md px-3 py-1 rounded-full flex items-center gap-1">
+<span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="text-xs font-bold text-on-surface">4.8</span>
+</div>
+</div>
+<div class="flex flex-col gap-2 mb-6">
+<div class="flex justify-between items-start">
+<h3 class="text-2xl font-bold font-headline text-on-surface">Marcus Thorne</h3>
+<div class="w-3 h-3 rounded-full bg-primary ring-4 ring-primary/20"></div>
+</div>
+<p class="text-on-surface-variant">Architectural Efficiency</p>
+<div class="flex flex-wrap gap-2 mt-2">
+<span class="px-3 py-1 rounded-full bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-widest">Infrastructure</span>
+<span class="px-3 py-1 rounded-full bg-secondary/10 text-secondary text-[10px] font-bold uppercase tracking-widest">Scale</span>
+</div>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-xl font-black text-on-surface">$185<span class="text-sm font-normal text-on-surface-variant">/hr</span></span>
+<button class="bg-tertiary-container text-on-tertiary-container font-bold px-6 py-3 rounded-full shadow-lg hover:shadow-tertiary/30 transition-all active:scale-95">
+                        Book Now
+                    </button>
+</div>
+</div>
+<!-- Provider Card 3 -->
+<div class="glass-card rounded-lg p-8 group hover:scale-[1.02] transition-all duration-300">
+<div class="relative mb-6">
+<div class="w-full h-56 rounded-md overflow-hidden">
+<img alt="Provider" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" data-alt="young professional woman looking thoughtful and smart in a creative studio with warm lighting and greenery" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBN3_6bxkn8DxssRG_Vi59vp0qGAhFXtVeclVTe7IsPz3QJ63sMuTkR2KZ1Khv1h4NBmUBawQnSXHm8EckKAuGutewdvktxqU250-DpYN0hK-6U1yeWXTciQ4RFKFXRpBBGnHaoV6v_a7AJkkX3CoHgE5ExZ5qmXURpM6B-E8ZpzPWxr9UphbWkGMz3zFYQ3yqQuXaD3Lil-E-GnvxiVR8oQeqvh3DhnRvQjLczdpO5Ss6OEsI0CaDbEoqu03ut5U3BIuJS4lqzLy0"/>
+</div>
+<div class="absolute top-4 right-4 bg-surface-dim/80 backdrop-blur-md px-3 py-1 rounded-full flex items-center gap-1">
+<span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="text-xs font-bold text-on-surface">5.0</span>
+</div>
+</div>
+<div class="flex flex-col gap-2 mb-6">
+<div class="flex justify-between items-start">
+<h3 class="text-2xl font-bold font-headline text-on-surface">Aria Sterling</h3>
+<div class="w-3 h-3 rounded-full bg-secondary ring-4 ring-secondary/20 animate-pulse"></div>
+</div>
+<p class="text-on-surface-variant">Digital Interface Psychology</p>
+<div class="flex flex-wrap gap-2 mt-2">
+<span class="px-3 py-1 rounded-full bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-widest">UI/UX</span>
+<span class="px-3 py-1 rounded-full bg-secondary/10 text-secondary text-[10px] font-bold uppercase tracking-widest">Cognition</span>
+</div>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-xl font-black text-on-surface">$210<span class="text-sm font-normal text-on-surface-variant">/hr</span></span>
+<button class="bg-tertiary-container text-on-tertiary-container font-bold px-6 py-3 rounded-full shadow-lg hover:shadow-tertiary/30 transition-all active:scale-95">
+                        Book Now
+                    </button>
+</div>
+</div>
+<!-- Provider Card 4 -->
+<div class="glass-card rounded-lg p-8 group hover:scale-[1.02] transition-all duration-300">
+<div class="relative mb-6">
+<div class="w-full h-56 rounded-md overflow-hidden">
+<img alt="Provider" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" data-alt="portrait of a creative professional man in a casual denim shirt against an urban loft background with soft daylight" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD2dIDdABg6wCt44vDq7xKbaAHLDEJdGjT8trYBFaayNozgoC6VtMiP2LAjYHwfleCgFgH7obpWNM0lu-yR-l8SulK7aqIHDp2WxVGM0m1T3_wLhdHcr2cbt9ahOxhUMzwY4fFhtQNrorH0hP-4-ljpLQMknhuZOswD-6HE2u_7iExWFZ3-JUqkD5xGv8Tu-VafsHaGHMDPy-Tmmv2T0Y-Zkq0N1HNFMbR35ub1yt7e0gcE064DEWbaK3YyOcS3-c379hXS8-SwS54"/>
+</div>
+<div class="absolute top-4 right-4 bg-surface-dim/80 backdrop-blur-md px-3 py-1 rounded-full flex items-center gap-1">
+<span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="text-xs font-bold text-on-surface">4.7</span>
+</div>
+</div>
+<div class="flex flex-col gap-2 mb-6">
+<div class="flex justify-between items-start">
+<h3 class="text-2xl font-bold font-headline text-on-surface">Julian Rossi</h3>
+<div class="w-3 h-3 rounded-full bg-outline-variant ring-4 ring-outline-variant/20"></div>
+</div>
+<p class="text-on-surface-variant">Visual Systems Director</p>
+<div class="flex flex-wrap gap-2 mt-2">
+<span class="px-3 py-1 rounded-full bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-widest">Identity</span>
+<span class="px-3 py-1 rounded-full bg-secondary/10 text-secondary text-[10px] font-bold uppercase tracking-widest">Motion</span>
+</div>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-xl font-black text-on-surface">$165<span class="text-sm font-normal text-on-surface-variant">/hr</span></span>
+<button class="bg-tertiary-container text-on-tertiary-container font-bold px-6 py-3 rounded-full shadow-lg hover:shadow-tertiary/30 transition-all active:scale-95">
+                        Book Now
+                    </button>
+</div>
+</div>
+<!-- Provider Card 5 -->
+<div class="glass-card rounded-lg p-8 group hover:scale-[1.02] transition-all duration-300">
+<div class="relative mb-6">
+<div class="w-full h-56 rounded-md overflow-hidden">
+<img alt="Provider" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" data-alt="focused female engineer wearing glasses in a high-tech lab with glowing blue computer monitors in the background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBkA6g_a4Yz8F7UUrPpSoriDaieefJjE7LvQk--6stn5aVhdlp0uD8Pmv4cLZsQVvc50-AJQMPlySVSBbXs2PQ2BiUHVdBf2ZvXTkREqK2TVlz4cfw4ejCugsWFs1oqB9DuzCUaEgytWSh2jT6LHyCF00NDvWh5iQAe722KHnod04gZQtPZsjzLGZ65aWjaDu2f5x-4pOlTgpKqxW5Ek8w-aGfo22UOCE0np5eJDsCxQl3Xhx7cL3a1fTOaCYXgC0-rx3q07xUDWnk"/>
+</div>
+<div class="absolute top-4 right-4 bg-surface-dim/80 backdrop-blur-md px-3 py-1 rounded-full flex items-center gap-1">
+<span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="text-xs font-bold text-on-surface">4.9</span>
+</div>
+</div>
+<div class="flex flex-col gap-2 mb-6">
+<div class="flex justify-between items-start">
+<h3 class="text-2xl font-bold font-headline text-on-surface">Sasha Kovic</h3>
+<div class="w-3 h-3 rounded-full bg-secondary ring-4 ring-secondary/20 animate-pulse"></div>
+</div>
+<p class="text-on-surface-variant">Embedded Systems Architect</p>
+<div class="flex flex-wrap gap-2 mt-2">
+<span class="px-3 py-1 rounded-full bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-widest">Firmware</span>
+<span class="px-3 py-1 rounded-full bg-secondary/10 text-secondary text-[10px] font-bold uppercase tracking-widest">IoT</span>
+</div>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-xl font-black text-on-surface">$195<span class="text-sm font-normal text-on-surface-variant">/hr</span></span>
+<button class="bg-tertiary-container text-on-tertiary-container font-bold px-6 py-3 rounded-full shadow-lg hover:shadow-tertiary/30 transition-all active:scale-95">
+                        Book Now
+                    </button>
+</div>
+</div>
+<!-- Empty State / Add Provider Card -->
+<div class="glass-card rounded-lg p-8 flex flex-col items-center justify-center border-2 border-dashed border-outline-variant/30 text-center gap-4 bg-transparent shadow-none">
+<div class="w-16 h-16 rounded-full bg-surface-container-high flex items-center justify-center mb-2">
+<span class="material-symbols-outlined text-3xl text-outline-variant">person_add</span>
+</div>
+<h3 class="text-xl font-bold font-headline text-on-surface">Join the Roster</h3>
+<p class="text-on-surface-variant text-sm">Become part of the Aqua Ember network of top-tier intelligence providers.</p>
+<button class="mt-4 text-primary font-bold border border-primary/30 px-6 py-2 rounded-full hover:bg-primary/5 transition-all">Apply Now</button>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-slate-950 w-full py-12 px-8 flex flex-col md:flex-row justify-between items-center gap-6">
+<div class="flex flex-col items-center md:items-start gap-2">
+<span class="font-manrope font-bold text-teal-400 text-xl tracking-tight">DLASS Intelligence</span>
+<span class="font-inter text-sm tracking-wide text-slate-500">© 2024 DLASS Intelligence. All rights reserved.</span>
+</div>
+<div class="flex gap-8">
+<a class="font-inter text-sm tracking-wide text-slate-500 hover:text-teal-300 transition-colors" href="#">Privacy Policy</a>
+<a class="font-inter text-sm tracking-wide text-slate-500 hover:text-teal-300 transition-colors" href="#">Terms of Service</a>
+<a class="font-inter text-sm tracking-wide text-slate-500 hover:text-teal-300 transition-colors" href="#">Help Center</a>
+</div>
+<div class="flex gap-4">
+<button class="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center opacity-80 hover:opacity-100 transition-all">
+<span class="material-symbols-outlined text-teal-500 text-xl">language</span>
+</button>
+<button class="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center opacity-80 hover:opacity-100 transition-all">
+<span class="material-symbols-outlined text-teal-500 text-xl">share</span>
+</button>
+</div>
+</footer>
+</body></html>
