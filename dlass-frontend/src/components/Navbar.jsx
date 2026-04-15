@@ -12,6 +12,7 @@ function Navbar() {
   const [token, setToken] = useState(getToken());
   const [role, setRole] = useState(getUserRole());
   const [email, setEmail] = useState(getUsername());
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     const syncAuth = () => {
@@ -26,6 +27,7 @@ function Navbar() {
   const handleLogout = () => {
     logout();
     window.dispatchEvent(new Event("auth-change"));
+    setMenuOpen(false);
     navigate("/login");
   };
 
@@ -37,6 +39,7 @@ function Navbar() {
       : "/dashboard";
 
   const isActive = (path) => location.pathname === path;
+  const settingsPath = role === "ADMIN" ? "/admin" : dashboardPath;
 
   const navLinkClass = (path) =>
     `font-headline font-bold tracking-tight text-sm transition-all duration-300 hover:text-primary ${
@@ -78,12 +81,45 @@ function Navbar() {
           
           {token ? (
             <>
-              <span className="hidden sm:block text-xs text-textSecondary font-label tracking-widest truncate max-w-[180px]">
-                {email}
-              </span>
-              <Button onClick={handleLogout} variant="ghost" className="!px-4 !py-2 !text-sm border border-gray-200 dark:border-gray-700 hover:border-rose dark:hover:border-rose/50 hover:text-rose transition-colors">
-                Logout
-              </Button>
+              <div className="relative">
+                <button
+                  onClick={() => setMenuOpen((prev) => !prev)}
+                  className="flex items-center gap-2 rounded-full border border-gray-200 dark:border-gray-700 bg-white/70 dark:bg-slate-900/70 px-3 py-1.5 text-textPrimary transition-colors hover:border-primary/40"
+                >
+                  <span className="material-symbols-outlined text-lg">account_circle</span>
+                  <span className="hidden sm:block text-xs text-textSecondary font-label tracking-widest truncate max-w-[140px]">
+                    {email}
+                  </span>
+                </button>
+
+                {menuOpen && (
+                  <div className="absolute right-0 top-12 z-[70] w-56 rounded-2xl border border-white/10 bg-slate-950/95 p-2 shadow-2xl backdrop-blur-2xl">
+                    {[
+                      { label: "My Profile", path: dashboardPath },
+                      { label: "Dashboard", path: dashboardPath },
+                      { label: "Notifications", path: dashboardPath },
+                      { label: "Settings", path: settingsPath },
+                    ].map((item) => (
+                      <button
+                        key={item.label}
+                        onClick={() => {
+                          setMenuOpen(false);
+                          navigate(item.path);
+                        }}
+                        className="flex w-full items-center rounded-xl px-3 py-2 text-left text-sm text-gray-200 transition-colors hover:bg-white/5"
+                      >
+                        {item.label}
+                      </button>
+                    ))}
+                    <button
+                      onClick={handleLogout}
+                      className="mt-1 flex w-full items-center rounded-xl px-3 py-2 text-left text-sm text-rose-300 transition-colors hover:bg-rose-500/10"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
             </>
           ) : (
             <>

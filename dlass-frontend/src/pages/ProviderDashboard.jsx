@@ -90,7 +90,7 @@ export default function ProviderDashboard() {
   const [historyDays, setHistoryDays] = useState(30);
 
   // Profile
-  const [profileForm, setProfileForm] = useState({ phone: "", city: "", area: "", pincode: "", profileImageUrl: "" });
+  const [profileForm, setProfileForm] = useState({ businessName: "", phone: "", city: "", area: "", pincode: "", description: "", profileImageUrl: "" });
   const [profileMsg, setProfileMsg] = useState("");
 
 
@@ -139,10 +139,12 @@ export default function ProviderDashboard() {
         setUserId(meRes.data.id);
 
         setProfileForm({
+          businessName: dashboardRes.data.businessName || "",
           phone: dashboardRes.data.phone || "",
           city: dashboardRes.data.city || "",
           area: dashboardRes.data.area || "",
           pincode: dashboardRes.data.pincode || "",
+          description: dashboardRes.data.description || "",
           profileImageUrl: dashboardRes.data.profileImageUrl || ""
         });
 
@@ -338,7 +340,7 @@ export default function ProviderDashboard() {
       const res = await axios.post(`${API}/providers/upload-avatar`, formData, {
         headers: { ...authHeaders(), "Content-Type": "multipart/form-data" },
       });
-      setProfileForm((prev) => ({ ...prev, profileImageUrl: res.data }));
+      setProfileForm((prev) => ({ ...prev, profileImageUrl: res.data.profileImageUrl || prev.profileImageUrl }));
       setProfileMsg("✓ Avatar updated successfully!");
     } catch (err) {
       console.error(err);
@@ -350,6 +352,7 @@ export default function ProviderDashboard() {
     if (e) e.preventDefault();
     try {
       await axios.put(`${API}/providers/profile`, profileForm, { headers: authHeaders() });
+      setProviderInfo((prev) => ({ ...prev, ...profileForm }));
       setProfileMsg("✓ Profile updated successfully!");
     } catch (e) {
       setProfileMsg("✕ Failed to update profile: " + (e.response?.data?.message || e.message));
@@ -1242,8 +1245,32 @@ export default function ProviderDashboard() {
                 </div>
               </div>
 
-              <form onSubmit={saveProfile} className="space-y-4 max-w-2xl">
+              <form onSubmit={saveProfile} className="space-y-4 max-w-4xl">
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className={labelClass}>Full Name</label>
+                    <input type="text" value={providerInfo?.fullName || ""} className={`${inputClass} opacity-70`} disabled />
+                  </div>
+                  <div>
+                    <label className={labelClass}>Email</label>
+                    <input type="text" value={providerInfo?.email || ""} className={`${inputClass} opacity-70`} disabled />
+                  </div>
+                  <div>
+                    <label className={labelClass}>Username</label>
+                    <input type="text" value={providerInfo?.username || ""} className={`${inputClass} opacity-70`} disabled />
+                  </div>
+                  <div>
+                    <label className={labelClass}>Category</label>
+                    <input type="text" value={providerInfo?.categoryId || ""} className={`${inputClass} opacity-70`} disabled />
+                  </div>
+                  <div>
+                    <label className={labelClass}>Joined Date</label>
+                    <input type="text" value={providerInfo?.joinedDate ? new Date(providerInfo.joinedDate).toLocaleDateString() : ""} className={`${inputClass} opacity-70`} disabled />
+                  </div>
+                  <div>
+                    <label className={labelClass}>Business Name</label>
+                    <input type="text" value={profileForm.businessName} onChange={(e) => setProfileForm({ ...profileForm, businessName: e.target.value })} className={inputClass} placeholder="Enter business name" />
+                  </div>
                   <div>
                     <label className={labelClass}>Phone Number</label>
                     <input type="tel" value={profileForm.phone} onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })} className={inputClass} placeholder="Enter phone" />
@@ -1259,6 +1286,10 @@ export default function ProviderDashboard() {
                   <div>
                     <label className={labelClass}>Pincode</label>
                     <input type="text" value={profileForm.pincode} onChange={(e) => setProfileForm({ ...profileForm, pincode: e.target.value })} className={inputClass} placeholder="Enter pincode" />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className={labelClass}>Description</label>
+                    <textarea value={profileForm.description} onChange={(e) => setProfileForm({ ...profileForm, description: e.target.value })} className={`${inputClass} min-h-28`} placeholder="Describe your business" />
                   </div>
                 </div>
                 {profileMsg && <p className={`text-sm font-bold mt-2 ${profileMsg.startsWith("✓") ? "text-green-400" : "text-coral"}`}>{profileMsg}</p>}

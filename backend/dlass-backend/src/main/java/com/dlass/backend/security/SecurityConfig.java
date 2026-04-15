@@ -131,7 +131,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/providers/upload-avatar").hasRole("PROVIDER")
 
                         // Chat
-                        .requestMatchers("/api/chat/**").authenticated()
+                        .requestMatchers("/api/chat/**").permitAll()
 
                         // Notifications
                         .requestMatchers("/api/notifications", "/api/notifications/**").authenticated()

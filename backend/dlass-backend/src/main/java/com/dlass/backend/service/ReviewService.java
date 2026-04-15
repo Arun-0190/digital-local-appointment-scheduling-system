@@ -97,7 +97,12 @@ public class ReviewService {
     }
 
     public List<Review> getProviderReviews(String providerId) {
-        return reviewRepository.findByProviderId(providerId);
+        List<Review> reviews = reviewRepository.findByProviderId(providerId);
+        reviews.forEach(review ->
+                userRepository.findById(review.getUserId())
+                        .ifPresent(user -> review.setUserName(user.getFullName()))
+        );
+        return reviews;
     }
 
     public Review replyToReview(String reviewId, String replyText, String providerEmail) {

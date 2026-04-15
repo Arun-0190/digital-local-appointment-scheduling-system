@@ -377,6 +377,10 @@ public class ServiceProviderService {
     public ProviderProfileResponse getProviderProfile(String providerId) {
         ServiceProvider provider = repository.findById(providerId)
             .orElseThrow(() -> new RuntimeException("Provider not found"));
+        userRepository.findById(provider.getUserId()).ifPresent(user -> {
+            provider.setUserName(user.getFullName());
+            provider.setUserEmail(user.getEmail());
+        });
         List<ServiceDTO> services = serviceOfferingRepository.findByProviderId(providerId)
                                         .stream().map(s -> new ServiceDTO(
                                             s.getId(),
@@ -387,6 +391,10 @@ public class ServiceProviderService {
                                         
         List<Review> reviews =
             reviewRepository.findByProviderId(providerId);
+        reviews.forEach(review ->
+            userRepository.findById(review.getUserId())
+                .ifPresent(user -> review.setUserName(user.getFullName()))
+        );
         return new ProviderProfileResponse(provider, services, reviews);
     }
 
@@ -547,6 +555,9 @@ public class ServiceProviderService {
             user.setPhone(req.getPhone()); // keep user phone in sync
             userRepository.save(user);
         }
+        if (req.getBusinessName() != null && !req.getBusinessName().isBlank()) {
+            provider.setBusinessName(req.getBusinessName());
+        }
         if (req.getCity() != null && !req.getCity().isBlank()) {
             provider.setCity(req.getCity());
         }
@@ -555,6 +566,12 @@ public class ServiceProviderService {
         }
         if (req.getPincode() != null && !req.getPincode().isBlank()) {
             provider.setPincode(req.getPincode());
+        }
+        if (req.getDescription() != null) {
+            provider.setDescription(req.getDescription().trim());
+        }
+        if (req.getProfileImageUrl() != null && !req.getProfileImageUrl().isBlank()) {
+            provider.setProfileImageUrl(req.getProfileImageUrl());
         }
         provider.setUpdatedAt(LocalDateTime.now());
         return repository.save(provider);

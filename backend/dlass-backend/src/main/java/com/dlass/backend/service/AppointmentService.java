@@ -519,6 +519,7 @@ public class AppointmentService {
         // User contact
         User user = userRepository.findById(a.getUserId()).orElse(null);
         if (user != null) {
+            dto.setUserId(user.getId());
             dto.setUserName(user.getFullName());
             dto.setUserEmail(user.getEmail());
             dto.setUserPhone(user.getPhone());
@@ -527,6 +528,8 @@ public class AppointmentService {
         // Provider contact (via the provider's linked user account)
         ServiceProvider sp = serviceProviderRepository.findById(a.getProviderId()).orElse(null);
         if (sp != null) {
+            dto.setProviderId(sp.getId());
+            dto.setProviderUserId(sp.getUserId());
             dto.setProviderName(sp.getBusinessName());
             User providerUser = userRepository.findById(sp.getUserId()).orElse(null);
             if (providerUser != null) {
@@ -596,4 +599,4 @@ public class AppointmentService {
             return dto;
         }).toList();
     }
-}
+}

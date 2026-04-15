@@ -21,6 +21,9 @@ public class Review {
 
     private LocalDateTime createdAt;
 
+    @org.springframework.data.annotation.Transient
+    private String userName;
+
     public Review() {}
 
     public void setId(String id) { this.id = id; }
@@ -32,6 +35,7 @@ public class Review {
     public String getComment() { return comment; }
     public String getReply() { return reply; }
     public LocalDateTime getCreatedAt() { return createdAt; }
+    public String getUserName() { return userName; }
 
     public void setProviderId(String providerId) { this.providerId = providerId; }
     public void setUserId(String userId) { this.userId = userId; }
@@ -40,5 +44,6 @@ public class Review {
     public void setComment(String comment) { this.comment = comment; }
     public void setReply(String reply) { this.reply = reply; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public void setUserName(String userName) { this.userName = userName; }
 
 }

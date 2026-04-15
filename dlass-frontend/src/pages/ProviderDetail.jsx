@@ -8,6 +8,7 @@ import Button from "../components/ui/Button";
 import ReviewModal from "../components/ReviewModal";
 
 const API = "http://localhost:8080/api";
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
 
 function fmt(t) {
   if (!t) return "";
@@ -21,12 +22,14 @@ function todayISO() {
 }
 
 export default function ProviderDetail() {
-  const { id } = useParams();
+  const { id, providerId } = useParams();
+  const resolvedProviderId = id || providerId;
   const navigate = useNavigate();
 
   const [profile, setProfile] = useState(null);
   const [services, setServices] = useState([]);
   const [reviews, setReviews] = useState([]);
+  const [portfolio, setPortfolio] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -43,14 +46,16 @@ export default function ProviderDetail() {
   useEffect(() => {
     async function load() {
       try {
-        const [profRes, svcRes, revRes] = await Promise.all([
-          axios.get(`${API}/providers/${id}/profile`),
-          axios.get(`${API}/providers/${id}/services`),
-          axios.get(`${API}/reviews/provider/${id}`)
+        const [profRes, svcRes, revRes, portfolioRes] = await Promise.all([
+          axios.get(`${API}/providers/${resolvedProviderId}/profile`),
+          axios.get(`${API}/providers/${resolvedProviderId}/services`),
+          axios.get(`${API}/reviews/provider/${resolvedProviderId}`),
+          axios.get(`${API}/provider/${resolvedProviderId}/portfolio`).catch(() => ({ data: [] }))
         ]);
         setProfile(profRes.data.provider);
-        setServices(svcRes.data);
-        setReviews(revRes.data);
+        setServices(profRes.data.services || svcRes.data);
+        setReviews(profRes.data.reviews || revRes.data);
+        setPortfolio(portfolioRes.data || []);
       } catch (e) {
         setError("Failed to load provider details.");
       } finally {
@@ -58,7 +63,7 @@ export default function ProviderDetail() {
       }
     }
     load();
-  }, [id]);
+  }, [resolvedProviderId]);
 
 
 
@@ -68,13 +73,13 @@ export default function ProviderDetail() {
     setSelectedSlot(null);
     setBookError("");
     axios
-      .get(`${API}/providers/${id}/slots`, { params: { serviceId: selectedService.id, date: bookDate } })
+      .get(`${API}/providers/${resolvedProviderId}/slots`, { params: { serviceId: selectedService.id, date: bookDate } })
       .then((r) => setSlots(r.data))
       .catch(() => setSlots([]))
       .finally(() => setSlotsLoading(false));
   };
 
-  useEffect(() => { fetchSlots(); }, [selectedService, bookDate, id]);
+  useEffect(() => { fetchSlots(); }, [selectedService, bookDate, resolvedProviderId]);
 
   async function handleBook() {
     if (!selectedSlot) return;
@@ -87,7 +92,7 @@ export default function ProviderDetail() {
       await axios.post(
         `${API}/appointments`,
         {
-          providerId: id,
+          providerId: resolvedProviderId,
           serviceId: selectedService.id,
           date: bookDate,
           startTime: selectedSlot.startTime,
@@ -148,6 +153,7 @@ export default function ProviderDetail() {
                   <h1 className="text-3xl md:text-4xl font-headline font-extrabold tracking-tight text-textPrimary">
                     {profile?.businessName}
                   </h1>
+                  <p className="mt-2 text-sm font-semibold text-textSecondary">{profile?.userName || "Provider"}</p>
                   <p className="text-blue-600 dark:text-blue-400 font-headline font-bold flex items-center gap-1 mt-1 text-xs uppercase tracking-widest bg-blue-50 dark:bg-blue-900/30 px-3 py-1.5 rounded-lg w-fit border border-blue-200 dark:border-blue-800">
                     <span className="material-symbols-outlined text-xs">verified</span>
                     {profile?.experienceYears} Year{profile?.experienceYears !== 1 ? "s" : ""} Experience
@@ -175,9 +181,34 @@ export default function ProviderDetail() {
                   {profile.description}
                 </p>
               )}
+              <div className="flex flex-wrap gap-3 pt-3">
+                <Button onClick={() => document.getElementById("booking-panel")?.scrollIntoView({ behavior: "smooth" })}>Book Appointment</Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    if (!getToken()) return navigate("/login");
+                    navigate("/dashboard", { state: { openChat: { id: profile?.userId, name: profile?.businessName } } });
+                  }}
+                >
+                  Chat
+                </Button>
+              </div>
             </div>
           </GlassCard>
         </section>
+
+        {portfolio.length > 0 && (
+          <section className="mb-10">
+            <h2 className="mb-4 text-2xl font-headline font-bold text-textPrimary">Portfolio Gallery</h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {portfolio.map((filename) => (
+                <div key={filename} className="overflow-hidden rounded-2xl border border-glassBorder bg-black/5 dark:bg-white/5 aspect-square">
+                  <img src={`${BASE_URL}/uploads/provider/${filename}`} alt="Portfolio" className="h-full w-full object-cover" />
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           <div className="lg:col-span-5 space-y-4">
@@ -233,7 +264,7 @@ export default function ProviderDetail() {
           </div>
 
           <div className="lg:col-span-7">
-            <GlassCard className="!p-6 md:!p-8 h-full">
+            <GlassCard id="booking-panel" className="!p-6 md:!p-8 h-full">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4 border-b border-glassBorder pb-6">
                 <h2 className="text-2xl font-headline font-bold tracking-tight text-textPrimary">
                   Schedule Appointment

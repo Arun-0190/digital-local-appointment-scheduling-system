@@ -18,11 +18,14 @@ public class AppointmentDetailDTO {
     private double amount;
 
     // User contact info
+    private String userId;
     private String userName;
     private String userEmail;
     private String userPhone;
 
     // Provider contact info
+    private String providerId;
+    private String providerUserId;
     private String providerName;
     private String providerEmail;
     private String providerPhone;
@@ -50,6 +53,9 @@ public class AppointmentDetailDTO {
     public double getAmount() { return amount; }
     public void setAmount(double amount) { this.amount = amount; }
 
+    public String getUserId() { return userId; }
+    public void setUserId(String userId) { this.userId = userId; }
+
     public String getUserName() { return userName; }
     public void setUserName(String userName) { this.userName = userName; }
 
@@ -58,6 +64,12 @@ public class AppointmentDetailDTO {
 
     public String getUserPhone() { return userPhone; }
     public void setUserPhone(String userPhone) { this.userPhone = userPhone; }
+
+    public String getProviderId() { return providerId; }
+    public void setProviderId(String providerId) { this.providerId = providerId; }
+
+    public String getProviderUserId() { return providerUserId; }
+    public void setProviderUserId(String providerUserId) { this.providerUserId = providerUserId; }
 
     public String getProviderName() { return providerName; }
     public void setProviderName(String providerName) { this.providerName = providerName; }

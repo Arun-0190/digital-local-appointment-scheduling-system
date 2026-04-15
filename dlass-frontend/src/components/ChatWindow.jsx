@@ -11,8 +11,9 @@ function authHeaders() {
 export default function ChatWindow({ isOpen, onClose, currentUser, otherUserId, otherUserName, isMaximized, onToggleMaximize }) {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const messagesEndRef = useRef(null);
-  const containerRef = useRef(null);
 
   useEffect(() => {
     if (!isOpen || !otherUserId) return;
@@ -20,32 +21,36 @@ export default function ChatWindow({ isOpen, onClose, currentUser, otherUserId, 
     let isSubscribed = true;
 
     const fetchMessages = async () => {
-      const token = localStorage.getItem("token");
+      const token = getToken();
       if (!token) {
         console.error("No token found for chat");
         return;
       }
       if (!otherUserId) return;
 
-      console.log("Chat token:", token);
-
       try {
+        setLoading(true);
+        setError("");
         const url = `${API}/chat/${otherUserId}`;
         const res = await axios.get(url, {
           headers: { Authorization: `Bearer ${token}` }
         });
         
         if (isSubscribed && res.data) {
+          const sorted = [...res.data].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
           setMessages(prev => {
-            if (JSON.stringify(prev) !== JSON.stringify(res.data)) {
+            if (JSON.stringify(prev) !== JSON.stringify(sorted)) {
               setTimeout(scrollToBottom, 50);
-              return res.data;
+              return sorted;
             }
             return prev;
           });
         }
       } catch (err) {
+        setError(err.response?.status === 403 ? "Chat access denied." : "Failed to load messages.");
         console.error("Chat fetch error:", err);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -67,12 +72,12 @@ export default function ChatWindow({ isOpen, onClose, currentUser, otherUserId, 
 
   const handleSend = async (e) => {
     e.preventDefault();
-    const token = localStorage.getItem("token");
+    const token = getToken();
     if (!token) {
       console.error("No token found for chat");
       return;
     }
-    if (!newMessage.trim() || !otherUserId) return;
+    if (!newMessage.trim() || !otherUserId || !currentUser?.id) return;
 
     const msgData = {
       senderId: currentUser.id,
@@ -81,7 +86,8 @@ export default function ChatWindow({ isOpen, onClose, currentUser, otherUserId, 
     };
 
     try {
-      setNewMessage(""); // Optimistic clear
+      setError("");
+      setNewMessage("");
       const tempMsg = { ...msgData, id: Date.now().toString(), createdAt: new Date().toISOString() };
       setMessages(prev => [...prev, tempMsg]);
       setTimeout(scrollToBottom, 50);
@@ -91,6 +97,7 @@ export default function ChatWindow({ isOpen, onClose, currentUser, otherUserId, 
       });
 
     } catch (err) {
+      setError(err.response?.status === 403 ? "Message blocked by authorization." : "Failed to send message.");
       console.error("Send error:", err);
     }
   };
@@ -127,11 +134,12 @@ export default function ChatWindow({ isOpen, onClose, currentUser, otherUserId, 
       </div>
 
       {/* Messages Area */}
-      <div 
-        ref={containerRef}
-        className="flex-1 overflow-y-auto p-4 space-y-4 bg-black/5 dark:bg-white/5"
-      >
-        {messages.length === 0 ? (
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-black/5 dark:bg-white/5">
+        {loading && messages.length === 0 ? (
+          <div className="h-full flex items-center justify-center text-textSecondary/60 text-sm">Loading chat...</div>
+        ) : error && messages.length === 0 ? (
+          <div className="h-full flex items-center justify-center text-coral text-sm text-center">{error}</div>
+        ) : messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-textSecondary/50">
             <span className="material-symbols-outlined text-4xl mb-2">forum</span>
             <p className="text-xs font-bold text-center">No messages yet.<br/>Start the conversation!</p>
@@ -171,7 +179,7 @@ export default function ChatWindow({ isOpen, onClose, currentUser, otherUserId, 
         />
         <button 
           type="submit" 
-          disabled={!newMessage.trim()}
+          disabled={!newMessage.trim() || !currentUser?.id || !otherUserId}
           className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-white hover:scale-[1.05] hover:brightness-110 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
         >
           <span className="material-symbols-outlined text-sm">send</span>

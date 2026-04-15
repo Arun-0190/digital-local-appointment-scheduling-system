@@ -11,9 +11,12 @@ public class ProfileUpdateRequest {
     private String email;
 
     // Provider-specific fields (ignored for user updates)
+    private String businessName;
     private String city;
     private String area;
     private String pincode;
+    private String description;
+    private String profileImageUrl;
 
     public ProfileUpdateRequest() {}
 
@@ -34,4 +37,13 @@ public class ProfileUpdateRequest {
 
     public String getPincode() { return pincode; }
     public void setPincode(String pincode) { this.pincode = pincode; }
+
+    public String getBusinessName() { return businessName; }
+    public void setBusinessName(String businessName) { this.businessName = businessName; }
+
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+
+    public String getProfileImageUrl() { return profileImageUrl; }
+    public void setProfileImageUrl(String profileImageUrl) { this.profileImageUrl = profileImageUrl; }
 }

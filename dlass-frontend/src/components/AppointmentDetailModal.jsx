@@ -175,7 +175,7 @@ export default function AppointmentDetailModal({
                 key="chat"
                 onClick={() => {
                   onChat?.(
-                    currentUserRole === "PROVIDER" ? "UNKNOWN_USER_ID" : "UNKNOWN_PROVIDER_ID", 
+                    currentUserRole === "PROVIDER" ? detail.userId : detail.providerUserId,
                     currentUserRole === "PROVIDER" ? detail.userName : detail.providerName
                   ); 
                   onClose();

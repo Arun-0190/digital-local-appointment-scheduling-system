@@ -21,19 +21,19 @@ async function revert() {
   try {
     await client.connect();
     const db = client.db(dbName);
-    
+
     // Find these users to get their IDs
     const users = await db.collection('users').find({ email: { $in: emails } }).toArray();
     const userIds = users.map(u => u._id.toString());
-    
+
     // Delete providers associated with these users
     const resP = await db.collection('providers').deleteMany({ userId: { $in: userIds } });
     console.log(`Deleted ${resP.deletedCount} seeded providers.`);
-    
+
     // Delete the users themselves
     const resU = await db.collection('users').deleteMany({ email: { $in: emails } });
     console.log(`Deleted ${resU.deletedCount} seeded users.`);
-    
+
     console.log('Revert completed successfully.');
   } catch (err) {
     console.error('Error during revert:', err);

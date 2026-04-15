@@ -30,6 +30,12 @@ function UserDashboard() {
   useEffect(() => {
     setIsChatMaximized(false);
   }, [location.pathname]);
+  useEffect(() => {
+    if (location.state?.openChat?.id) {
+      setActiveChat(location.state.openChat);
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location, navigate]);
   const [tab, setTab] = useState("appointments");
 
   const [appointments, setAppointments] = useState([]);
@@ -90,7 +96,7 @@ function UserDashboard() {
       const res = await axios.post(`${API}/users/upload-avatar`, formData, {
         headers: { ...authHeaders(), "Content-Type": "multipart/form-data" },
       });
-      setProfileForm((prev) => ({ ...prev, profileImageUrl: res.data }));
+      setProfileForm((prev) => ({ ...prev, profileImageUrl: res.data.profileImageUrl || prev.profileImageUrl }));
       setProfileMsg("✓ Avatar updated successfully!");
     } catch (err) {
       console.error(err);
@@ -101,7 +107,11 @@ function UserDashboard() {
   async function saveProfile(e) {
     if (e) e.preventDefault();
     try {
-      await axios.put(`${API}/users/profile`, profileForm, { headers: authHeaders() });
+      await axios.put(`${API}/users/profile`, {
+        name: profileForm.fullName,
+        phone: profileForm.phone,
+        pincode: profileForm.pincode,
+      }, { headers: authHeaders() });
       setProfileMsg("✓ Profile updated successfully!");
       setUsername(profileForm.fullName);
     } catch (e) {

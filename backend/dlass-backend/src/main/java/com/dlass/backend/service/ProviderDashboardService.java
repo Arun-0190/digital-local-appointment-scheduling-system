@@ -6,6 +6,7 @@ import com.dlass.backend.dto.ProviderDashboardDTO;
 import com.dlass.backend.dto.RevenueMonthDTO;
 import com.dlass.backend.model.Appointment;
 import com.dlass.backend.model.ServiceProvider;
+import com.dlass.backend.model.User;
 import com.dlass.backend.repository.AppointmentRepository;
 import com.dlass.backend.repository.ReviewRepository;
 import com.dlass.backend.repository.ServiceProviderRepository;
@@ -84,6 +85,21 @@ public class ProviderDashboardService {
         dto.setReviewCount(provider.getReviewCount());
         dto.setCategoryId(provider.getCategoryId());
         dto.setSubCategoryId(provider.getSubCategoryId());
+        dto.setBusinessName(provider.getBusinessName());
+        dto.setPhone(provider.getPhone());
+        dto.setCity(provider.getCity());
+        dto.setArea(provider.getArea());
+        dto.setPincode(provider.getPincode());
+        dto.setDescription(provider.getDescription());
+        dto.setProfileImageUrl(provider.getProfileImageUrl());
+        dto.setJoinedDate(provider.getCreatedAt());
+
+        User user = userRepository.findById(userId).orElse(null);
+        if (user != null) {
+            dto.setFullName(user.getFullName());
+            dto.setEmail(user.getEmail());
+            dto.setUsername(user.getEmail());
+        }
 
         return dto;
     }
