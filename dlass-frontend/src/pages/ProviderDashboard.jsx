@@ -361,8 +361,15 @@ export default function ProviderDashboard() {
       const res = await axios.post(`${API}/providers/upload-avatar`, formData, {
         headers: { ...authHeaders(), "Content-Type": "multipart/form-data" },
       });
-      setProfileForm((prev) => ({ ...prev, profileImageUrl: res.data }));
+      
+      // The backend returns the full ServiceProvider object. Extract the image URL.
+      // Add a cache-busting timestamp.
+      const newImageUrl = res.data.profileImageUrl + "?t=" + Date.now();
+      
+      setProfileForm((prev) => ({ ...prev, profileImageUrl: newImageUrl }));
       setProfileMsg("✓ Profile picture updated!");
+      
+      // Notify navbar
       window.dispatchEvent(new Event("profile-update"));
       
       // Clean up object URL
@@ -1267,6 +1274,7 @@ export default function ProviderDashboard() {
                       src={profileForm.profileImageUrl ? (profileForm.profileImageUrl.startsWith('blob:') ? profileForm.profileImageUrl : `${BASE_URL}${profileForm.profileImageUrl.startsWith('/') ? '' : '/'}${profileForm.profileImageUrl}`) : null} 
                       name={profileForm.fullName || userName} 
                       size="lg" 
+                      className="!rounded-full object-cover"
                       glow={true}
                     />
                     <label className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity cursor-pointer z-10">
@@ -1334,7 +1342,7 @@ export default function ProviderDashboard() {
                     name={profileForm.businessName || profileForm.fullName || userName} 
                     size="xl" 
                     glow={true}
-                    className="shrink-0"
+                    className="shrink-0 !rounded-full object-cover shadow-2xl"
                   />
                   
                   <div className="flex-1 space-y-4">

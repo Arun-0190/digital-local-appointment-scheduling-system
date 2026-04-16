@@ -87,7 +87,10 @@ function Navbar() {
 
   const getProfileImageUrl = () => {
     if (!userProfile?.profileImageUrl) return null;
-    return `${BASE_URL}${userProfile.profileImageUrl.startsWith('/') ? '' : '/'}${userProfile.profileImageUrl}`;
+    // Append unique timestamp for cache-busting
+    const separator = userProfile.profileImageUrl.includes('?') ? '&' : '?';
+    const baseUrlFormatted = `${BASE_URL}${userProfile.profileImageUrl.startsWith('/') ? '' : '/'}${userProfile.profileImageUrl}`;
+    return `${baseUrlFormatted}${separator}t=${Date.now()}`;
   };
 
   return (
@@ -116,11 +119,12 @@ function Navbar() {
           {token ? (
             <div className="relative group">
               <button className="flex items-center gap-2 hover:bg-black/5 dark:hover:bg-white/5 p-1 rounded-full transition-all border border-transparent hover:border-black/10 dark:hover:border-primary/20">
-                <Avatar 
-                  src={getProfileImageUrl()} 
-                  name={userProfile?.fullName || email || "User"} 
-                  size="sm" 
-                />
+                  <Avatar 
+                    src={getProfileImageUrl()} 
+                    name={userProfile?.fullName || "User"} 
+                    size="sm" 
+                    className="!rounded-full object-cover transition-opacity hover:opacity-90"
+                  />
                 <span className="hidden sm:block text-sm font-headline font-bold text-textPrimary">{userProfile?.fullName || "User"}</span>
                 <span className="material-symbols-outlined text-textSecondary text-sm group-hover:rotate-180 transition-transform duration-300">expand_more</span>
               </button>

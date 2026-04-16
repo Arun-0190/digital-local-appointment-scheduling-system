@@ -45,13 +45,12 @@ public class ProviderDashboardService {
 
     public ProviderDashboardDTO getDashboard(String email) {
 
-        String userId = userRepository.findByEmail(email)
-                .orElseThrow()
-                .getId();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         ServiceProvider provider = providerRepository
-                .findByUserId(userId)
-                .orElseThrow();
+                .findByUserId(user.getId())
+                .orElseThrow(() -> new RuntimeException("Provider profile not found"));
 
         String providerId = provider.getId();
 
@@ -84,6 +83,24 @@ public class ProviderDashboardService {
         dto.setReviewCount(provider.getReviewCount());
         dto.setCategoryId(provider.getCategoryId());
         dto.setSubCategoryId(provider.getSubCategoryId());
+
+        // Populate new fields
+        dto.setFullName(user.getFullName());
+        dto.setUsername(email);
+        dto.setEmail(user.getEmail());
+        dto.setBusinessName(provider.getBusinessName());
+        dto.setPhone(provider.getPhone() != null ? provider.getPhone() : user.getPhone());
+        dto.setCity(provider.getCity());
+        dto.setArea(provider.getArea());
+        dto.setPincode(provider.getPincode());
+        dto.setStatus(provider.getStatus());
+        dto.setCreatedAt(provider.getCreatedAt() != null ? provider.getCreatedAt() : user.getCreatedAt());
+
+        // Prioritize provider image, fallback to user image
+        String imageUrl = (provider.getProfileImageUrl() != null && !provider.getProfileImageUrl().isEmpty())
+                ? provider.getProfileImageUrl()
+                : user.getProfileImageUrl();
+        dto.setProfileImageUrl(imageUrl);
 
         return dto;
     }
