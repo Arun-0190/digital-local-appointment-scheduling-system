@@ -35,58 +35,66 @@ public class ReminderService {
 
     @Scheduled(fixedRate = 300000)              //every 5 minutes
     public void sendReminders() {
+        try {
+            System.out.println("[ReminderService] Checking for upcoming appointments to send reminders...");
 
-        System.out.println("Checking for upcoming appointments to send reminders...");
+            List<Appointment> appointments = appointmentRepository.findAll();
+            LocalDateTime now = LocalDateTime.now();
 
-        List<Appointment> appointments = appointmentRepository.findAll();
+            for (Appointment appointment : appointments) {
+                try {
+                    // Skip deleted or non-booked appointments
+                    if (appointment.isDeleted() || !"BOOKED".equals(appointment.getStatus())) {
+                        continue;
+                    }
 
-        LocalDateTime now = LocalDateTime.now();
+                    // Robust Check: Old records might have null fields or failed to parse via custom converters
+                    if (appointment.getDate() == null || appointment.getStartTime() == null) {
+                        // Silent skip or log error? User requested "skip safely"
+                        continue;
+                    }
 
-        for (Appointment appointment : appointments) {
+                    LocalDateTime appointmentTime =
+                            LocalDateTime.of(appointment.getDate(), appointment.getStartTime());
 
-            if (!"BOOKED".equals(appointment.getStatus())) {
-                continue;
+                    long minutesUntil = Duration.between(now, appointmentTime).toMinutes();
+
+                    // Optional handling to prevent crashing the whole loop if data is missing
+                    User user = userRepository.findById(appointment.getUserId()).orElse(null);
+                    if (user == null || user.getEmail() == null) continue;
+
+                    ServiceProvider provider =
+                            serviceProviderRepository.findById(appointment.getProviderId()).orElse(null);
+                    if (provider == null) continue;
+
+                    User providerUser =
+                            userRepository.findById(provider.getUserId()).orElse(null);
+                    if (providerUser == null || providerUser.getEmail() == null) continue;
+
+                    // 24 hour reminder
+                    if (minutesUntil <= 1440 && minutesUntil > 60 && !appointment.isReminder24Sent()) {
+                        sendReminderEmails(user, providerUser, appointment);
+                        appointment.setReminder24Sent(true);
+                        appointmentRepository.save(appointment);
+                    }
+                    // 1 hour reminder
+                    else if (minutesUntil <= 60 && minutesUntil > 0 && !appointment.isReminder1hSent()) {
+                        sendReminderEmails(user, providerUser, appointment);
+                        appointment.setReminder1hSent(true);
+                        appointmentRepository.save(appointment);
+                    }
+                    // meeting start reminder
+                    else if (minutesUntil <= 0 && minutesUntil > -15 && !appointment.isReminderStartSent()) {
+                        sendReminderEmails(user, providerUser, appointment);
+                        appointment.setReminderStartSent(true);
+                        appointmentRepository.save(appointment);
+                    }
+                } catch (Exception e) {
+                    System.err.println("[ReminderService] Error processing appointment " + appointment.getId() + ": " + e.getMessage());
+                }
             }
-
-            LocalDateTime appointmentTime =
-                    LocalDateTime.of(appointment.getDate(), appointment.getStartTime());
-
-            long minutesUntil = Duration.between(now, appointmentTime).toMinutes();
-
-            User user = userRepository.findById(appointment.getUserId()).orElseThrow();
-
-            ServiceProvider provider =
-                    serviceProviderRepository.findById(appointment.getProviderId()).orElseThrow();
-
-            User providerUser =
-                    userRepository.findById(provider.getUserId()).orElseThrow();
-
-            // 24 hour reminder
-            if (minutesUntil <= 1440 && !appointment.isReminder24Sent()) {
-
-                sendReminderEmails(user, providerUser, appointment);
-
-                appointment.setReminder24Sent(true);
-                appointmentRepository.save(appointment);
-            }
-
-            // 1 hour reminder
-            else if (minutesUntil <= 60 && !appointment.isReminder1hSent()) {
-
-                sendReminderEmails(user, providerUser, appointment);
-
-                appointment.setReminder1hSent(true);
-                appointmentRepository.save(appointment);
-            }
-
-            // meeting start reminder
-            else if (minutesUntil <= 0 && !appointment.isReminderStartSent()) {
-
-                sendReminderEmails(user, providerUser, appointment);
-
-                appointment.setReminderStartSent(true);
-                appointmentRepository.save(appointment);
-            }
+        } catch (Exception e) {
+            System.err.println("[ReminderService] CRITICAL: Failed to run reminder task: " + e.getMessage());
         }
     }
 
