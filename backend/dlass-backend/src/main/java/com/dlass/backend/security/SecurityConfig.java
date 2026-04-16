@@ -110,9 +110,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/reviews/**").hasRole("USER")
                         .requestMatchers(HttpMethod.GET, "/api/reviews/**").permitAll()
 
-                        //Dashboard
-                        .requestMatchers(HttpMethod.GET, "/api/provider/dashboard").hasRole("PROVIDER")
-                        .requestMatchers(HttpMethod.GET, "/api/provider/dashboard/**").hasRole("PROVIDER")
+                        // Dashboard
+                        .requestMatchers("/api/provider/dashboard", "/api/provider/dashboard/**").hasAnyRole("PROVIDER", "ADMIN")
 
                         // Portfolio
                         .requestMatchers(HttpMethod.POST, "/api/provider/upload-image").hasRole("PROVIDER")
@@ -138,9 +137,11 @@ public class SecurityConfig {
                         .requestMatchers("/api/chat/**").authenticated()
 
                         // Notifications
-                        .requestMatchers("/api/notifications", "/api/notifications/**").authenticated()
+                        .requestMatchers("/api/notifications/**").authenticated()
+                        .requestMatchers("/api/notifications").authenticated()
 
                         .anyRequest().authenticated()
+
                 )
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)

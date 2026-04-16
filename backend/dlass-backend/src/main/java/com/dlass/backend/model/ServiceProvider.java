@@ -44,7 +44,13 @@ public class ServiceProvider {
     private String status; // PENDING, ACTIVE, SUSPENDED
 
     @Field("isActive")
-    private boolean isActive = true; // existing soft-delete flag
+    private Boolean isActive;
+
+    @Field("active")
+    private Boolean active;
+
+    @Field("enabled")
+    private Boolean enabled;
 
     private boolean isDeleted = false;
     private LocalDateTime deletedAt;
@@ -202,11 +208,26 @@ public class ServiceProvider {
 
     @JsonProperty("isActive")
     public boolean isActive() {
-        return isActive;
+        if (isActive != null) return isActive;
+        if (active != null) return active;
+        if (enabled != null) return enabled;
+        return true;
+    }
+
+    public ServiceProvider() {
+        this.createdAt = LocalDateTime.now();
+        this.status = "PENDING";
+        this.isActive = true;
+        this.active = true;
+        this.enabled = true;
+        this.rating = 0.0;
+        this.reviewCount = 0;
     }
 
     public void setActive(boolean active) {
-        isActive = active;
+        this.isActive = active;
+        this.active = active;
+        this.enabled = active;
     }
 
     public boolean isDeleted() { return isDeleted; }

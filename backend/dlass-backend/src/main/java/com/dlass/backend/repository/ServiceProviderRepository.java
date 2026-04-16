@@ -16,6 +16,8 @@ public interface ServiceProviderRepository extends MongoRepository<ServiceProvid
     @Query("{ 'userId': ?0, $or: [ { 'isDeleted': false }, { 'isDeleted': { $exists: false } } ] }")
     Optional<ServiceProvider> findByUserId(String userId);
 
+    boolean existsByUserId(String userId);
+
     @Query("{ 'pincode': { $regex: '^?0' }, $or: [ { 'isDeleted': false }, { 'isDeleted': { $exists: false } } ] }")
     List<ServiceProvider> findByPincodeStartingWith(String prefix);
 
@@ -26,28 +28,27 @@ public interface ServiceProviderRepository extends MongoRepository<ServiceProvid
     List<ServiceProvider> findByCategoryIdAndSubCategoryIdAndStatus(String categoryId, String subCategoryId, String status);
 
     /** Soft-delete aware — also matches old docs where field doesn't exist */
-    @Query("{ $and: [ { $or: [ { 'isActive': true }, { 'active': true }, { 'isActive': { $exists: false }, 'active': { $exists: false } } ] }, { $or: [ { 'isDeleted': false }, { 'isDeleted': { $exists: false } } ] } ] }")
+    @Query("{ 'isActive': { $ne: false }, 'active': { $ne: false }, 'enabled': { $ne: false }, 'isDeleted': { $ne: true } }")
     List<ServiceProvider> findByIsActiveTrue();
 
-    /** Active providers by status */
-    @Query("{ 'status': ?0, $and: [ { $or: [ { 'isActive': true }, { 'active': true }, { 'isActive': { $exists: false }, 'active': { $exists: false } } ] }, { $or: [ { 'isDeleted': false }, { 'isDeleted': { $exists: false } } ] } ] }")
+    @Query("{ 'status': ?0, 'isActive': { $ne: false }, 'active': { $ne: false }, 'enabled': { $ne: false }, 'isDeleted': { $ne: true } }")
     List<ServiceProvider> findByStatusAndIsActiveTrue(String status);
 
     /** Active providers for search */
-    @Query("{ 'subCategoryId': ?0, 'status': ?1, $and: [ { $or: [ { 'isActive': true }, { 'active': true }, { 'isActive': { $exists: false }, 'active': { $exists: false } } ] }, { $or: [ { 'isDeleted': false }, { 'isDeleted': { $exists: false } } ] } ] }")
+    @Query("{ 'subCategoryId': ?0, 'status': ?1, $and: [ { $or: [ { 'isActive': true }, { 'isActive': { $exists: false } } ] }, { $or: [ { 'isDeleted': false }, { 'isDeleted': { $exists: false } } ] } ] }")
     List<ServiceProvider> findBySubCategoryIdAndStatusAndIsActiveTrue(String subCategoryId, String status);
 
-    @Query("{ 'categoryId': ?0, 'subCategoryId': ?1, 'status': ?2, $and: [ { $or: [ { 'isActive': true }, { 'active': true }, { 'isActive': { $exists: false }, 'active': { $exists: false } } ] }, { $or: [ { 'isDeleted': false }, { 'isDeleted': { $exists: false } } ] } ] }")
+    @Query("{ 'categoryId': ?0, 'subCategoryId': ?1, 'status': ?2, $and: [ { $or: [ { 'isActive': true }, { 'isActive': { $exists: false } } ] }, { $or: [ { 'isDeleted': false }, { 'isDeleted': { $exists: false } } ] } ] }")
     List<ServiceProvider> findByCategoryIdAndSubCategoryIdAndStatusAndIsActiveTrue(
             String categoryId, String subCategoryId, String status);
 
     /** Weekly stats: active providers created between dates */
-    @Query("{ 'createdAt': { $gte: ?0, $lte: ?1 }, $and: [ { $or: [ { 'isActive': true }, { 'active': true }, { 'isActive': { $exists: false }, 'active': { $exists: false } } ] }, { $or: [ { 'isDeleted': false }, { 'isDeleted': { $exists: false } } ] } ] }")
+    @Query("{ 'createdAt': { $gte: ?0, $lte: ?1 }, $and: [ { $or: [ { 'isActive': true }, { 'isActive': { $exists: false } } ] }, { $or: [ { 'isDeleted': false }, { 'isDeleted': { $exists: false } } ] } ] }")
     List<ServiceProvider> findByCreatedAtBetweenAndIsActiveTrue(LocalDateTime from, LocalDateTime to);
 
-    @Query(value = "{ 'createdAt': { $gte: ?0, $lte: ?1 }, $and: [ { $or: [ { 'isActive': true }, { 'active': true }, { 'isActive': { $exists: false }, 'active': { $exists: false } } ] }, { $or: [ { 'isDeleted': false }, { 'isDeleted': { $exists: false } } ] } ] }", count = true)
+    @Query(value = "{ 'createdAt': { $gte: ?0, $lte: ?1 }, $and: [ { $or: [ { 'isActive': true }, { 'isActive': { $exists: false } } ] }, { $or: [ { 'isDeleted': false }, { 'isDeleted': { $exists: false } } ] } ] }", count = true)
     long countByCreatedAtBetweenAndIsActiveTrue(LocalDateTime from, LocalDateTime to);
 
-    @Query("{ $or: [ { 'isDeleted': true }, { 'isActive': false }, { 'active': false } ] }")
+    @Query("{ $or: [ { 'isDeleted': true }, { 'isActive': false } ] }")
     List<ServiceProvider> findDeletedProviders();
-}
+}

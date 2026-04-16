@@ -1,6 +1,9 @@
 package com.dlass.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.data.annotation.Id;
+
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDate;
@@ -16,9 +19,15 @@ public class Appointment {
     private String userId;
     private String providerId;
 
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate date;
+
+    @JsonFormat(pattern = "HH:mm:ss")
     private LocalTime startTime;
+
+    @JsonFormat(pattern = "HH:mm:ss")
     private LocalTime endTime;
+
 
     private String status;    //BOOKED, PAID, CANCELLED, COMPLETED
 
@@ -27,7 +36,9 @@ public class Appointment {
     private String paymentId;
     private double amount;
 
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createdAt;
+
 
     private boolean reminder24Sent = false;
     private boolean reminder1hSent = false;

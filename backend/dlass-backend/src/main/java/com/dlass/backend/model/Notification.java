@@ -1,5 +1,6 @@
 package com.dlass.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -22,6 +23,7 @@ public class Notification {
     @JsonProperty("isRead")
     private boolean isRead = false;
     
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createdAt = LocalDateTime.now();
 
     public Notification() {

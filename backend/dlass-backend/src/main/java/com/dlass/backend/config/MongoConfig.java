@@ -7,8 +7,24 @@ import com.mongodb.client.MongoClients;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.data.convert.ReadingConverter;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.MongoDatabaseFactory;
 import org.springframework.data.mongodb.core.SimpleMongoClientDatabaseFactory;
+import org.springframework.data.mongodb.core.convert.MongoCustomConversions;
+
+
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
 
 @Configuration
 public class MongoConfig {
@@ -41,14 +57,80 @@ public class MongoConfig {
     }
 
     @Bean
-    public MongoTemplate mongoTemplate() {
-        return new MongoTemplate(new SimpleMongoClientDatabaseFactory(mongoClient(), getDatabaseName()));
+    public MongoCustomConversions customConversions() {
+        List<Converter<?, ?>> converters = new ArrayList<>();
+        converters.add(new StringToLocalDateConverter());
+        converters.add(new StringToLocalDateTimeConverter());
+        converters.add(new DateToLocalDateConverter());
+        converters.add(new DateToLocalDateTimeConverter());
+        return new MongoCustomConversions(converters);
+    }
+
+
+    @ReadingConverter
+    public static class StringToLocalDateConverter implements Converter<String, LocalDate> {
+        @Override
+        public LocalDate convert(String source) {
+            if (source == null || source.isBlank()) return null;
+            try {
+                if (source.contains("T")) {
+                    return OffsetDateTime.parse(source).toLocalDate();
+                }
+                return LocalDate.parse(source);
+            } catch (Exception e) {
+                return null;
+            }
+        }
+    }
+
+    @ReadingConverter
+    public static class StringToLocalDateTimeConverter implements Converter<String, LocalDateTime> {
+        @Override
+        public LocalDateTime convert(String source) {
+            if (source == null || source.isBlank()) return null;
+            try {
+                if (source.contains("T")) {
+                    return OffsetDateTime.parse(source).toLocalDateTime();
+                }
+                return LocalDateTime.parse(source);
+            } catch (Exception e) {
+                return null;
+            }
+        }
+    }
+
+    @ReadingConverter
+    public static class DateToLocalDateConverter implements Converter<Date, LocalDate> {
+        @Override
+        public LocalDate convert(Date source) {
+            return source.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        }
+    }
+
+    @ReadingConverter
+    public static class DateToLocalDateTimeConverter implements Converter<Date, LocalDateTime> {
+        @Override
+        public LocalDateTime convert(Date source) {
+            return source.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+        }
+    }
+
+
+    @Bean
+    public MongoDatabaseFactory mongoDatabaseFactory(MongoClient mongoClient) {
+        return new SimpleMongoClientDatabaseFactory(mongoClient, getDatabaseName());
+    }
+
+    @Bean
+    public MongoTemplate mongoTemplate(MongoDatabaseFactory mongoDatabaseFactory) {
+        return new MongoTemplate(mongoDatabaseFactory);
     }
 
     private String getDatabaseName() {
         try {
             ConnectionString connectionString = new ConnectionString(mongoUri);
-            return connectionString.getDatabase() != null ? connectionString.getDatabase() : "dlass_db";
+            String db = connectionString.getDatabase();
+            return (db != null && !db.isBlank()) ? db : "dlass_db";
         } catch (Exception e) {
             return "dlass_db";
         }
