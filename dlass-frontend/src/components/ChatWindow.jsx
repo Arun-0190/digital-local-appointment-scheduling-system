@@ -2,7 +2,9 @@ import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { getToken } from "../services/authService";
 
-const API = "http://localhost:8080/api";
+import { API_URL } from "../services/apiUtils";
+
+const API = API_URL;
 
 function authHeaders() {
   return { Authorization: `Bearer ${getToken()}` };
@@ -27,7 +29,6 @@ export default function ChatWindow({ isOpen, onClose, currentUser, otherUserId, 
       }
       if (!otherUserId) return;
 
-      console.log("Chat token:", token);
 
       try {
         const url = `${API}/chat/${otherUserId}`;

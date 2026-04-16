@@ -14,9 +14,10 @@ import Avatar from "../components/ui/Avatar";
 import ReviewModal from "../components/ReviewModal";
 import StatCard from "../components/ui/StatCard";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
+import { API_BASE_URL, API_URL } from "../services/apiUtils";
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
-const API = `${BASE_URL}/api`;
+const BASE_URL = API_BASE_URL;
+const API = API_URL;
 
 function authHeaders() {
   return { Authorization: `Bearer ${getToken()}` };

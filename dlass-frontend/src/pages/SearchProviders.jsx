@@ -8,8 +8,9 @@ import PageWrapper from "../components/ui/PageWrapper";
 import GlassCard from "../components/ui/GlassCard";
 import Button from "../components/ui/Button";
 import Dropdown from "../components/ui/Dropdown";
+import { API_URL } from "../services/apiUtils";
 
-const API_BASE = "http://localhost:8080/api";
+const API_BASE = API_URL;
 
 const SORT_OPTIONS = [
   { value: "", label: "Relevance (Default)" },

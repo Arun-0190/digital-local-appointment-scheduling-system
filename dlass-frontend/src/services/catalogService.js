@@ -1,14 +1,15 @@
 import axios from 'axios';
+import { API_URL } from './apiUtils';
 
-const API_BASE_URL = 'http://localhost:8080/api/catalog';
+const CATALOG_API = `${API_URL}/catalog`;
 
 export const getCategories = async () => {
-  const res = await axios.get(`${API_BASE_URL}/categories`);
+  const res = await axios.get(`${CATALOG_API}/categories`);
   return res.data;
 };
 
 export const getSubCategories = async (categoryId) => {
-  const res = await axios.get(`${API_BASE_URL}/subcategories`, {
+  const res = await axios.get(`${CATALOG_API}/subcategories`, {
     params: { categoryId }
   });
   return res.data;

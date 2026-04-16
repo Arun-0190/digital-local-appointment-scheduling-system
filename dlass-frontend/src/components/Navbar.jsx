@@ -6,7 +6,9 @@ import Button from "./ui/Button";
 import Avatar from "./ui/Avatar";
 import NotificationBell from "./NotificationBell";
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+import { API_BASE_URL } from "../services/apiUtils";
+
+const BASE_URL = API_BASE_URL;
 
 function Navbar() {
   const navigate = useNavigate();

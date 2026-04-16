@@ -7,8 +7,10 @@ import GlassCard from "../components/ui/GlassCard";
 import Button from "../components/ui/Button";
 import ReviewModal from "../components/ReviewModal";
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
-const API = `${BASE_URL}/api`;
+import { API_BASE_URL, API_URL } from "../services/apiUtils";
+
+const BASE_URL = API_BASE_URL;
+const API = API_URL;
 
 function fmt(t) {
   if (!t) return "";
