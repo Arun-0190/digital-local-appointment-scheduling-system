@@ -170,7 +170,10 @@ export default function ProviderDashboard() {
           .catch(() => {});
       } catch (err) {
         console.error("Dashboard Init Error:", err);
-        setError("Could not load dashboard. Make sure you are an approved provider.");
+        const msg = err.response?.data?.message || err.message || "An unexpected error occurred.";
+        setError(msg.includes("approved provider") 
+          ? msg 
+          : "Could not load dashboard. Please try again later.");
       } finally {
         setLoading(false);
       }
