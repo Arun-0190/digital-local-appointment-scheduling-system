@@ -15,13 +15,13 @@ public class AdminSeeder implements CommandLineRunner {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    @Value("${ADMIN_EMAIL}")
+    @Value("${admin.email}")
     private String adminEmail;
 
-    @Value("${ADMIN_PASSWORD}")
+    @Value("${admin.password}")
     private String adminPassword;
 
-    @Value("${ADMIN_NAME}")
+    @Value("${admin.name:DLASS Admin}")
     private String adminName;
 
     public AdminSeeder(UserRepository userRepository, PasswordEncoder passwordEncoder) {
@@ -32,9 +32,6 @@ public class AdminSeeder implements CommandLineRunner {
     @Override
     public void run(String... args) {
         try {
-            // Log connection success (assuming Spring Boot started successfully if we're here)
-            System.out.println("[DLASS] Connected to MongoDB Atlas successfully");
-
             if (adminEmail == null || adminEmail.isBlank() || adminPassword == null || adminPassword.isBlank()) {
                 System.err.println("[DLASS] SKIP: Admin credentials (email/password) are missing in environment.");
                 return;

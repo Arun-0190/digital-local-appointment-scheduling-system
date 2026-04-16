@@ -2,6 +2,10 @@ spring:
   application:
     name: dlass-backend
 
+  data:
+    mongodb:
+      uri: ${MONGODB_URI}
+
   mail:
     host: ${MAIL_HOST}
     port: ${MAIL_PORT}
@@ -13,9 +17,6 @@ spring:
           auth: true
           starttls:
             enable: true
-  data:
-    mongodb:
-      uri: ${MONGODB_URI:mongodb://localhost:27017/dlass_db}
 
   servlet:
     multipart:
@@ -36,3 +37,12 @@ app:
     secret: ${JWT_SECRET:dlass-super-secret-key-dlass-super-secret-key}
   upload:
     dir: uploads/provider
+  avatar:
+    dir: uploads/avatars
+
+# Admin Credentials (picked up from system env or Dotenv)
+admin:
+  email: ${ADMIN_EMAIL}
+  password: ${ADMIN_PASSWORD}
+  name: ${ADMIN_NAME:DLASS Admin}
+

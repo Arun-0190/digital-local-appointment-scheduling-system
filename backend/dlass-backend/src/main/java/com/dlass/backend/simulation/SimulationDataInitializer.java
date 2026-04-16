@@ -2,6 +2,7 @@ package com.dlass.backend.simulation;
 
 import com.dlass.backend.model.*;
 import com.dlass.backend.repository.*;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -21,6 +22,9 @@ public class SimulationDataInitializer implements CommandLineRunner {
     private final ReviewRepository reviewRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @Value("${app.seed.simulation:false}")
+    private boolean seedSimulation;
+
     public SimulationDataInitializer(UserRepository userRepository, 
                                      ServiceProviderRepository providerRepository, 
                                      AppointmentRepository appointmentRepository, 
@@ -35,6 +39,10 @@ public class SimulationDataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
+        if (!seedSimulation) {
+            return;
+        }
+
         String KAMLESH_ID = "69c8f55313de1c936d29e8f2";
         
         // Check if simulation is already present
