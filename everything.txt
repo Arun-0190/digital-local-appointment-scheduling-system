@@ -1,32 +1,114 @@
-# DLASS Project Context
+# DLASS: Digital Local Appointment Scheduling System - Project Master Guide
 
-## Architecture
-- **Frontend**: React + Vite + Tailwind CSS.
-- **Backend**: Spring Boot + Java (running on port 8080).
-- **Database**: MongoDB.
-- **Authentication**: JWT based.
+## 🌟 Project Overview
+DLASS is a comprehensive, full-stack service marketplace platform designed to bridge the gap between local service providers and customers. It features a robust appointment scheduling engine, a real-time chat system, and an advanced analytics dashboard for providers, all powered by an AI-driven recommendation layer.
 
-## Key Modules
-- **Login / Register**: Works under `/api/auth/...`.
-- **Provider Dashboard**: React `ProviderDashboard.jsx`. Backend `ServiceProviderController` + `ServiceProviderService`.
-- **User Dashboard**: React `UserDashboard.jsx`. Backend `UserController` + `UserService`.
-- **Search & Provider Detail**: React `SearchProviders.jsx` -> `ProviderDetail.jsx`. Backend `/api/providers/{providerId}/profile` returning `ProviderProfileResponse`.
-- **Chat System**: UI exists in `ChatWindow.jsx`. Syncs correctly via websockets / SSE / polling.
-- **Static Assets / Avatars**: Managed via `StaticResourceConfig.java` in backend. Avatars upload to `/api/providers/upload-avatar` and `/api/users/upload-avatar` (persisted to `uploads/avatars`). Provider portfolios are uploaded to `uploads/provider`. Accessed cleanly via `http://localhost:8080/uploads/avatars/...` and `http://localhost:8080/uploads/provider/...`.
+The project is built with a focus on high performance, secure communication, and a premium "Aurelian Night" design aesthetic, utilizing modern web technologies and production-ready architecture.
 
-## Recent Fixes
-### Provider Public Profile Navigate
-- In `ProviderDetail.jsx`, Hero Avatar is loaded. Reviews correctly display `userName`. Portfolio images accurately mapped and displayed cleanly! "Chat Provider" CTA implemented successfully using `navigate("/dashboard", { state: { openChatWith: {...} } })`.
+---
 
-### Avatar Bug
-- Frontend `profileImageUrl` accurately mapped to append API domain properly.
-- `ServiceProviderService.java:uploadAvatar` synced to save `profileImageUrl` across both the underlying `User` record AND the `ServiceProvider` record.
+## 🛠️ Technology Stack
 
-### Navbar
-- Remodelled user navigation logic in `Navbar.jsx`. Drops raw email presentation in favor of an interactive Profile Avatar Dropdown fetched dynamically through `/api/users/me`. Gracefully falls back to initials/name rendering. Added Links for 'My Profile / Dashboard', 'Notifications', and 'Settings'.
+### Frontend
+- **Framework**: React.js (built with Vite)
+- **Styling**: Tailwind CSS (with a custom "Aurelian Night" premium theme)
+- **Animations**: Framer Motion
+- **State Management**: React Hooks & Context API
+- **Routing**: React Router DOM (v6+)
+- **Charts**: Recharts / Chart.js for provider analytics
+- **Communication**: Polling/Fetch API (with infrastructure for WebSockets)
 
-## Operational Instructions
-- Run backend: `mvn spring-boot:run` in `backend/dlass-backend`.
-- Run frontend: `npm run dev` in `dlass-frontend` (runs on `http://localhost:5175`). 
+### Backend
+- **Framework**: Spring Boot (Java 21)
+- **Security**: Spring Security + JWT (JSON Web Tokens)
+- **Database**: MongoDB (Atlas for cloud hosting)
+- **File Storage**: Local filesystem (with static resource mapping for avatars and portfolios)
+- **Email**: SMTP integration for transactional notifications
+- **Build Tool**: Maven
 
-All flows gracefully working in tandem!
+### Database
+- **Primary Database**: MongoDB (NoSQL)
+- **Schema Design**: Document-based with support for soft deletes and audit tracking (`isDeleted`, `deletedAt`).
+
+---
+
+## 📁 Folder Structure & File Roles
+
+### 1. Root Directory
+- `everything.txt`: This comprehensive guide.
+- `README.md`: High-level project entry point.
+- `FOLDER_STRUCTURE.md`: Detailed documentation of the directory map.
+- `.gitignore`: Specifies files for Git to ignore (node_modules, target, .env).
+
+### 2. `/backend`
+- **`dlass-backend/`**: The core Spring Boot application.
+  - `Dockerfile`: Multi-stage build for production deployment.
+  - `src/main/java/com/dlass/backend/`:
+    - `controller/`: REST API endpoints (User, Provider, Booking, Chat, Admin).
+    - `service/`: Core business logic and AI recommendation algorithms.
+    - `repository/`: MongoDB data access layer using Spring Data MongoDB.
+    - `model/`: Data entities (User, ServiceProvider, Appointment, Review, Message).
+    - `security/`: JWT filter, authentication providers, and security configurations.
+    - `config/`: Application configurations (CORS, Static Resources, Mail).
+  - `src/main/resources/`:
+    - `application.yaml`: Central backend configuration (Database URI, Port, JWT Secret).
+  - `pom.xml`: Maven dependencies and build configuration.
+
+### 3. `/dlass-frontend`
+- **`src/`**: React source code.
+  - `components/`: UI components (Navbar, Sidebar, Profile Cards, Chat Window).
+    - `common/`: Shared components like Loaders and Modals.
+    - `provider/` / `user/` / `admin/`: Role-specific UI elements.
+  - `pages/`: Full-page views (Hero, Login, Search, Dashboards).
+  - `services/`: API utility functions for backend communication.
+  - `utils/`: Helper functions (Formatting, Constants, Validations).
+- `tailwind.config.js`: Custom theme and design system tokens.
+- `package.json`: Frontend dependencies and scripts.
+
+### 4. `/database`
+- `schema/`: JSON schema documents for MongoDB collections.
+- `seed-data/`: JSON files for populating the database during development.
+
+### 5. `/docs`
+- `SRS/`: Software Requirements Specifications.
+- `api-docs/`: Documentation for REST endpoints.
+- `diagrams/`: Architecture and Database visualizations.
+
+### 6. `/scripts`
+- Automation scripts (Batch files) for building backend and frontend modules locally.
+
+---
+
+## 🚀 How to Deploy
+
+Deploying DLASS requires setting up both the backend (API) and frontend (Static Client), along with a managed MongoDB database.
+
+### 1. Database Setup (MongoDB Atlas)
+- Create a cluster on [MongoDB Atlas](https://www.mongodb.com/cloud/atlas).
+- Create a database user and whitelist the deployment server's IP.
+- Copy the connection string (format: `mongodb+srv://...`).
+
+### 2. Backend Deployment (e.g., VPS, Render, or Spring Cloud)
+- **Environment Variables**: Ensure the following are set in the production environment:
+  - `SPRING_DATA_MONGODB_URI`: Your Atlas connection string.
+  - `JWT_SECRET`: A strong random string for token signing.
+  - `MAIL_USERNAME` & `MAIL_PASSWORD`: For notification services.
+- **Build**: Use the provided `Dockerfile` or run `mvn clean package -DskipTests`.
+- **Run**: If using native runtime, execute `java -jar target/dlass-backend-0.0.1-SNAPSHOT.jar`.
+- **Note**: The app is configured to use the `PORT` environment variable provided by Render.
+
+### 3. Frontend Deployment (e.g., Vercel, Netlify, or Nginx)
+- **Environment Variables**: Create a `.env` file in the frontend root:
+  - `VITE_API_BASE_URL`: The URL of your deployed backend (e.g., `https://api.dlass.com`).
+- **Build**: Run `npm install` and then `npm run build`. This generates a `dist/` folder.
+- **Serve**: 
+  - For **Vercel/Netlify**: Just point the build command to `npm run build` and the output directory to `dist`.
+  - For **VPS/Nginx**: Upload the `dist` folder to your server and configure Nginx to serve `index.html` for all routes (SPA support).
+
+### 4. SSL & Production Hardening
+- Use **Certbot/Let's Encrypt** for HTTPS.
+- Update CORS configuration in the backend (`WebConfig.java`) to allow only your production frontend domain.
+- Set up a reverse proxy (like Nginx) to handle incoming traffic and forward it to the Spring Boot application.
+
+---
+*Created by Arun-0190;

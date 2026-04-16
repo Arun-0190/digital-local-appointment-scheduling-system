@@ -28,8 +28,11 @@ spring:
       static-locations: classpath:/static/,file:uploads/
 
 server:
-  port: 8080
+  port: ${PORT:8080}
 
 app:
+  frontend-url: ${FRONTEND_URL:http://localhost:5173}
+  jwt:
+    secret: ${JWT_SECRET:dlass-super-secret-key-dlass-super-secret-key}
   upload:
     dir: uploads/provider
