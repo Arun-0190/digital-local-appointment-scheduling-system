@@ -11,8 +11,12 @@ import java.util.List;
 
 public interface AppointmentRepository extends MongoRepository<Appointment, String> {
 
-    @Query("{ 'providerId': ?0, 'date': ?1, $or: [ { 'isDeleted': false }, { 'isDeleted': { $exists: false } } ] }")
-    List<Appointment> findByProviderIdAndDate(String providerId, LocalDate date);
+    @Query("{ 'providerId': ?0, 'date': { $gte: ?1, $lte: ?2 }, $or: [ { 'isDeleted': false }, { 'isDeleted': { $exists: false } } ] }")
+    List<Appointment> findByProviderIdAndDateBetweenInternal(String providerId, LocalDateTime start, LocalDateTime end);
+
+    default List<Appointment> findByProviderIdAndDate(String providerId, LocalDate date) {
+        return findByProviderIdAndDateBetweenInternal(providerId, date.atStartOfDay(), date.atTime(LocalTime.MAX));
+    }
 
     void deleteByProviderId(String providerId);
 
@@ -22,32 +26,53 @@ public interface AppointmentRepository extends MongoRepository<Appointment, Stri
     @Query(value = "{ 'providerId': ?0, $or: [ { 'isDeleted': false }, { 'isDeleted': { $exists: false } } ] }", count = true)
     long countByProviderId(String providerId);
 
-    @Query(value = "{ 'providerId': ?0, 'date': ?1, $or: [ { 'isDeleted': false }, { 'isDeleted': { $exists: false } } ] }", count = true)
-    long countByProviderIdAndDate(String providerId, LocalDate date);
+    @Query(value = "{ 'providerId': ?0, 'date': { $gte: ?1, $lte: ?2 }, $or: [ { 'isDeleted': false }, { 'isDeleted': { $exists: false } } ] }", count = true)
+    long countByProviderIdAndDateBetweenInternal(String providerId, LocalDateTime start, LocalDateTime end);
+
+    default long countByProviderIdAndDate(String providerId, LocalDate date) {
+        return countByProviderIdAndDateBetweenInternal(providerId, date.atStartOfDay(), date.atTime(LocalTime.MAX));
+    }
 
     @Query(value = "{ 'providerId': ?0, 'date': { $gt: ?1 }, $or: [ { 'isDeleted': false }, { 'isDeleted': { $exists: false } } ] }", count = true)
-    long countByProviderIdAndDateAfter(String providerId, LocalDate date);
+    long countByProviderIdAndDateAfterInternal(String providerId, LocalDateTime date);
+
+    default long countByProviderIdAndDateAfter(String providerId, LocalDate date) {
+        return countByProviderIdAndDateAfterInternal(providerId, date.atTime(LocalTime.MAX));
+    }
 
     @Query("{ 'providerId': ?0, $or: [ { 'isDeleted': false }, { 'isDeleted': { $exists: false } } ] }")
     List<Appointment> findByProviderId(String providerId);
 
-    @Query(value = "{ 'providerId': ?0, 'date': ?1, 'startTime': ?2, $or: [ { 'isDeleted': false }, { 'isDeleted': { $exists: false } } ] }", exists = true)
-    boolean existsByProviderIdAndDateAndStartTime(String providerId, LocalDate date, LocalTime startTime);
+    @Query(value = "{ 'providerId': ?0, 'date': { $gte: ?1, $lte: ?2 }, 'startTime': ?3, $or: [ { 'isDeleted': false }, { 'isDeleted': { $exists: false } } ] }", exists = true)
+    boolean existsByProviderIdAndDateBetweenInternal(String providerId, LocalDateTime start, LocalDateTime end, LocalTime startTime);
 
-    /** Weekly analytics: appointments in a date range */
+    default boolean existsByProviderIdAndDateAndStartTime(String providerId, LocalDate date, LocalTime startTime) {
+        return existsByProviderIdAndDateBetweenInternal(providerId, date.atStartOfDay(), date.atTime(LocalTime.MAX), startTime);
+    }
+
+    /** Weekly analytics range queries */
     @Query("{ 'date': { $gte: ?0, $lte: ?1 }, $or: [ { 'isDeleted': false }, { 'isDeleted': { $exists: false } } ] }")
-    List<Appointment> findByDateBetween(LocalDate from, LocalDate to);
+    List<Appointment> findByDateBetweenInternal(LocalDateTime from, LocalDateTime to);
+
+    default List<Appointment> findByDateBetween(LocalDate from, LocalDate to) {
+        return findByDateBetweenInternal(from.atStartOfDay(), to.atTime(LocalTime.MAX));
+    }
 
     @Query(value = "{ 'date': { $gte: ?0, $lte: ?1 }, $or: [ { 'isDeleted': false }, { 'isDeleted': { $exists: false } } ] }", count = true)
-    long countByDateBetween(LocalDate from, LocalDate to);
+    long countByDateBetweenInternal(LocalDateTime from, LocalDateTime to);
+
+    default long countByDateBetween(LocalDate from, LocalDate to) {
+        return countByDateBetweenInternal(from.atStartOfDay(), to.atTime(LocalTime.MAX));
+    }
 
     /** Appointments within a createdAt range */
     @Query("{ 'createdAt': { $gte: ?0, $lte: ?1 }, $or: [ { 'isDeleted': false }, { 'isDeleted': { $exists: false } } ] }")
     List<Appointment> findByCreatedAtBetween(LocalDateTime from, LocalDateTime to);
 
-    /** Analytics: provider-scoped date range queries */
-    @Query("{ 'providerId': ?0, 'date': { $gte: ?1, $lte: ?2 }, $or: [ { 'isDeleted': false }, { 'isDeleted': { $exists: false } } ] }")
-    List<Appointment> findByProviderIdAndDateBetween(String providerId, LocalDate from, LocalDate to);
+    /** Provider-scoped date range queries */
+    default List<Appointment> findByProviderIdAndDateBetween(String providerId, LocalDate from, LocalDate to) {
+        return findByProviderIdAndDateBetweenInternal(providerId, from.atStartOfDay(), to.atTime(LocalTime.MAX));
+    }
 
     /** Analytics: provider + status filter */
     @Query("{ 'providerId': ?0, 'status': ?1, $or: [ { 'isDeleted': false }, { 'isDeleted': { $exists: false } } ] }")
@@ -55,11 +80,18 @@ public interface AppointmentRepository extends MongoRepository<Appointment, Stri
 
     /** Analytics: provider + status + date range */
     @Query("{ 'providerId': ?0, 'status': ?1, 'date': { $gte: ?2, $lte: ?3 }, $or: [ { 'isDeleted': false }, { 'isDeleted': { $exists: false } } ] }")
-    List<Appointment> findByProviderIdAndStatusAndDateBetween(
-            String providerId, String status, LocalDate from, LocalDate to);
+    List<Appointment> findByProviderIdAndStatusAndDateBetweenInternal(
+            String providerId, String status, LocalDateTime from, LocalDateTime to);
+
+    default List<Appointment> findByProviderIdAndStatusAndDateBetween(String providerId, String status, LocalDate from, LocalDate to) {
+        return findByProviderIdAndStatusAndDateBetweenInternal(providerId, status, from.atStartOfDay(), to.atTime(LocalTime.MAX));
+    }
 
     /** History: user-scoped, date range */
     @Query("{ 'userId': ?0, 'date': { $gte: ?1, $lte: ?2 }, $or: [ { 'isDeleted': false }, { 'isDeleted': { $exists: false } } ] }")
-    List<Appointment> findByUserIdAndDateBetween(String userId, LocalDate from, LocalDate to);
+    List<Appointment> findByUserIdAndDateBetweenInternal(String userId, LocalDateTime from, LocalDateTime to);
+
+    default List<Appointment> findByUserIdAndDateBetween(String userId, LocalDate from, LocalDate to) {
+        return findByUserIdAndDateBetweenInternal(userId, from.atStartOfDay(), to.atTime(LocalTime.MAX));
+    }
 }
-

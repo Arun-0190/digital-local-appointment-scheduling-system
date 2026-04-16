@@ -18,6 +18,7 @@ import org.springframework.data.mongodb.core.convert.MongoCustomConversions;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -47,7 +48,7 @@ public class MongoConfig {
             host = "PARSE_ERROR";
         }
         
-        System.out.println("[DLASS] FORCED MONGO CONNECTION: " + host);
+        System.out.println("[DLASS] MONGO: Attempting connection to [" + host + "] database [" + getDatabaseName() + "]");
 
         MongoClientSettings settings = MongoClientSettings.builder()
                 .applyConnectionString(new ConnectionString(mongoUri))
@@ -61,6 +62,7 @@ public class MongoConfig {
         List<Converter<?, ?>> converters = new ArrayList<>();
         converters.add(new StringToLocalDateConverter());
         converters.add(new StringToLocalDateTimeConverter());
+        converters.add(new StringToLocalTimeConverter());
         converters.add(new DateToLocalDateConverter());
         converters.add(new DateToLocalDateTimeConverter());
         return new MongoCustomConversions(converters);
@@ -115,6 +117,24 @@ public class MongoConfig {
         }
     }
 
+    @ReadingConverter
+    public static class StringToLocalTimeConverter implements Converter<String, LocalTime> {
+        @Override
+        public LocalTime convert(String source) {
+            if (source == null || source.isBlank()) return null;
+            try {
+                return LocalTime.parse(source);
+            } catch (Exception e) {
+                try {
+                    if (source.contains("T")) {
+                        return OffsetDateTime.parse(source).toLocalTime();
+                    }
+                } catch (Exception e2) { }
+                return null;
+            }
+        }
+    }
+
 
     @Bean
     public MongoDatabaseFactory mongoDatabaseFactory(MongoClient mongoClient) {
@@ -130,9 +150,14 @@ public class MongoConfig {
         try {
             ConnectionString connectionString = new ConnectionString(mongoUri);
             String db = connectionString.getDatabase();
-            return (db != null && !db.isBlank()) ? db : "dlass_db";
+            if (db == null || db.isBlank()) {
+                throw new RuntimeException("[DLASS] FATAL: MONGODB_URI is missing the database name (e.g. ...mongodb.net/dbname). Production requires a specific database.");
+            }
+            return db;
+        } catch (RuntimeException e) {
+            throw e;
         } catch (Exception e) {
-            return "dlass_db";
+            throw new RuntimeException("[DLASS] FATAL: Invalid MONGODB_URI format.", e);
         }
     }
 }
