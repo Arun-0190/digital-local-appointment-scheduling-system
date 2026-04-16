@@ -45,10 +45,32 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of(frontendUrl));
+        
+        // Define common origins
+        java.util.List<String> origins = new java.util.ArrayList<>();
+        origins.add("http://localhost:5173");
+        origins.add("http://localhost:3000");
+        origins.add("https://dlass.vercel.app");
+        origins.add("https://digital-local-appointment-schedulin.vercel.app");
+        
+        // Add dynamic origin from FRONTEND_URL environment variable
+        if (frontendUrl != null && !frontendUrl.isEmpty()) {
+            // Support comma-separated list of origins
+            String[] splitOrigins = frontendUrl.split(",");
+            for (String origin : splitOrigins) {
+                String trimmedOrigin = origin.trim();
+                if (!trimmedOrigin.isEmpty() && !origins.contains(trimmedOrigin)) {
+                    origins.add(trimmedOrigin);
+                }
+            }
+        }
+        
+        config.setAllowedOrigins(origins);
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(List.of("*"));
+        config.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Requested-With", "Accept", "Origin"));
+        config.setExposedHeaders(List.of("Authorization"));
         config.setAllowCredentials(true);
+        config.setMaxAge(3600L); // Cache preflight response for 1 hour
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
