@@ -2,6 +2,7 @@ package com.dlass.backend.config;
 
 import com.dlass.backend.model.User;
 import com.dlass.backend.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -14,6 +15,15 @@ public class AdminSeeder implements CommandLineRunner {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @Value("${ADMIN_EMAIL}")
+    private String adminEmail;
+
+    @Value("${ADMIN_PASSWORD}")
+    private String adminPassword;
+
+    @Value("${ADMIN_NAME}")
+    private String adminName;
+
     public AdminSeeder(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
@@ -21,26 +31,40 @@ public class AdminSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
+        try {
+            // Log connection success (assuming Spring Boot started successfully if we're here)
+            System.out.println("[DLASS] Connected to MongoDB Atlas successfully");
 
-        String adminEmail = System.getenv("ADMIN_EMAIL");
-        String adminPassword = System.getenv("ADMIN_PASSWORD");
+            if (adminEmail == null || adminEmail.isBlank() || adminPassword == null || adminPassword.isBlank()) {
+                System.err.println("[DLASS] SKIP: Admin credentials (email/password) are missing in environment.");
+                return;
+            }
 
-        if (adminEmail == null || adminPassword == null) {
-            System.out.println("Admin credentials not found in environment variables.");
-            return;
-        }
+            // STEP A & B: Find and Delete all users where role = ADMIN
+            // This ensures we always have EXACTLY ONE admin corresponding to the latest .env
+            long count = userRepository.findByRole("ADMIN").size();
+            userRepository.deleteByRole("ADMIN");
+            if (count > 0) {
+                System.out.println("[DLASS] Old admin accounts removed (" + count + ")");
+            }
 
-        if (userRepository.findByEmail(adminEmail).isEmpty()) {
+            // STEP C: Create one fresh admin using .env values
             User admin = new User();
-            admin.setFullName("System Admin");
+            admin.setFullName(adminName != null && !adminName.isBlank() ? adminName : "DLASS Admin");
             admin.setEmail(adminEmail);
             admin.setPassword(passwordEncoder.encode(adminPassword));
             admin.setRole("ADMIN");
+            admin.setActive(true);
+            admin.setDeleted(false);
             admin.setCreatedAt(LocalDateTime.now());
 
             userRepository.save(admin);
 
-            System.out.println("Admin user created successfully.");
+            System.out.println("[DLASS] Fresh admin seeded successfully");
+            System.out.println("[DLASS] Admin email: " + adminEmail);
+
+        } catch (Exception e) {
+            System.err.println("[DLASS] CRITICAL: Error during admin seeding: " + e.getMessage());
         }
     }
 }

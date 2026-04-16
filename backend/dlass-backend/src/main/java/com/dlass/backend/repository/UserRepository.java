@@ -10,6 +10,9 @@ import java.util.Optional;
 
 public interface UserRepository extends MongoRepository<User, String> {
 
+    List<User> findByRole(String role);
+    void deleteByRole(String role);
+
     @Query("{ 'email': ?0, $or: [ { 'isDeleted': false }, { 'isDeleted': { $exists: false } } ] }")
     Optional<User> findByEmail(String email);
 

@@ -13,8 +13,9 @@ spring:
           auth: true
           starttls:
             enable: true
-  mongodb:
-    uri: mongodb://localhost:27017/dlass_db
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://localhost:27017/dlass_db}
 
   servlet:
     multipart:
