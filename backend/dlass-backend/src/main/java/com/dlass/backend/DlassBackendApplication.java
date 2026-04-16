@@ -10,28 +10,30 @@ import io.github.cdimascio.dotenv.Dotenv;
 public class DlassBackendApplication {
 
 	public static void main(String[] args) {
+		Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
 
-		Dotenv dotenv = Dotenv.load();
-
-		// Set MongoDB Atlas URI
-		String mongodbUri = dotenv.get("MONGODB_URI");
-		if (mongodbUri != null) {
-			System.setProperty("MONGODB_URI", mongodbUri);
-			// Also set the direct spring property for maximum compatibility
-			System.setProperty("spring.data.mongodb.uri", mongodbUri);
-		}
-
-		// Set Mail Config
-		System.setProperty("MAIL_HOST", dotenv.get("MAIL_HOST") != null ? dotenv.get("MAIL_HOST") : "");
-		System.setProperty("MAIL_PORT", dotenv.get("MAIL_PORT") != null ? dotenv.get("MAIL_PORT") : "");
-		System.setProperty("MAIL_USERNAME", dotenv.get("MAIL_USERNAME") != null ? dotenv.get("MAIL_USERNAME") : "");
-		System.setProperty("MAIL_PASSWORD", dotenv.get("MAIL_PASSWORD") != null ? dotenv.get("MAIL_PASSWORD") : "");
-		
-		// Set Admin Credentials
-		System.setProperty("ADMIN_EMAIL", dotenv.get("ADMIN_EMAIL") != null ? dotenv.get("ADMIN_EMAIL") : "");
-		System.setProperty("ADMIN_PASSWORD", dotenv.get("ADMIN_PASSWORD") != null ? dotenv.get("ADMIN_PASSWORD") : "");
-		System.setProperty("ADMIN_NAME", dotenv.get("ADMIN_NAME") != null ? dotenv.get("ADMIN_NAME") : "DLASS Admin");
+		// Helper to get from Dotenv or System Env
+		autoGetEnv(dotenv, "MONGODB_URI", "spring.data.mongodb.uri");
+		autoGetEnv(dotenv, "JWT_SECRET", "app.jwt.secret");
+		autoGetEnv(dotenv, "FRONTEND_URL", "app.frontend-url");
+		autoGetEnv(dotenv, "MAIL_HOST", "MAIL_HOST");
+		autoGetEnv(dotenv, "MAIL_PORT", "MAIL_PORT");
+		autoGetEnv(dotenv, "MAIL_USERNAME", "MAIL_USERNAME");
+		autoGetEnv(dotenv, "MAIL_PASSWORD", "MAIL_PASSWORD");
+		autoGetEnv(dotenv, "ADMIN_EMAIL", "ADMIN_EMAIL");
+		autoGetEnv(dotenv, "ADMIN_PASSWORD", "ADMIN_PASSWORD");
+		autoGetEnv(dotenv, "ADMIN_NAME", "ADMIN_NAME");
 
 		SpringApplication.run(DlassBackendApplication.class, args);
+	}
+
+	private static void autoGetEnv(Dotenv dotenv, String key, String systemProp) {
+		String value = dotenv.get(key);
+		if (value == null) {
+			value = System.getenv(key);
+		}
+		if (value != null) {
+			System.setProperty(systemProp, value);
+		}
 	}
 }

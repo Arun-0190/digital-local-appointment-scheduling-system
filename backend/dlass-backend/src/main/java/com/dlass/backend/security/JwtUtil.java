@@ -4,7 +4,9 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import jakarta.annotation.PostConstruct;
 
 import java.security.Key;
 import java.util.Date;
@@ -14,8 +16,15 @@ import java.util.Map;
 @Component
 public class JwtUtil {
 
-    private final String SECRET = "dlass-super-secret-key-dlass-super-secret-key";
-    private final Key key = Keys.hmacShaKeyFor(SECRET.getBytes());
+    @Value("${app.jwt.secret}")
+    private String secret;
+
+    private Key key;
+
+    @PostConstruct
+    public void init() {
+        this.key = Keys.hmacShaKeyFor(secret.getBytes());
+    }
 
     private final long EXPIRATION = 1000 * 60 * 60; // 1 hour
 
