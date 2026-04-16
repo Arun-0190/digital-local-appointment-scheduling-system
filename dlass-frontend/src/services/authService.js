@@ -1,7 +1,8 @@
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
+import { API_BASE_URL } from "./apiUtils";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
+const API_URL = API_BASE_URL;
 
 // ─── Token helpers ───────────────────────────────────────────────────────────
 
@@ -75,7 +76,6 @@ export async function login(email, password) {
 }
 
 export async function register(userData) {
-  console.log("Register Payload:", userData);
   const response = await api.post("/api/users", userData);
   return response.data;
 }

@@ -7,7 +7,9 @@ import PageWrapper from "../components/ui/PageWrapper";
 import StatCard from "../components/ui/StatCard";
 import Button from "../components/ui/Button";
 
-const API = "http://localhost:8080/api";
+import { API_URL } from "../services/apiUtils";
+
+const API = API_URL;
 
 function authHeaders() {
   return { Authorization: `Bearer ${getToken()}` };
@@ -146,7 +148,6 @@ function AdminDashboard() {
         axios.get(`${API}/admin/weekly-stats`, { headers }),
       ])
         .then(([statsRes, weeklyRes]) => {
-          console.log("Admin Stats Response:", statsRes.data);
           setStats(statsRes.data);
           setWeeklyStats(weeklyRes.data);
         })

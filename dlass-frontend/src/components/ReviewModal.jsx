@@ -4,7 +4,9 @@ import axios from "axios";
 import { getToken } from "../services/authService";
 import Button from "./ui/Button";
 
-const API = "http://localhost:8080/api";
+import { API_URL } from "../services/apiUtils";
+
+const API = API_URL;
 
 export default function ReviewModal({ isOpen, onClose, appointmentId, providerId, onSuccess }) {
   const [rating, setRating] = useState(0);

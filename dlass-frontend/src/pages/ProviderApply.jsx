@@ -5,8 +5,9 @@ import { getCategories, getSubCategories } from "../services/catalogService";
 import { applyAsProvider } from "../services/providerService";
 import { getToken } from "../services/authService";
 import axios from "axios";
+import { API_URL } from "../services/apiUtils";
 
-const API = "http://localhost:8080/api";
+const API = API_URL;
 
 function authHeaders() {
   return { Authorization: `Bearer ${getToken()}` };

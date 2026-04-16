@@ -2,7 +2,9 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { getToken } from "../services/authService";
 
-const API = "http://localhost:8080/api";
+import { API_URL } from "../services/apiUtils";
+
+const API = API_URL;
 const authHeaders = () => ({ Authorization: `Bearer ${getToken()}` });
 
 export default function AppointmentDetailModal({

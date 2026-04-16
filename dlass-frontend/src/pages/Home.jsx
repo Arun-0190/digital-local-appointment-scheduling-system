@@ -14,7 +14,9 @@ import FinalCTA from "../components/landing/FinalCTA";
 import ScrollProgress from "../components/landing/ScrollProgress";
 import CursorEffect from "../components/landing/CursorEffect";
 
-const API = "http://localhost:8080/api";
+import { API_URL } from "../services/apiUtils";
+
+const API = API_URL;
 
 function authHeaders() {
   return { Authorization: `Bearer ${getToken()}` };

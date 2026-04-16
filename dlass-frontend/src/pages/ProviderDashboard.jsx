@@ -15,8 +15,10 @@ import Button from "../components/ui/Button";
 import Avatar from "../components/ui/Avatar";
 import AvailabilityCalendar from "../components/AvailabilityCalendar";
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
-const API = `${BASE_URL}/api`;
+import { API_BASE_URL, API_URL } from "../services/apiUtils";
+
+const BASE_URL = API_BASE_URL;
+const API = API_URL;
 const DAYS = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"];
 
 function authHeaders() {
@@ -133,13 +135,10 @@ export default function ProviderDashboard() {
   useEffect(() => {
     async function init() {
       try {
-        console.log("Token in use:", getToken());
         const [dashboardRes, meRes] = await Promise.all([
           axios.get(`${API}/provider/dashboard`, { headers: authHeaders() }),
           axios.get(`${API}/users/me`, { headers: authHeaders() })
         ]);
-        console.log("Dashboard API Response:", dashboardRes.data);
-        console.log("Users Me API Response:", meRes.data);
         
         if (!dashboardRes.data || !dashboardRes.data.providerId) {
           throw new Error("Missing providerId in response data");
