@@ -193,7 +193,8 @@ public class UserService {
     private UserResponseDTO toDTO(User u) {
         return new UserResponseDTO(
                 u.getId(), u.getFullName(), u.getEmail(),
-                u.getRole(), u.getPincode(), u.getPhone(), u.getCreatedAt());
+                u.getRole(), u.getPincode(), u.getPhone(),
+                u.getProfileImageUrl(), u.getCreatedAt());
     }
 
     public List<UserResponseDTO> getDeletedUsers() {

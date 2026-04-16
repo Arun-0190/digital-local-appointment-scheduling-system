@@ -1,5 +1,7 @@
 package com.dlass.backend.dto;
 
+import java.time.LocalDateTime;
+
 public class ProviderDashboardDTO {
 
     private long totalAppointments;
@@ -14,6 +16,19 @@ public class ProviderDashboardDTO {
     private String providerId;
     private String categoryId;
     private String subCategoryId;
+
+    // Profile fields
+    private String fullName;
+    private String username;
+    private String businessName;
+    private String email;
+    private String phone;
+    private String city;
+    private String area;
+    private String pincode;
+    private String profileImageUrl;
+    private String status;
+    private LocalDateTime createdAt;
 
     public ProviderDashboardDTO() {}
 
@@ -77,4 +92,37 @@ public class ProviderDashboardDTO {
 
     public String getSubCategoryId() { return subCategoryId; }
     public void setSubCategoryId(String subCategoryId) { this.subCategoryId = subCategoryId; }
+
+    public String getFullName() { return fullName; }
+    public void setFullName(String fullName) { this.fullName = fullName; }
+
+    public String getUsername() { return username; }
+    public void setUsername(String username) { this.username = username; }
+
+    public String getBusinessName() { return businessName; }
+    public void setBusinessName(String businessName) { this.businessName = businessName; }
+
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+
+    public String getPhone() { return phone; }
+    public void setPhone(String phone) { this.phone = phone; }
+
+    public String getCity() { return city; }
+    public void setCity(String city) { this.city = city; }
+
+    public String getArea() { return area; }
+    public void setArea(String area) { this.area = area; }
+
+    public String getPincode() { return pincode; }
+    public void setPincode(String pincode) { this.pincode = pincode; }
+
+    public String getProfileImageUrl() { return profileImageUrl; }
+    public void setProfileImageUrl(String profileImageUrl) { this.profileImageUrl = profileImageUrl; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }

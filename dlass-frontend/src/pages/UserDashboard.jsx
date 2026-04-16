@@ -114,7 +114,11 @@ function UserDashboard() {
       const res = await axios.post(`${API}/users/upload-avatar`, formData, {
         headers: { ...authHeaders(), "Content-Type": "multipart/form-data" },
       });
-      setProfileForm((prev) => ({ ...prev, profileImageUrl: res.data }));
+      
+      // Extract the string path from the DTO. Add cache busting.
+      const newPath = res.data.profileImageUrl + "?t=" + Date.now();
+      
+      setProfileForm((prev) => ({ ...prev, profileImageUrl: newPath }));
       setProfileMsg("✓ Profile picture updated!");
       window.dispatchEvent(new Event("profile-update"));
       
@@ -562,6 +566,7 @@ function UserDashboard() {
                     src={profileForm.profileImageUrl ? (profileForm.profileImageUrl.startsWith('blob:') ? profileForm.profileImageUrl : `${BASE_URL}${profileForm.profileImageUrl.startsWith('/') ? '' : '/'}${profileForm.profileImageUrl}`) : null} 
                     name={profileForm.fullName || username} 
                     size="lg" 
+                    className="!rounded-full object-cover shadow-xl border-primary/20"
                     glow={true}
                   />
                   <label className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity cursor-pointer z-10">
