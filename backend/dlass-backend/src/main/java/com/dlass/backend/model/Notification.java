@@ -1,5 +1,6 @@
 package com.dlass.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -20,8 +21,9 @@ public class Notification {
     
     // Force JSON field name to be "isRead" so the frontend can use notification.isRead
     @JsonProperty("isRead")
-    private boolean isRead = false;
+    private boolean read = false;
     
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createdAt = LocalDateTime.now();
 
     public Notification() {
@@ -33,7 +35,7 @@ public class Notification {
         this.type = type;
         this.referenceId = referenceId;
         this.redirectUrl = redirectUrl;
-        this.isRead = false;
+        this.read = false;
         this.createdAt = LocalDateTime.now();
     }
 
@@ -87,12 +89,12 @@ public class Notification {
 
     @JsonProperty("isRead")
     public boolean isRead() {
-        return isRead;
+        return read;
     }
 
     @JsonProperty("isRead")
     public void setRead(boolean read) {
-        isRead = read;
+        this.read = read;
     }
 
     public LocalDateTime getCreatedAt() {

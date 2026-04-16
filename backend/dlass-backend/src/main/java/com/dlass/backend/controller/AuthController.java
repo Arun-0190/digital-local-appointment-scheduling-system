@@ -13,7 +13,7 @@ import com.dlass.backend.service.UserService;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "${app.frontend-url}")
 public class AuthController {
 
     private final UserService userService;

@@ -10,7 +10,8 @@ import com.dlass.backend.repository.AppointmentRepository;
 import com.dlass.backend.repository.ReviewRepository;
 import com.dlass.backend.repository.ServiceProviderRepository;
 import com.dlass.backend.repository.UserRepository;
-import org.apache.catalina.User;
+import com.dlass.backend.model.User;
+
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -48,16 +49,16 @@ public class ProviderDashboardService {
         System.out.println("[DLASS] Dashboard API hit for: " + email);
 
         try {
-            User user = (User) userRepository.findByEmail(email)
+            User user = userRepository.findByEmail(email)
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
             ServiceProvider provider = providerRepository
-                    .findByUserId(((Appointment) user).getId())
+                    .findByUserId(user.getId())
                     .orElseThrow(() -> new RuntimeException("Provider profile not found"));
 
             // ── Standardized Access Rule ──────────────────────────────────────────
             boolean isNotDeleted = !Boolean.TRUE.equals(provider.isDeleted());
-            boolean isActive = Boolean.TRUE.equals(provider.isActive());
+            boolean isActive = provider.isActive();
             boolean isStatusActive = "ACTIVE".equalsIgnoreCase(provider.getStatus());
 
             if (!isNotDeleted || (!isActive && !isStatusActive)) {
@@ -93,20 +94,20 @@ public class ProviderDashboardService {
 
             dto.setFullName(user.getFullName() != null ? user.getFullName() : "Provider");
             dto.setUsername(email);
-            dto.setEmail(((ProviderDashboardDTO) user).getEmail());
+            dto.setEmail(user.getEmail());
             dto.setBusinessName(provider.getBusinessName() != null ? provider.getBusinessName() : "Business");
             dto.setPhone(
-                    provider.getPhone() != null ? provider.getPhone() : (user.getName() != null ? user.getName() : ""));
+                    provider.getPhone() != null ? provider.getPhone()
+                            : (user.getPhone() != null ? user.getPhone() : ""));
             dto.setCity(provider.getCity() != null ? provider.getCity() : "");
             dto.setArea(provider.getArea() != null ? provider.getArea() : "");
             dto.setPincode(provider.getPincode() != null ? provider.getPincode() : "");
             dto.setStatus(provider.getStatus() != null ? provider.getStatus() : "PENDING");
-            dto.setCreatedAt(provider.getCreatedAt() != null ? provider.getCreatedAt()
-                    : ((ProviderDashboardDTO) user).getCreatedAt());
+            dto.setCreatedAt(provider.getCreatedAt() != null ? provider.getCreatedAt() : user.getCreatedAt());
 
             String imageUrl = (provider.getProfileImageUrl() != null && !provider.getProfileImageUrl().isEmpty())
                     ? provider.getProfileImageUrl()
-                    : ((ProviderDashboardDTO) user).getProfileImageUrl();
+                    : user.getProfileImageUrl();
             dto.setProfileImageUrl(imageUrl != null ? imageUrl : "");
 
             System.out.println("[DLASS] Response sent successfully for: " + email);
@@ -253,10 +254,10 @@ public class ProviderDashboardService {
     // ── helpers ───────────────────────────────────────────────────────────
 
     private String resolveProviderId(String email) {
-        User user = (User) userRepository.findByEmail(email)
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        ServiceProvider provider = providerRepository.findByUserId(((Appointment) user).getId())
+        ServiceProvider provider = providerRepository.findByUserId(user.getId())
                 .orElseThrow(() -> new RuntimeException("Provider profile not found"));
 
         boolean isNotDeleted = !Boolean.TRUE.equals(provider.isDeleted());

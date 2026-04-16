@@ -15,13 +15,13 @@ public class AdminSeeder implements CommandLineRunner {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    @Value("${ADMIN_EMAIL}")
+    @Value("${admin.email}")
     private String adminEmail;
 
-    @Value("${ADMIN_PASSWORD}")
+    @Value("${admin.password}")
     private String adminPassword;
 
-    @Value("${ADMIN_NAME}")
+    @Value("${admin.name:DLASS Admin}")
     private String adminName;
 
     public AdminSeeder(UserRepository userRepository, PasswordEncoder passwordEncoder) {
@@ -32,39 +32,32 @@ public class AdminSeeder implements CommandLineRunner {
     @Override
     public void run(String... args) {
         try {
-            // Log connection success (assuming Spring Boot started successfully if we're here)
-            System.out.println("[DLASS] Connected to MongoDB Atlas successfully");
-
             if (adminEmail == null || adminEmail.isBlank() || adminPassword == null || adminPassword.isBlank()) {
-                System.err.println("[DLASS] SKIP: Admin credentials (email/password) are missing in environment.");
                 return;
             }
 
-            // STEP A & B: Find and Delete all users where role = ADMIN
-            // This ensures we always have EXACTLY ONE admin corresponding to the latest .env
-            long count = userRepository.findByRole("ADMIN").size();
-            userRepository.deleteByRole("ADMIN");
-            if (count > 0) {
-                System.out.println("[DLASS] Old admin accounts removed (" + count + ")");
+            // Strictly additive: Only seed if NO admin exists
+            long adminCount = userRepository.findAll().stream()
+                    .filter(u -> "ADMIN".equals(u.getRole()))
+                    .count();
+            
+            if (adminCount == 0) {
+                User admin = new User();
+                admin.setFullName(adminName != null && !adminName.isBlank() ? adminName : "DLASS Admin");
+                admin.setEmail(adminEmail);
+                admin.setPassword(passwordEncoder.encode(adminPassword));
+                admin.setRole("ADMIN");
+                admin.setActive(true);
+                admin.setDeleted(false);
+                admin.setCreatedAt(LocalDateTime.now());
+                userRepository.save(admin);
+                System.out.println("[DLASS] Initial Admin Account Created: " + adminEmail);
+            } else {
+                System.out.println("[DLASS] Production Check: " + adminCount + " admin(s) present. skipping seeder.");
             }
 
-            // STEP C: Create one fresh admin using .env values
-            User admin = new User();
-            admin.setFullName(adminName != null && !adminName.isBlank() ? adminName : "DLASS Admin");
-            admin.setEmail(adminEmail);
-            admin.setPassword(passwordEncoder.encode(adminPassword));
-            admin.setRole("ADMIN");
-            admin.setActive(true);
-            admin.setDeleted(false);
-            admin.setCreatedAt(LocalDateTime.now());
-
-            userRepository.save(admin);
-
-            System.out.println("[DLASS] Fresh admin seeded successfully");
-            System.out.println("[DLASS] Admin email: " + adminEmail);
-
         } catch (Exception e) {
-            System.err.println("[DLASS] CRITICAL: Error during admin seeding: " + e.getMessage());
+            System.err.println("[DLASS] WARNING: Startup seeder check failed: " + e.getMessage());
         }
     }
 }

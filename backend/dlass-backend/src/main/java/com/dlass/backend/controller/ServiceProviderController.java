@@ -32,7 +32,7 @@ import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/providers")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "${app.frontend-url}")
 public class ServiceProviderController {
 
     private final ServiceProviderService service;

@@ -20,7 +20,7 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/api/admin")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "${app.frontend-url}")
 public class AdminController {
 
     private final ServiceProviderService serviceProviderService;

@@ -1,7 +1,10 @@
 package com.dlass.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -16,9 +19,20 @@ public class Appointment {
     private String userId;
     private String providerId;
 
-    private LocalDate date;
+    /**
+     * Managed as LocalDateTime to handle ISO strings (e.g. 2026-04-02T03:30:00.000Z) from MongoDB.
+     * We hide this from outgoing JSON to prevent breaking frontend date parsing.
+     */
+    @Field("date")
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private LocalDateTime dateTime;
+
+    @JsonFormat(pattern = "HH:mm:ss")
     private LocalTime startTime;
+
+    @JsonFormat(pattern = "HH:mm:ss")
     private LocalTime endTime;
+
 
     private String status;    //BOOKED, PAID, CANCELLED, COMPLETED
 
@@ -27,7 +41,9 @@ public class Appointment {
     private String paymentId;
     private double amount;
 
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createdAt;
+
 
     private boolean reminder24Sent = false;
     private boolean reminder1hSent = false;
@@ -52,8 +68,28 @@ public class Appointment {
         return providerId;
     }
 
+    /**
+     * This is the primary date field used by the frontend.
+     * Annotated to ensure outgoing JSON remains yyyy-MM-dd compatible.
+     */
+    @JsonProperty("date")
+    @JsonFormat(pattern = "yyyy-MM-dd")
     public LocalDate getDate() {
-        return date;
+        return dateTime != null ? dateTime.toLocalDate() : null;
+    }
+
+    @JsonProperty("date")
+    public void setDate(LocalDate date) {
+        this.dateTime = (date != null) ? date.atStartOfDay() : null;
+    }
+
+    // Helper for backend logic requiring full precision (if any)
+    public LocalDateTime getDateTime() {
+        return dateTime;
+    }
+
+    public void setDateTime(LocalDateTime dateTime) {
+        this.dateTime = dateTime;
     }
 
     public LocalTime getStartTime() {
@@ -93,10 +129,6 @@ public class Appointment {
 
     public void setProviderId(String providerId) {
         this.providerId = providerId;
-    }
-
-    public void setDate(LocalDate date) {
-        this.date = date;
     }
 
     public void setStartTime(LocalTime startTime) {

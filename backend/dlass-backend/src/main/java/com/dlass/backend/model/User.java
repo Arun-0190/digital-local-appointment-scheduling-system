@@ -26,7 +26,13 @@ public class User {
     private String phone; // Format: +91XXXXXXXXXX
 
     @Field("isActive")
-    private boolean isActive = true; // existing soft-delete flag
+    private Boolean isActive;
+
+    @Field("active")
+    private Boolean active;
+
+    @Field("enabled")
+    private Boolean enabled;
 
     private boolean isDeleted = false;
     private LocalDateTime deletedAt;
@@ -40,6 +46,8 @@ public class User {
     public User() {
         this.createdAt = LocalDateTime.now();
         this.isActive = true;
+        this.active = true;
+        this.enabled = true;
     }
 
     // Getters and Setters
@@ -66,8 +74,19 @@ public class User {
     public void setPhone(String phone) { this.phone = phone; }
 
     @JsonProperty("isActive")
-    public boolean isActive() { return isActive; }
-    public void setActive(boolean active) { isActive = active; }
+    public boolean isActive() {
+        // Return true if ANY of the active fields are true OR if none are present (default active)
+        if (isActive != null) return isActive;
+        if (active != null) return active;
+        if (enabled != null) return enabled;
+        return true; // Default to active if field is missing (legacy docs)
+    }
+
+    public void setActive(boolean active) {
+        this.isActive = active;
+        this.active = active;
+        this.enabled = active;
+    }
 
     public boolean isDeleted() { return isDeleted; }
     public void setDeleted(boolean deleted) { isDeleted = deleted; }
