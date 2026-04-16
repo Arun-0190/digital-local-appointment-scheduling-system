@@ -1,0 +1,32 @@
+# DLASS Project Context
+
+## Architecture
+- **Frontend**: React + Vite + Tailwind CSS.
+- **Backend**: Spring Boot + Java (running on port 8080).
+- **Database**: MongoDB.
+- **Authentication**: JWT based.
+
+## Key Modules
+- **Login / Register**: Works under `/api/auth/...`.
+- **Provider Dashboard**: React `ProviderDashboard.jsx`. Backend `ServiceProviderController` + `ServiceProviderService`.
+- **User Dashboard**: React `UserDashboard.jsx`. Backend `UserController` + `UserService`.
+- **Search & Provider Detail**: React `SearchProviders.jsx` -> `ProviderDetail.jsx`. Backend `/api/providers/{providerId}/profile` returning `ProviderProfileResponse`.
+- **Chat System**: UI exists in `ChatWindow.jsx`. Syncs correctly via websockets / SSE / polling.
+- **Static Assets / Avatars**: Managed via `StaticResourceConfig.java` in backend. Avatars upload to `/api/providers/upload-avatar` and `/api/users/upload-avatar` (persisted to `uploads/avatars`). Provider portfolios are uploaded to `uploads/provider`. Accessed cleanly via `http://localhost:8080/uploads/avatars/...` and `http://localhost:8080/uploads/provider/...`.
+
+## Recent Fixes
+### Provider Public Profile Navigate
+- In `ProviderDetail.jsx`, Hero Avatar is loaded. Reviews correctly display `userName`. Portfolio images accurately mapped and displayed cleanly! "Chat Provider" CTA implemented successfully using `navigate("/dashboard", { state: { openChatWith: {...} } })`.
+
+### Avatar Bug
+- Frontend `profileImageUrl` accurately mapped to append API domain properly.
+- `ServiceProviderService.java:uploadAvatar` synced to save `profileImageUrl` across both the underlying `User` record AND the `ServiceProvider` record.
+
+### Navbar
+- Remodelled user navigation logic in `Navbar.jsx`. Drops raw email presentation in favor of an interactive Profile Avatar Dropdown fetched dynamically through `/api/users/me`. Gracefully falls back to initials/name rendering. Added Links for 'My Profile / Dashboard', 'Notifications', and 'Settings'.
+
+## Operational Instructions
+- Run backend: `mvn spring-boot:run` in `backend/dlass-backend`.
+- Run frontend: `npm run dev` in `dlass-frontend` (runs on `http://localhost:5175`). 
+
+All flows gracefully working in tandem!

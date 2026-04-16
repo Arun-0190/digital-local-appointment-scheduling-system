@@ -54,13 +54,13 @@ function Login() {
   return (
     <PageWrapper className="justify-center items-center">
       {/* Decorative blobs */}
-      <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-blue-400/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-accent/10 rounded-full blur-3xl pointer-events-none" />
 
       <div className="relative w-full max-w-md z-10 px-4">
         <GlassCard className="shadow-2xl">
           <div className="mb-8 text-center flex flex-col items-center">
-            <span className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-indigo-500/10 mb-4 text-indigo-600 dark:text-indigo-400">
+            <span className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary/10 mb-4 text-primary">
               <span className="material-symbols-outlined text-3xl">lock</span>
             </span>
             <h1 className="text-3xl font-headline font-extrabold tracking-tight text-textPrimary">
@@ -120,7 +120,7 @@ function Login() {
             Don&apos;t have an account?{" "}
             <Link
               to="/register"
-              className="text-indigo-600 dark:text-indigo-400 font-bold hover:underline"
+              className="text-primary font-bold hover:underline"
             >
               Register here
             </Link>

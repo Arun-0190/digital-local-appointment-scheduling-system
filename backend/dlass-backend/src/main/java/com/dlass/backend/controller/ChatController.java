@@ -33,10 +33,8 @@ public class ChatController {
 
     @PostMapping
     public ResponseEntity<ChatMessage> sendMessage(@RequestBody ChatMessage message, Authentication authentication) {
-        System.out.println("Auth object: " + SecurityContextHolder.getContext().getAuthentication());
         User user = userRepository.findByEmailAndIsActiveTrue(authentication.getName())
                 .orElseThrow(() -> new RuntimeException("User not found"));
-
         if (!user.getId().equals(message.getSenderId())) {
             return ResponseEntity.status(403).build();
         }
@@ -63,8 +61,6 @@ public class ChatController {
             @PathVariable String otherUserId,
             Authentication authentication) {
 
-        System.out.println("Auth object: " + SecurityContextHolder.getContext().getAuthentication());
-        
         User user = userRepository.findByEmailAndIsActiveTrue(authentication.getName())
                 .orElseThrow(() -> new RuntimeException("User not found"));
         String myId = user.getId();

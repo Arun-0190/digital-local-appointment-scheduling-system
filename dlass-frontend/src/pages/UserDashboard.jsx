@@ -10,12 +10,13 @@ import GlassCard from "../components/ui/GlassCard";
 import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
 import Dropdown from "../components/ui/Dropdown";
+import Avatar from "../components/ui/Avatar";
 import ReviewModal from "../components/ReviewModal";
 import StatCard from "../components/ui/StatCard";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 
-const API = "http://localhost:8080/api";
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+const API = `${BASE_URL}/api`;
 
 function authHeaders() {
   return { Authorization: `Bearer ${getToken()}` };
@@ -45,12 +46,26 @@ function UserDashboard() {
   const [historyDays, setHistoryDays] = useState(30);
 
   // Profile tab state
-  const [profileForm, setProfileForm] = useState({ fullName: "", phone: "", pincode: "", profileImageUrl: "" });
+  const [profileForm, setProfileForm] = useState({ 
+    fullName: "", username: "", email: "", phone: "", pincode: "", profileImageUrl: "",
+    createdAt: null, status: "ACTIVE"
+  });
   const [profileMsg, setProfileMsg] = useState("");
 
   // Quick search
   const [pincode, setPincode] = useState("");
   const [searchHistory, setSearchHistory] = useState([]);
+
+  useEffect(() => {
+    if (location.state?.openChatWith) {
+      setActiveChat(location.state.openChatWith);
+      // Clear state after reading to prevent re-opening on refresh
+      window.history.replaceState({}, document.title);
+    }
+    if (location.state?.tab) {
+      setTab(location.state.tab);
+    }
+  }, [location]);
 
   useEffect(() => {
     // Fetch real name
@@ -60,9 +75,13 @@ function UserDashboard() {
         setUserId(res.data.id);
         setProfileForm({
            fullName: res.data.fullName || "",
+           username: res.data.username || res.data.email || "",
+           email: res.data.email || "",
            phone: res.data.phone || "",
            pincode: res.data.pincode || "",
-           profileImageUrl: res.data.profileImageUrl || ""
+           profileImageUrl: res.data.profileImageUrl || "",
+           createdAt: res.data.createdAt,
+           status: res.data.status || (res.data.isActive ? "ACTIVE" : "INACTIVE")
         });
       })
       .catch(() => {});
@@ -82,6 +101,11 @@ function UserDashboard() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Instant Preview
+    const previewUrl = URL.createObjectURL(file);
+    const oldUrl = profileForm.profileImageUrl;
+    setProfileForm(prev => ({ ...prev, profileImageUrl: previewUrl }));
+
     const formData = new FormData();
     formData.append("file", file);
 
@@ -91,9 +115,14 @@ function UserDashboard() {
         headers: { ...authHeaders(), "Content-Type": "multipart/form-data" },
       });
       setProfileForm((prev) => ({ ...prev, profileImageUrl: res.data }));
-      setProfileMsg("✓ Avatar updated successfully!");
+      setProfileMsg("✓ Profile picture updated!");
+      window.dispatchEvent(new Event("profile-update"));
+      
+      // Clean up object URL
+      setTimeout(() => URL.revokeObjectURL(previewUrl), 10000);
     } catch (err) {
       console.error(err);
+      setProfileForm(prev => ({ ...prev, profileImageUrl: oldUrl }));
       setProfileMsg("Failed to upload avatar.");
     }
   };
@@ -101,9 +130,11 @@ function UserDashboard() {
   async function saveProfile(e) {
     if (e) e.preventDefault();
     try {
+      setProfileMsg("Saving changes...");
       await axios.put(`${API}/users/profile`, profileForm, { headers: authHeaders() });
       setProfileMsg("✓ Profile updated successfully!");
       setUsername(profileForm.fullName);
+      window.dispatchEvent(new Event("profile-update"));
     } catch (e) {
       setProfileMsg("✕ Failed to update profile: " + (e.response?.data?.message || e.message));
     }
@@ -278,7 +309,7 @@ function UserDashboard() {
               onClick={() => setTab(key)}
               className={`flex items-center gap-2 px-6 py-2 rounded-lg font-medium text-sm transition-all ${
                 tab === key
-                  ? "bg-white dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 shadow-sm"
+                  ? "bg-white dark:bg-gray-700 text-primary shadow-sm"
                   : "text-textSecondary hover:text-textPrimary"
               }`}
             >
@@ -302,17 +333,18 @@ function UserDashboard() {
                     <AreaChart data={chartData}>
                       <defs>
                         <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#4F46E5" stopOpacity={0.3}/>
-                          <stop offset="95%" stopColor="#4F46E5" stopOpacity={0}/>
+                          <stop offset="5%" stopColor="#FFBF00" stopOpacity={0.3}/>
+                          <stop offset="95%" stopColor="#FFBF00" stopOpacity={0}/>
                         </linearGradient>
                       </defs>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#333" />
                       <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#6B7280'}} dy={10} />
                       <YAxis axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#6B7280'}} />
                       <Tooltip 
-                        contentStyle={{ backgroundColor: '#fff', borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} 
+                        contentStyle={{ backgroundColor: '#131313', borderRadius: '12px', border: '1px solid rgba(255,191,0,0.2)', color: '#fff' }} 
+                        itemStyle={{ color: '#FFBF00' }}
                       />
-                      <Area type="monotone" dataKey="count" stroke="#4F46E5" strokeWidth={3} fillOpacity={1} fill="url(#colorCount)" />
+                      <Area type="monotone" dataKey="count" stroke="#FFBF00" strokeWidth={3} fillOpacity={1} fill="url(#colorCount)" />
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
@@ -524,33 +556,51 @@ function UserDashboard() {
             <GlassCard className="!p-6 md:!p-8 shadow-2xl">
               <h2 className="text-xl font-headline font-bold text-textPrimary mb-6">Profile Settings</h2>
               
-              <div className="flex items-center gap-6 mb-8">
-                <div className="relative group">
-                  <div className="w-24 h-24 rounded-full overflow-hidden bg-black/10 dark:bg-white/10 border-2 border-glassBorder flex items-center justify-center">
-                    {profileForm.profileImageUrl ? (
-                      <img 
-                         src={`${BASE_URL}${profileForm.profileImageUrl.startsWith('/') ? '' : '/'}${profileForm.profileImageUrl}`} 
-                         alt="Avatar" 
-                         className="w-full h-full object-cover" 
-                      />
-                    ) : (
-                      <span className="material-symbols-outlined text-4xl text-textSecondary">person</span>
-                    )}
-                  </div>
-                  <label className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+              <div className="flex items-center gap-8 mb-10 p-6 rounded-3xl bg-primary/5 border border-primary/10">
+                <div className="relative group/avatar">
+                  <Avatar 
+                    src={profileForm.profileImageUrl ? (profileForm.profileImageUrl.startsWith('blob:') ? profileForm.profileImageUrl : `${BASE_URL}${profileForm.profileImageUrl.startsWith('/') ? '' : '/'}${profileForm.profileImageUrl}`) : null} 
+                    name={profileForm.fullName || username} 
+                    size="lg" 
+                    glow={true}
+                  />
+                  <label className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity cursor-pointer z-10">
                     <span className="material-symbols-outlined text-white">photo_camera</span>
                     <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
                   </label>
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-textPrimary">Profile Picture</h3>
-                  <p className="text-xs text-textSecondary mt-1">Click the image to upload a new avatar.</p>
+                  <h3 className="text-xl font-headline font-extrabold text-textPrimary">{profileForm.fullName || username}</h3>
+                  <p className="text-xs text-textSecondary uppercase tracking-widest font-bold opacity-60 mt-1">Status: {profileForm.status}</p>
+                  <p className="text-[10px] text-textSecondary mt-2">Member Since: {profileForm.createdAt ? new Date(profileForm.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : "April 2026"}</p>
                 </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6 mb-12 py-8 border-y border-glassBorder">
+                {[
+                  { icon: "person", label: "Full Name", value: profileForm.fullName || "Not set" },
+                  { icon: "alternate_email", label: "Username", value: profileForm.username || "Not set" },
+                  { icon: "mail", label: "Email", value: profileForm.email || "Not set" },
+                  { icon: "phone", label: "Contact", value: profileForm.phone || "Not set" },
+                  { icon: "pin_drop", label: "Pincode", value: profileForm.pincode || "Not set" },
+                  { icon: "verified", label: "Account Tier", value: "Verified User" },
+                ].map(item => (
+                  <div key={item.label} className="flex items-center gap-4 group/item">
+                    <div className="w-10 h-10 rounded-xl bg-black/5 dark:bg-white/5 border border-glassBorder flex items-center justify-center group-hover/item:border-primary/30 transition-colors">
+                      <span className="material-symbols-outlined text-primary text-xl">{item.icon}</span>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-textSecondary uppercase font-bold tracking-widest opacity-40">{item.label}</p>
+                      <p className="text-sm font-bold text-textPrimary">{item.value}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
 
               <form onSubmit={saveProfile} className="space-y-6 max-w-2xl">
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <Input label="Full Name" required value={profileForm.fullName} onChange={(e) => setProfileForm({ ...profileForm, fullName: e.target.value })} placeholder="Enter full name" />
+                  <Input label="Email" required disabled value={profileForm.email} className="opacity-60 cursor-not-allowed" />
                   <Input label="Phone Number" type="tel" value={profileForm.phone} onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })} placeholder="Enter phone number" />
                   <Input label="Pincode" type="text" value={profileForm.pincode} onChange={(e) => setProfileForm({ ...profileForm, pincode: e.target.value })} placeholder="Enter preferred pincode" />
                 </div>

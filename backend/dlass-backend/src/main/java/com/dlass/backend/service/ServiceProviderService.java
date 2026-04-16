@@ -377,6 +377,16 @@ public class ServiceProviderService {
     public ProviderProfileResponse getProviderProfile(String providerId) {
         ServiceProvider provider = repository.findById(providerId)
             .orElseThrow(() -> new RuntimeException("Provider not found"));
+            
+        userRepository.findById(provider.getUserId()).ifPresent(user -> {
+            provider.setUserName(user.getFullName());
+            provider.setUserEmail(user.getEmail());
+            // Use user's avatar if provider doesn't have one specifically set
+            if (provider.getProfileImageUrl() == null || provider.getProfileImageUrl().isEmpty()) {
+                provider.setProfileImageUrl(user.getProfileImageUrl());
+            }
+        });
+
         List<ServiceDTO> services = serviceOfferingRepository.findByProviderId(providerId)
                                         .stream().map(s -> new ServiceDTO(
                                             s.getId(),
@@ -387,6 +397,11 @@ public class ServiceProviderService {
                                         
         List<Review> reviews =
             reviewRepository.findByProviderId(providerId);
+            
+        for (Review r : reviews) {
+            userRepository.findById(r.getUserId()).ifPresent(u -> r.setUserName(u.getFullName()));
+        }
+
         return new ProviderProfileResponse(provider, services, reviews);
     }
 
@@ -613,6 +628,10 @@ public class ServiceProviderService {
 
         provider.setProfileImageUrl("/uploads/avatars/" + filename);
         provider.setUpdatedAt(LocalDateTime.now());
+        
+        user.setProfileImageUrl("/uploads/avatars/" + filename);
+        userRepository.save(user);
+        
         return repository.save(provider);
     }
 }

@@ -41,4 +41,10 @@ public class Review {
     public void setReply(String reply) { this.reply = reply; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
+    @org.springframework.data.annotation.Transient
+    private String userName;
+
+    public String getUserName() { return userName; }
+    public void setUserName(String userName) { this.userName = userName; }
+
 }

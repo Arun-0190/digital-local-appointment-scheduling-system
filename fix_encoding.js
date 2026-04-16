@@ -1,0 +1,12 @@
+const fs = require('fs');
+const path = require('path');
+const p = path.join(__dirname, 'dlass-frontend', 'src', 'pages', 'ProviderDashboard.jsx');
+let content = fs.readFileSync(p, 'utf8');
+content = content.replace(/â‚¹/g, '₹');
+content = content.replace(/â€“/g, '-');
+content = content.replace(/â€¦/g, '...');
+content = content.replace(/âœ“/g, '✓');
+content = content.replace(/âœ•/g, '✕');
+content = content.replace(/â ±/g, '⏱');
+fs.writeFileSync(p, content, 'utf8');
+console.log('Fixed encoding in ' + p);
