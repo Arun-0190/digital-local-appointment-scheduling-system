@@ -12,10 +12,11 @@ import AppointmentDetailModal from "../components/AppointmentDetailModal";
 import PageWrapper from "../components/ui/PageWrapper";
 import StatCard from "../components/ui/StatCard";
 import Button from "../components/ui/Button";
+import Avatar from "../components/ui/Avatar";
 import AvailabilityCalendar from "../components/AvailabilityCalendar";
 
-const API = "http://localhost:8080/api";
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+const API = `${BASE_URL}/api`;
 const DAYS = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"];
 
 function authHeaders() {
@@ -116,6 +117,17 @@ export default function ProviderDashboard() {
   // Chat
   const [activeChat, setActiveChat] = useState(null);
   const [isChatMaximized, setIsChatMaximized] = useState(false);
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+
+  useEffect(() => {
+    if (location.state?.openChatWith) {
+      setActiveChat(location.state.openChatWith);
+      window.history.replaceState({}, document.title);
+    }
+    if (location.state?.tab) {
+      setTab(location.state.tab);
+    }
+  }, [location]);
 
   // ── Init ──────────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -139,11 +151,17 @@ export default function ProviderDashboard() {
         setUserId(meRes.data.id);
 
         setProfileForm({
+          fullName: meRes.data.fullName || "",
+          username: meRes.data.username || meRes.data.email || "",
+          businessName: dashboardRes.data.businessName || "",
+          email: meRes.data.email || "",
           phone: dashboardRes.data.phone || "",
           city: dashboardRes.data.city || "",
           area: dashboardRes.data.area || "",
           pincode: dashboardRes.data.pincode || "",
-          profileImageUrl: dashboardRes.data.profileImageUrl || ""
+          profileImageUrl: dashboardRes.data.profileImageUrl || "",
+          createdAt: dashboardRes.data.createdAt || meRes.data.createdAt,
+          status: dashboardRes.data.status || (dashboardRes.data.isActive ? "ACTIVE" : "INACTIVE")
         });
 
         // Global fetch for reviews to use in multiple tabs
@@ -330,6 +348,11 @@ export default function ProviderDashboard() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Instant Preview
+    const previewUrl = URL.createObjectURL(file);
+    const oldUrl = profileForm.profileImageUrl;
+    setProfileForm(prev => ({ ...prev, profileImageUrl: previewUrl }));
+
     const formData = new FormData();
     formData.append("file", file);
 
@@ -339,18 +362,32 @@ export default function ProviderDashboard() {
         headers: { ...authHeaders(), "Content-Type": "multipart/form-data" },
       });
       setProfileForm((prev) => ({ ...prev, profileImageUrl: res.data }));
-      setProfileMsg("✓ Avatar updated successfully!");
+      setProfileMsg("✓ Profile picture updated!");
+      window.dispatchEvent(new Event("profile-update"));
+      
+      // Clean up object URL
+      setTimeout(() => URL.revokeObjectURL(previewUrl), 10000);
     } catch (err) {
       console.error(err);
-      setProfileMsg("Failed to upload avatar.");
+      setProfileForm(prev => ({ ...prev, profileImageUrl: oldUrl }));
+      setProfileMsg("✕ Failed to upload avatar.");
     }
   };
 
   async function saveProfile(e) {
     if (e) e.preventDefault();
     try {
-      await axios.put(`${API}/providers/profile`, profileForm, { headers: authHeaders() });
+      setProfileMsg("Saving changes...");
+      const res = await axios.put(`${API}/providers/profile`, profileForm, { headers: authHeaders() });
       setProfileMsg("✓ Profile updated successfully!");
+      setIsEditingProfile(false);
+      
+      // Update local state with saved data
+      setUserName(profileForm.fullName);
+      setProviderInfo(prev => ({ ...prev, ...profileForm }));
+      
+      // Dispatch event to sync Navbar
+      window.dispatchEvent(new Event("profile-update"));
     } catch (e) {
       setProfileMsg("✕ Failed to update profile: " + (e.response?.data?.message || e.message));
     }
@@ -499,7 +536,7 @@ export default function ProviderDashboard() {
                 onClick={() => setTab(key)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all ${
                   tab === key
-                    ? "bg-white dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 shadow-sm"
+                    ? "bg-white dark:bg-gray-700 text-primary shadow-sm"
                     : "text-textSecondary hover:text-textPrimary"
                 }`}
               >
@@ -723,7 +760,7 @@ export default function ProviderDashboard() {
                     </div>
                   </div>
                   {svcMsg && <p className={`text-sm font-bold ${svcMsg.startsWith("✓") ? "text-green-400" : "text-coral"}`}>{svcMsg}</p>}
-                  <button type="submit" className="w-full py-3.5 rounded-xl bg-primary text-deep-navy font-headline font-bold text-sm uppercase tracking-wider hover:scale-[1.02] active:scale-95 transition-all">
+                  <button type="submit" className="w-full py-3.5 rounded-xl bg-primary text-black font-headline font-bold text-sm uppercase tracking-wider hover:scale-[1.02] active:scale-95 transition-all">
                     Add Service
                   </button>
                 </form>
@@ -1188,7 +1225,7 @@ export default function ProviderDashboard() {
                       className="relative group rounded-2xl overflow-hidden aspect-square bg-black/5 dark:bg-white/5 border border-glassBorder"
                     >
                       <img
-                        src={`http://localhost:8080/uploads/provider/${filename}`}
+                        src={`${BASE_URL}/uploads/provider/${filename}`}
                         alt="Portfolio"
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         onError={(e) => { e.target.style.display = "none"; }}
@@ -1214,81 +1251,167 @@ export default function ProviderDashboard() {
         )}
         {/* ════════════════ PROFILE TAB ════════════════════════ */}
         {tab === "profile" && (
-          <div className="space-y-8">
-            <div className="glass-card rounded-3xl p-6 md:p-8 shadow-2xl">
-              <h2 className="text-xl font-headline font-bold text-textPrimary mb-6">Profile Settings</h2>
-              
-              <div className="flex items-center gap-6 mb-8">
-                <div className="relative group">
-                  <div className="w-24 h-24 rounded-full overflow-hidden bg-black/10 dark:bg-white/10 border-2 border-glassBorder flex items-center justify-center">
-                    {profileForm.profileImageUrl ? (
-                      <img 
-                         src={`${BASE_URL}${profileForm.profileImageUrl.startsWith('/') ? '' : '/'}${profileForm.profileImageUrl}`} 
-                         alt="Avatar" 
-                         className="w-full h-full object-cover" 
-                      />
-                    ) : (
-                      <span className="material-symbols-outlined text-4xl text-textSecondary">person</span>
-                    )}
-                  </div>
-                  <label className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
-                    <span className="material-symbols-outlined text-white">photo_camera</span>
-                    <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
-                  </label>
+          <div className="space-y-8 animate-fade-in">
+            {isEditingProfile ? (
+              <div className="glass-card rounded-3xl p-6 md:p-8 shadow-2xl border-primary/20">
+                <div className="flex items-center justify-between mb-8">
+                  <h2 className="text-xl font-headline font-bold text-textPrimary">Edit Profile Settings</h2>
+                  <button onClick={() => setIsEditingProfile(false)} className="text-textSecondary hover:text-textPrimary flex items-center gap-1 text-sm font-bold">
+                    <span className="material-symbols-outlined text-sm">close</span> Cancel
+                  </button>
                 </div>
-                <div>
-                  <h3 className="text-lg font-bold text-textPrimary">Profile Picture</h3>
-                  <p className="text-xs text-textSecondary mt-1">Click the image to upload a new avatar.</p>
+                
+                <div className="flex items-center gap-6 mb-10 p-4 rounded-3xl bg-primary/5 border border-primary/10">
+                  <div className="relative group/avatar">
+                    <Avatar 
+                      src={profileForm.profileImageUrl ? (profileForm.profileImageUrl.startsWith('blob:') ? profileForm.profileImageUrl : `${BASE_URL}${profileForm.profileImageUrl.startsWith('/') ? '' : '/'}${profileForm.profileImageUrl}`) : null} 
+                      name={profileForm.fullName || userName} 
+                      size="lg" 
+                      glow={true}
+                    />
+                    <label className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity cursor-pointer z-10">
+                      <span className="material-symbols-outlined text-white">photo_camera</span>
+                      <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
+                    </label>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-textPrimary">Profile Picture</h3>
+                    <p className="text-xs text-textSecondary mt-1">Update your professional profile photo.</p>
+                  </div>
+                </div>
+
+                <form onSubmit={saveProfile} className="space-y-6 max-w-3xl">
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className={labelClass}>Full Name</label>
+                      <input type="text" value={profileForm.fullName} onChange={(e) => setProfileForm({ ...profileForm, fullName: e.target.value })} className={inputClass} placeholder="Full Name" />
+                    </div>
+                    <div>
+                      <label className={labelClass}>Business Name</label>
+                      <input type="text" value={profileForm.businessName} onChange={(e) => setProfileForm({ ...profileForm, businessName: e.target.value })} className={inputClass} placeholder="Business Name" />
+                    </div>
+                    <div>
+                      <label className={labelClass}>Phone Number</label>
+                      <input type="tel" value={profileForm.phone} onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })} className={inputClass} placeholder="Enter phone" />
+                    </div>
+                    <div>
+                      <label className={labelClass}>City</label>
+                      <input type="text" value={profileForm.city} onChange={(e) => setProfileForm({ ...profileForm, city: e.target.value })} className={inputClass} placeholder="Enter city" />
+                    </div>
+                    <div>
+                      <label className={labelClass}>Area</label>
+                      <input type="text" value={profileForm.area} onChange={(e) => setProfileForm({ ...profileForm, area: e.target.value })} className={inputClass} placeholder="Enter area" />
+                    </div>
+                    <div>
+                      <label className={labelClass}>Pincode</label>
+                      <input type="text" value={profileForm.pincode} onChange={(e) => setProfileForm({ ...profileForm, pincode: e.target.value })} className={inputClass} placeholder="Enter pincode" />
+                    </div>
+                  </div>
+                  {profileMsg && (
+                    <div className={`p-4 rounded-xl flex items-center gap-3 ${profileMsg.startsWith("✓") ? "bg-green-500/10 text-green-400 border border-green-500/20" : "bg-coral/10 text-coral border border-coral/20"}`}>
+                      <span className="material-symbols-outlined text-sm">{profileMsg.startsWith("✓") ? "check_circle" : "error"}</span>
+                      <p className="text-sm font-bold">{profileMsg}</p>
+                    </div>
+                  )}
+                  <div className="flex gap-4 pt-4">
+                    <button type="button" onClick={() => setIsEditingProfile(false)} className="flex-1 py-4 rounded-2xl bg-black/10 dark:bg-white/10 text-textPrimary font-headline font-bold text-sm uppercase tracking-widest hover:bg-black/20 transition-all border border-glassBorder">
+                      Discard
+                    </button>
+                    <button type="submit" className="flex-[2] py-4 rounded-2xl bg-primary text-deep-navy font-headline font-black text-sm uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-primary/20">
+                      Save Profile
+                    </button>
+                  </div>
+                </form>
+              </div>
+            ) : (
+              <div className="glass-card rounded-3xl p-8 md:p-10 shadow-2xl relative overflow-hidden group">
+                 {/* Decorative background element */}
+                <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -mr-32 -mt-32 blur-3xl group-hover:bg-primary/10 transition-colors" />
+                
+                <div className="relative flex flex-col md:flex-row gap-8 items-start md:items-center">
+                   <Avatar 
+                    src={profileForm.profileImageUrl ? `${BASE_URL}${profileForm.profileImageUrl.startsWith('/') ? '' : '/'}${profileForm.profileImageUrl}` : null} 
+                    name={profileForm.businessName || profileForm.fullName || userName} 
+                    size="xl" 
+                    glow={true}
+                    className="shrink-0"
+                  />
+                  
+                  <div className="flex-1 space-y-4">
+                    <div>
+                      <h2 className="text-4xl font-headline font-black text-textPrimary tracking-tight">
+                        {profileForm.businessName || profileForm.fullName || userName}
+                      </h2>
+                      <div className="flex items-center gap-2 mt-2">
+                        <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest border border-primary/20 flex items-center gap-1.5 ring-4 ring-primary/5">
+                          <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                          Verified Professional
+                        </span>
+                        <span className="text-textSecondary text-[10px] font-bold uppercase tracking-widest opacity-60">Status: {profileForm.status || "ACTIVE"}</span>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-8 pt-4">
+                      {[
+                        { icon: "person", label: "Full Name", value: profileForm.fullName || "Not set" },
+                        { icon: "account_circle", label: "Username", value: profileForm.username || "Not set" },
+                        { icon: "business", label: "Business", value: profileForm.businessName || "Not set" },
+                        { icon: "mail", label: "Email", value: profileForm.email || "Not set" },
+                        { icon: "phone", label: "Contact", value: profileForm.phone || "Not set" },
+                        { icon: "location_on", label: "Location", value: profileForm.city && profileForm.area ? `${profileForm.area}, ${profileForm.city}` : profileForm.city || profileForm.area || "Not set" },
+                        { icon: "pin_drop", label: "Pincode", value: profileForm.pincode || "Not set" },
+                        { icon: "calendar_month", label: "Member Since", value: profileForm.createdAt ? new Date(profileForm.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : "April 2026" },
+                      ].map(item => (
+                        <div key={item.label} className="flex items-center gap-3 group/item">
+                          <div className="w-9 h-9 rounded-xl bg-primary/5 border border-primary/10 flex items-center justify-center group-hover/item:border-primary/40 transition-colors">
+                            <span className="material-symbols-outlined text-lg text-primary">{item.icon}</span>
+                          </div>
+                          <div className="overflow-hidden">
+                            <p className="text-[10px] text-textSecondary uppercase font-bold tracking-widest opacity-40">{item.label}</p>
+                            <p className="text-sm font-bold text-textPrimary leading-none truncate">{item.value}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="pt-6">
+                      <button 
+                        onClick={() => setIsEditingProfile(true)}
+                        className="px-8 py-3.5 rounded-2xl bg-primary text-deep-navy font-headline font-black text-sm uppercase tracking-widest hover:scale-[1.05] active:scale-95 transition-all shadow-xl shadow-primary/20 flex items-center gap-2"
+                      >
+                        <span className="material-symbols-outlined text-lg">edit</span>
+                        Edit Public Profile
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
-
-              <form onSubmit={saveProfile} className="space-y-4 max-w-2xl">
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className={labelClass}>Phone Number</label>
-                    <input type="tel" value={profileForm.phone} onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })} className={inputClass} placeholder="Enter phone" />
-                  </div>
-                  <div>
-                    <label className={labelClass}>City</label>
-                    <input type="text" value={profileForm.city} onChange={(e) => setProfileForm({ ...profileForm, city: e.target.value })} className={inputClass} placeholder="Enter city" />
-                  </div>
-                  <div>
-                    <label className={labelClass}>Area</label>
-                    <input type="text" value={profileForm.area} onChange={(e) => setProfileForm({ ...profileForm, area: e.target.value })} className={inputClass} placeholder="Enter area" />
-                  </div>
-                  <div>
-                    <label className={labelClass}>Pincode</label>
-                    <input type="text" value={profileForm.pincode} onChange={(e) => setProfileForm({ ...profileForm, pincode: e.target.value })} className={inputClass} placeholder="Enter pincode" />
-                  </div>
-                </div>
-                {profileMsg && <p className={`text-sm font-bold mt-2 ${profileMsg.startsWith("✓") ? "text-green-400" : "text-coral"}`}>{profileMsg}</p>}
-                <button type="submit" className="w-full mt-4 py-3.5 rounded-xl bg-primary text-deep-navy font-headline font-bold text-sm uppercase tracking-wider hover:scale-[1.02] active:scale-95 transition-all">
-                  Save Changes
-                </button>
-              </form>
-            </div>
+            )}
 
             <div className="glass-card rounded-3xl p-6 md:p-8 border border-coral/20 bg-red-500/5 shadow-2xl">
-              <h2 className="text-xl font-headline font-bold text-coral mb-2">Danger Zone</h2>
+              <h2 className="text-xl font-headline font-bold text-coral mb-2 flex items-center gap-2">
+                <span className="material-symbols-outlined text-coral">report_problem</span>
+                Danger Zone
+              </h2>
               <p className="text-sm text-textSecondary mb-6">These actions affect your account status. Please proceed with caution.</p>
               
               <div className="space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-black/5 dark:bg-white/5 border border-glassBorder">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-black/5 dark:bg-white/5 border border-glassBorder group hover:border-amber-500/30 transition-colors">
                   <div>
-                    <h3 className="font-headline font-bold text-textPrimary">Deactivate Account</h3>
+                    <h3 className="font-headline font-bold text-textPrimary group-hover:text-amber-500 transition-colors">Deactivate Account</h3>
                     <p className="text-xs text-textSecondary mt-1">Temporarily hide your profile from customers. Requires Admin approval to reactivate.</p>
                   </div>
-                  <button onClick={deactivateAccount} className="px-5 py-2.5 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20 font-bold text-sm hover:bg-amber-500/20 transition-all whitespace-nowrap">
+                  <button onClick={deactivateAccount} className="px-6 py-2.5 rounded-xl bg-amber-500/10 text-amber-500 border border-amber-500/20 font-bold text-sm hover:bg-amber-500/20 transition-all whitespace-nowrap">
                     Pause Account
                   </button>
                 </div>
 
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-black/5 dark:bg-white/5 border border-coral/10 hover:border-coral/30 transition-colors">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-black/5 dark:bg-white/5 border border-coral/10 hover:border-coral/30 transition-colors group">
                   <div>
-                    <h3 className="font-headline font-bold text-coral">Delete Account</h3>
+                    <h3 className="font-headline font-bold text-coral group-hover:text-red-500 transition-colors">Delete Account</h3>
                     <p className="text-xs text-textSecondary mt-1">Permanently remove your provider profile. This action cannot be undone.</p>
                   </div>
-                  <button onClick={deleteAccount} className="px-5 py-2.5 rounded-xl bg-coral/10 text-coral border border-coral/20 font-bold text-sm hover:bg-coral/20 transition-all whitespace-nowrap">
+                  <button onClick={deleteAccount} className="px-6 py-2.5 rounded-xl bg-coral/10 text-coral border border-coral/20 font-bold text-sm hover:bg-coral/20 transition-all whitespace-nowrap">
                     Permanently Delete
                   </button>
                 </div>

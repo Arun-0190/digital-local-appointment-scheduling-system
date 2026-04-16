@@ -28,7 +28,7 @@ function StarRating({ rating }) {
       {Array.from({ length: 5 }, (_, i) => (
         <span
           key={i}
-          className="material-symbols-outlined text-sm text-indigo-500"
+          className="material-symbols-outlined text-sm text-primary"
           style={{ fontVariationSettings: i < full ? "'FILL' 1" : "'FILL' 0" }}
         >
           star
@@ -209,7 +209,7 @@ function SearchProviders() {
                     onClick={() => setSelectedCategory(cat.id)}
                     className={`px-4 py-2 rounded-xl border text-sm font-bold transition-all shadow-sm ${
                       selectedCategory === cat.id 
-                        ? "bg-indigo-600 text-white border-indigo-600 shadow-md shadow-indigo-500/20" 
+                        ? "bg-primary text-black border-primary shadow-md shadow-primary/20" 
                         : "bg-white dark:bg-gray-800 border-inputBorder text-textSecondary hover:border-primary hover:text-primary"
                     }`}
                   >
@@ -221,7 +221,7 @@ function SearchProviders() {
           )}
 
           {fromPincode && pincode && (
-            <div className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 rounded-xl text-indigo-600 dark:text-indigo-400 text-sm font-bold">
+            <div className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-primary/10 border border-primary/20 rounded-xl text-primary text-sm font-bold">
               <span className="material-symbols-outlined text-base">location_on</span>
               Showing providers near pincode <span className="font-mono">{pincode}</span>
               <button type="button" onClick={() => { setPincode(""); setFromPincode(false); }} className="ml-2 text-xs opacity-70 hover:opacity-100 transition-opacity">
@@ -280,7 +280,7 @@ function SearchProviders() {
               <button
                 type="button"
                 onClick={() => setShowAdvanced(!showAdvanced)}
-                className="text-indigo-600 dark:text-indigo-400 text-sm font-bold flex items-center gap-1 hover:text-indigo-800 transition-colors"
+                className="text-primary text-sm font-bold flex items-center gap-1 hover:text-accent transition-colors"
               >
                 <span className="material-symbols-outlined text-base">
                   {showAdvanced ? 'expand_less' : 'expand_more'}
@@ -393,15 +393,15 @@ function SearchProviders() {
                 <GlassCard
                   key={provider.id}
                   onClick={() => navigate(`/provider/${provider.id}`)}
-                  className="!p-0 group hover:shadow-[0_15px_30px_-5px_rgba(79,70,229,0.15)] flex flex-col border border-transparent hover:border-indigo-500/30 overflow-hidden"
+                  className="!p-0 group hover:shadow-[0_15px_30px_-5px_rgba(255,191,0,0.15)] flex flex-col border border-transparent hover:border-primary/30 overflow-hidden"
                 >
-                  <div className="bg-white dark:bg-gray-800/80 p-6 h-full flex flex-col transition-colors group-hover:bg-indigo-50/10 dark:group-hover:bg-indigo-900/5">
+                  <div className="bg-white dark:bg-gray-800/80 p-6 h-full flex flex-col transition-colors group-hover:bg-primary/5">
                     <div className="flex justify-between items-start mb-5">
-                      <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300">
+                      <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20 group-hover:bg-primary group-hover:text-black transition-all duration-300">
                         <span className="material-symbols-outlined text-2xl group-hover:scale-110 transition-transform">business_center</span>
                       </div>
                       <div className="flex flex-col items-end gap-2">
-                        <span className="px-3 py-1 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-lg text-[10px] font-bold tracking-wider border border-indigo-200 dark:border-indigo-800 uppercase">
+                        <span className="px-3 py-1 bg-primary/10 text-primary rounded-lg text-[10px] font-bold tracking-wider border border-primary/20 uppercase">
                           {provider.experienceYears}+ yrs exp
                         </span>
                         {pincode && provider.pincode === pincode && (
@@ -413,7 +413,7 @@ function SearchProviders() {
                       </div>
                     </div>
 
-                    <h3 className="font-headline text-lg font-bold text-textPrimary mb-1 group-hover:text-indigo-600 transition-colors">{provider.businessName}</h3>
+                    <h3 className="font-headline text-lg font-bold text-textPrimary mb-1 group-hover:text-primary transition-colors">{provider.businessName}</h3>
                     <p className="text-textSecondary text-xs mb-4 flex items-center gap-1 opacity-80">
                       <span className="material-symbols-outlined text-xs">location_on</span>
                       {provider.area ? `${provider.area}, ` : ""}{provider.city}
@@ -437,8 +437,8 @@ function SearchProviders() {
                     )}
 
                     <div className="mt-auto pt-4 flex items-center justify-between border-t border-gray-100 dark:border-gray-700">
-                       <span className="text-xs font-bold text-indigo-600/60 dark:text-indigo-400/60 tracking-wider uppercase">View Availability</span>
-                       <div className="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 group-hover:translate-x-0 -translate-x-2 transition-all duration-300 shadow-md shadow-indigo-500/30">
+                       <span className="text-xs font-bold text-primary/60 tracking-wider uppercase">View Availability</span>
+                       <div className="w-8 h-8 rounded-full bg-primary text-black flex items-center justify-center opacity-0 group-hover:opacity-100 group-hover:translate-x-0 -translate-x-2 transition-all duration-300 shadow-md shadow-primary/30">
                         <span className="material-symbols-outlined text-sm">arrow_forward</span>
                        </div>
                     </div>

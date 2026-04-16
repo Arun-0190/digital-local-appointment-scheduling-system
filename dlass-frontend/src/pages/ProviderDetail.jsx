@@ -7,7 +7,8 @@ import GlassCard from "../components/ui/GlassCard";
 import Button from "../components/ui/Button";
 import ReviewModal from "../components/ReviewModal";
 
-const API = "http://localhost:8080/api";
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+const API = `${BASE_URL}/api`;
 
 function fmt(t) {
   if (!t) return "";
@@ -138,22 +139,33 @@ export default function ProviderDetail() {
           <GlassCard className="!p-6 md:!p-8 flex flex-col md:flex-row gap-6 md:gap-8 items-start md:items-center relative overflow-hidden group">
             <div className="absolute inset-0 bg-indigo-600/5 dark:bg-indigo-400/5 group-hover:bg-indigo-600/10 transition-colors" />
 
-            <div className="relative w-20 h-20 md:w-28 md:h-28 rounded-2xl bg-indigo-600/10 flex items-center justify-center shrink-0 border border-indigo-500/20 shadow-lg">
-              <span className="material-symbols-outlined text-4xl text-indigo-600 dark:text-indigo-400">business_center</span>
+            <div className="relative w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden bg-indigo-600/10 flex items-center justify-center shrink-0 border-2 border-indigo-500/20 shadow-lg">
+              {profile?.profileImageUrl ? (
+                <img 
+                  src={`${BASE_URL}${profile.profileImageUrl.startsWith('/') ? '' : '/'}${profile.profileImageUrl}`} 
+                  alt={profile.businessName || "Provider"} 
+                  className="w-full h-full object-cover" 
+                />
+              ) : (
+                <span className="material-symbols-outlined text-4xl text-indigo-600 dark:text-indigo-400">person</span>
+              )}
             </div>
 
-            <div className="relative flex-1 space-y-3">
+            <div className="relative flex-1 space-y-3 w-full">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                   <h1 className="text-3xl md:text-4xl font-headline font-extrabold tracking-tight text-textPrimary">
                     {profile?.businessName}
                   </h1>
+                  <h2 className="text-lg text-textSecondary font-medium mt-1 mb-2">
+                    {profile?.userName || "Provider"}
+                  </h2>
                   <p className="text-blue-600 dark:text-blue-400 font-headline font-bold flex items-center gap-1 mt-1 text-xs uppercase tracking-widest bg-blue-50 dark:bg-blue-900/30 px-3 py-1.5 rounded-lg w-fit border border-blue-200 dark:border-blue-800">
                     <span className="material-symbols-outlined text-xs">verified</span>
                     {profile?.experienceYears} Year{profile?.experienceYears !== 1 ? "s" : ""} Experience
                   </p>
                 </div>
-                <div className="flex flex-col items-start sm:items-end gap-2">
+                <div className="flex flex-col items-start sm:items-end gap-2 shrink-0">
                   <div className="flex items-center gap-2 bg-white dark:bg-gray-800/50 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
                     <span
                       className="material-symbols-outlined text-amber-500 text-base"
@@ -168,6 +180,16 @@ export default function ProviderDetail() {
                     <span className="material-symbols-outlined text-sm text-indigo-600">location_on</span>
                     {profile?.area}, {profile?.city} — {profile?.pincode}
                   </div>
+                  <div className="mt-2 w-full">
+                    <Button 
+                      onClick={() => navigate("/dashboard", { state: { openChatWith: { id: profile.userId, name: profile.businessName } } })} 
+                      className="w-full !px-4 !py-2 text-sm flex items-center justify-center gap-2"
+                      variant="outline"
+                    >
+                      <span className="material-symbols-outlined text-base">chat</span>
+                      Chat Provider
+                    </Button>
+                  </div>
                 </div>
               </div>
               {profile?.description && (
@@ -178,6 +200,28 @@ export default function ProviderDetail() {
             </div>
           </GlassCard>
         </section>
+
+        {/* PORTFOLIO SECTION */}
+        {profile?.portfolioImages && profile.portfolioImages.length > 0 && (
+          <section className="mb-10">
+            <h2 className="text-2xl font-headline font-bold tracking-tight text-textPrimary flex items-center gap-3 mb-6">
+              Portfolio
+              <span className="h-px flex-1 bg-gradient-to-r from-glassBorder to-transparent" />
+            </h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {profile.portfolioImages.map((imgUrl, i) => (
+                <div key={i} className="aspect-square rounded-2xl overflow-hidden bg-black/5 dark:bg-white/5 border border-glassBorder group">
+                  <img
+                    src={`${BASE_URL}/uploads/provider/${imgUrl}`}
+                    alt={`Portfolio ${i+1}`}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    onError={(e) => { e.target.style.display = "none"; }}
+                  />
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           <div className="lg:col-span-5 space-y-4">
@@ -370,6 +414,14 @@ export default function ProviderDetail() {
                          <span key={star} className={`material-symbols-outlined text-sm ${rev.rating >= star ? 'text-amber-500' : 'text-gray-300 dark:text-gray-700'}`} style={{ fontVariationSettings: rev.rating >= star ? "'FILL' 1" : "'FILL' 0" }}>star</span>
                       ))}
                     </div>
+                    
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-8 h-8 rounded-full bg-indigo-500/10 flex items-center justify-center text-indigo-700 font-bold uppercase">
+                        {rev.userName ? rev.userName.charAt(0) : "U"}
+                      </div>
+                      <span className="text-sm font-bold text-textPrimary">{rev.userName || "User"}</span>
+                    </div>
+
                     {rev.comment ? (
                       <p className="text-textPrimary text-base mb-6 leading-relaxed flex-1 italic group-hover:text-indigo-950 dark:group-hover:text-indigo-100 transition-colors">"{rev.comment}"</p>
                     ) : (
